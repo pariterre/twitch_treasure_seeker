@@ -13,20 +13,35 @@ class GameController {
     required this.nbCols,
     required this.nbBombs,
   }) {
+    if (nbBombs > nbRows * nbCols) {
+      throw 'Too many bombs for the number of tiles';
+    }
     _generateGrid();
   }
 
+  ///
+  /// Reset the board to initial and call the refresh the draw
   void reset() {
     _generateGrid();
     if (mainWindowSetState != null) mainWindowSetState!(() {});
   }
 
+  ///
+  /// Get if a specific row/col pair is inside or outside the current grid
   bool _isInsideGrid(row, col) {
     // Do not check rows or column outside of the grid
     return (row >= 0 && col >= 0 && row < nbRows && col < nbCols);
   }
 
+  ///
+  /// Get the value of a tile of a specific [index]. If the tile is not
+  /// revealed yet, this method returns -2; if the tile is a bomb, then it
+  /// returns -1, otherwise it returns the number of bomb around it.
   int getTile(int index) => _isRevealed[index] ? _grid[index] : -2;
+
+  ///
+  /// Reveal a tile. If it is a zero, it is recursively called to all its
+  /// neighbourhood so it automatically reveals all the surroundings
   void revealTile(int index, {List<bool>? isChecked}) {
     // If it is already open, do nothing
     if (_isRevealed[index] || (isChecked != null && isChecked[index])) return;
@@ -72,10 +87,15 @@ class GameController {
     }
   }
 
+  ///
+  /// Easy accessors translating index into row/col pair or row/col pair into
+  /// index
   int _index(int row, int col) => row * nbCols + col;
   int _row(int index) => index ~/ nbCols;
   int _col(int index) => index % nbCols;
 
+  ///
+  /// Generate a new grid with randomly positionned bomb
   void _generateGrid() {
     // Create an empty grid
     _grid = List.filled(nbRows * nbCols, 0);
@@ -84,10 +104,11 @@ class GameController {
     // Populate it with bombs
     final rand = Random();
     for (var i = 0; i < nbBombs; i++) {
-      var indexToBomb = rand.nextInt(nbRows * nbCols);
-      while (_grid[indexToBomb] == -1) {
+      var indexToBomb = -1;
+      do {
         indexToBomb = rand.nextInt(nbRows * nbCols);
-      }
+        // Make sure it was not already a bomb
+      } while (_grid[indexToBomb] == -1);
       _grid[indexToBomb] = -1;
     }
 
