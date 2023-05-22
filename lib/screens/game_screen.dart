@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:twitched_minesweeper/models/game_controller.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({
     super.key,
-    required this.nbRows,
-    required this.nbCols,
+    required this.gameController,
   });
 
   static const route = '/game-screen';
-  final int nbRows;
-  final int nbCols;
+  final GameController gameController;
 
   @override
   Widget build(BuildContext context) {
-    final tileSize = (MediaQuery.of(context).size.height - 2 * 12) / nbRows;
+    final tileSize =
+        (MediaQuery.of(context).size.height - 2 * 12) / gameController.nbRows;
 
     return Scaffold(
       body: Container(
@@ -22,12 +22,16 @@ class GameScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Center(
           child: SizedBox(
-            width: nbCols * tileSize,
+            width: gameController.nbCols * tileSize,
             child: GridView.count(
-              crossAxisCount: nbCols,
-              children: List.generate(nbRows * nbCols, (index) {
-                return SweeperTile(number: 1, tileSize: tileSize);
-              }),
+              crossAxisCount: gameController.nbCols,
+              children: List.generate(
+                  gameController.nbRows * gameController.nbCols, (index) {
+                return SweeperTile(
+                    gameController: gameController,
+                    tileIndex: index,
+                    tileSize: tileSize);
+              }, growable: false),
             ),
           ),
         ),
