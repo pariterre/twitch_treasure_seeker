@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
-import 'package:twitched_minesweeper/models/game_controller.dart';
 
 void main() async {
   runApp(MaterialApp(
@@ -21,9 +20,7 @@ void main() async {
       //       withModerator: true,
       //       forceNewAuthentication: false,
       //     ),
-      GameScreen.route: (ctx) => GameScreen(
-            gameController: GameController(nbRows: 20, nbCols: 10, nbBombs: 7),
-          ),
+      GameScreen.route: (ctx) => const GameScreen(),
     },
   ));
 }
