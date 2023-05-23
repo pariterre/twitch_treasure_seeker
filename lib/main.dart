@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
+import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
+import 'package:twitched_minesweeper/screens/register_player_screen.dart';
 
 void main() async {
+  final gameManager = GameManager();
+  gameManager.playersController.addPlayer('Moi');
+  gameManager.playersController.addPlayer('Toi');
+
   runApp(MaterialApp(
-    initialRoute: GameScreen.route,
+    initialRoute: RegisterPlayersScreen.route,
     routes: {
       // TwitchAuthenticationScreen.route: (ctx) =>
       //     const TwitchAuthenticationScreen(
@@ -20,7 +26,9 @@ void main() async {
       //       withModerator: true,
       //       forceNewAuthentication: false,
       //     ),
-      GameScreen.route: (ctx) => const GameScreen(),
+      GameScreen.route: (ctx) => GameScreen(gameManager: gameManager),
+      RegisterPlayersScreen.route: (ctx) =>
+          RegisterPlayersScreen(gameManager: gameManager),
     },
   ));
 }

@@ -1,29 +1,47 @@
 import 'dart:math';
 
-class GameController {
-  final int nbRows;
-  final int nbCols;
-  final int nbBombs;
+import 'package:twitched_minesweeper/models/players_controller.dart';
+
+class GameManager {
+  final playersController = PlayersController();
+  int _nbRows = 20;
+  int _nbCols = 10;
+  int _nbBombs = 15;
   List<int> _grid = [];
   List<bool> _isRevealed = [];
-  void Function(void Function())? mainWindowSetState;
 
-  GameController({
-    required this.nbRows,
-    required this.nbCols,
-    required this.nbBombs,
-  }) {
-    if (nbBombs > nbRows * nbCols) {
+  // This is a callback to current window that need to be redrawn when
+  // the grid changes
+  void Function()? _onStateChanged;
+  set onStateChanged(void Function()? value) {
+    _onStateChanged = value;
+    playersController.onStateChanged = value;
+  }
+
+  GameManager() {
+    _generateGrid();
+  }
+
+  int get nbRows => _nbRows;
+  int get nbCols => _nbCols;
+  int get nbBombs => _nbBombs;
+  void setDifficulty(int nbRows, int nbCols, int nbBombs) {
+    _nbRows = nbRows;
+    _nbCols = nbCols;
+    _nbBombs = nbBombs;
+    if (_nbBombs > _nbRows * _nbCols) {
       throw 'Too many bombs for the number of tiles';
     }
-    _generateGrid();
   }
 
   ///
   /// Reset the board to initial and call the refresh the draw
-  void reset() {
+  void newGame() {
     _generateGrid();
-    if (mainWindowSetState != null) mainWindowSetState!(() {});
+    for (final player in playersController.players) {
+      player.reset(bombs: _nbBombs);
+    }
+    if (_onStateChanged != null) _onStateChanged!();
   }
 
   ///
@@ -53,7 +71,7 @@ class GameController {
       // Prepare the isChecked structure and launch the recursive procedure
       isChecked = List.filled(nbRows * nbCols, false);
       revealTile(index, isChecked: isChecked);
-      if (mainWindowSetState != null) mainWindowSetState!(() {});
+      if (_onStateChanged != null) _onStateChanged!();
       return;
     }
 
