@@ -19,7 +19,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
   @override
   void initState() {
     super.initState();
-    widget.gameManager.playersController.onStateChanged = () => setState(() {});
+    widget.gameManager.onStateChanged = () => setState(() {});
   }
 
   @override
@@ -56,19 +56,18 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                                   const EdgeInsets.only(top: 10, left: 20.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children:
-                                    widget.gameManager.playersController.players
-                                        .map<Widget>((e) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 4.0),
-                                              child: Text(
-                                                e.username,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 16),
-                                              ),
-                                            ))
-                                        .toList(),
+                                children: widget.gameManager.players
+                                    .map<Widget>((e) => Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 4.0),
+                                          child: Text(
+                                            e.username,
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16),
+                                          ),
+                                        ))
+                                    .toList(),
                               ),
                             ),
                           ],

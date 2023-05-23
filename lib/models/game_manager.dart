@@ -1,21 +1,27 @@
 import 'dart:math';
 
-import 'package:twitched_minesweeper/models/players_controller.dart';
+import 'player.dart';
 
 class GameManager {
-  final playersController = PlayersController();
+  
+  final List<Player> _players = [];
+
   int _nbRows = 20;
   int _nbCols = 10;
   int _nbBombs = 15;
   List<int> _grid = [];
   List<bool> _isRevealed = [];
 
+  bool _canRegister = true;
+  bool get registrationIsOpen => _canRegister;
+  void closeRegistration() => _canRegister = false;
+
+
   // This is a callback to current window that need to be redrawn when
   // the grid changes
   void Function()? _onStateChanged;
   set onStateChanged(void Function()? value) {
     _onStateChanged = value;
-    playersController.onStateChanged = value;
   }
 
   GameManager() {
@@ -25,7 +31,7 @@ class GameManager {
   int get nbRows => _nbRows;
   int get nbCols => _nbCols;
   int get nbBombs => _nbBombs;
-  void setDifficulty(int nbRows, int nbCols, int nbBombs) {
+  void setGameParameters(int nbRows, int nbCols, int nbBombs) {
     _nbRows = nbRows;
     _nbCols = nbCols;
     _nbBombs = nbBombs;
@@ -38,11 +44,23 @@ class GameManager {
   /// Reset the board to initial and call the refresh the draw
   void newGame() {
     _generateGrid();
-    for (final player in playersController.players) {
+    for (final player in _players) {
       player.reset(bombs: _nbBombs);
     }
     if (_onStateChanged != null) _onStateChanged!();
   }
+
+  ///
+  /// Add a new player to the player pool
+  void addPlayer(String username) {
+    if (!_canRegister) return;
+
+    _players.add(Player(username: username));
+
+    if (_onStateChanged != null) _onStateChanged!();
+    return;
+  }
+  List<Player> get players => _players;
 
   ///
   /// Get if a specific row/col pair is inside or outside the current grid

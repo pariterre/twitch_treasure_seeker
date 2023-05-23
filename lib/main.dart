@@ -6,8 +6,8 @@ import 'package:twitched_minesweeper/screens/register_player_screen.dart';
 
 void main() async {
   final gameManager = GameManager();
-  gameManager.playersController.addPlayer('Moi');
-  gameManager.playersController.addPlayer('Toi');
+  gameManager.addPlayer('Moi');
+  gameManager.addPlayer('Toi');
 
   runApp(MaterialApp(
     initialRoute: RegisterPlayersScreen.route,

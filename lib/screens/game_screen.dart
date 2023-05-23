@@ -20,6 +20,7 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     widget.gameManager.onStateChanged = () => setState(() {});
+    widget.gameManager.newGame();
   }
 
   Widget _buildGameTiles(double availableHeight) {
@@ -80,7 +81,7 @@ class _GameScreenState extends State<GameScreen> {
               padding: const EdgeInsets.only(left: 12.0),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: widget.gameManager.playersController.players
+                  children: widget.gameManager.players
                       .map((e) => Padding(
                             padding: const EdgeInsets.only(bottom: 4.0),
                             child: Text(
