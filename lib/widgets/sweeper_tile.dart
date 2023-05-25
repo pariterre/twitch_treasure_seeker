@@ -53,7 +53,7 @@ class SweeperTile extends StatelessWidget {
       decoration: BoxDecoration(
         color:
             tile == Tile.concealed ? ThemeColor.conceiled : ThemeColor.revealed,
-        border: Border.all(width: 3),
+        border: Border.all(width: tileSize * 0.02),
       ),
       child: tile == Tile.concealed || tile == Tile.zero
           ? null

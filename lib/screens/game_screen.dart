@@ -26,11 +26,8 @@ class _GameScreenState extends State<GameScreen> {
     _mainInterface.gameManager.newGame();
   }
 
-  Widget _buildGameTiles(double availableHeight) {
-    final tileSize = availableHeight / _mainInterface.gameManager.nbRows;
-
+  Widget _buildGameTiles(double tileSize) {
     return SizedBox(
-      height: availableHeight,
       width: _mainInterface.gameManager.nbCols * tileSize - 1,
       child: GridView.count(
         crossAxisCount: _mainInterface.gameManager.nbCols,
@@ -46,41 +43,57 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildScore(double height) {
+  Widget _buildScore() {
+    final windowHeight = MediaQuery.of(context).size.height;
+
+    final smallPadding = ThemePadding.small(context);
+    final interlinePadding = ThemePadding.interline(context);
+
+    final titleSize = ThemeSize.title(context);
+    final textSize = ThemeSize.text(context);
+
+    final players = _mainInterface.gameManager.players;
+
     return Container(
       decoration: BoxDecoration(
         color: ThemeColor.main,
         borderRadius: BorderRadius.circular(5),
       ),
-      height: height,
-      width: 300,
+      height:
+          windowHeight * 0.08 + players.length * (textSize + interlinePadding),
+      width: windowHeight * 0.40,
       child: Padding(
-        padding: EdgeInsets.only(
-            left: ThemePadding.small(context),
-            top: ThemePadding.small(context)),
+        padding: EdgeInsets.only(left: smallPadding, top: smallPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Score',
-              style: TextStyle(
-                  color: Colors.white, fontSize: ThemeSize.title(context)),
+              style: TextStyle(color: Colors.white, fontSize: titleSize),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: interlinePadding * 2),
             Padding(
-              padding: EdgeInsets.only(left: ThemePadding.small(context)),
+              padding: EdgeInsets.only(left: smallPadding, right: smallPadding),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _mainInterface.gameManager.players.keys.map((name) {
+                  children: players.keys.map((name) {
                     final player = _mainInterface.gameManager.players[name]!;
                     return Padding(
-                      padding: EdgeInsets.only(
-                          bottom: ThemePadding.interline(context)),
-                      child: Text(
-                        '${player.username}: ${player.score} (${player.bombs} bombs)',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: ThemeSize.text(context)),
+                      padding: EdgeInsets.only(bottom: interlinePadding),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${player.username}:',
+                            style: TextStyle(
+                                color: Colors.white, fontSize: textSize),
+                          ),
+                          Text(
+                            '${player.score} bleuets (${player.bombs} essais)',
+                            style: TextStyle(
+                                color: Colors.white, fontSize: textSize),
+                          )
+                        ],
                       ),
                     );
                   }).toList()),
@@ -93,27 +106,34 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const offsetFromTop = 25.0;
-    const scoreHeight = 250.0;
-    final gameHeight = MediaQuery.of(context).size.height - 2 * offsetFromTop;
+    final windowWidth = MediaQuery.of(context).size.width;
+    final windowHeight = MediaQuery.of(context).size.height;
+
+    final offsetFromBorder = windowHeight * 0.02;
+    final gridHeight = windowHeight - 2 * offsetFromBorder;
+
+    final tileSize = gridHeight / _mainInterface.gameManager.nbRows;
 
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(color: ThemeColor.greenScreen),
         child: Center(
           child: Stack(
-            alignment: Alignment.topCenter,
             children: [
               SizedBox(
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
+                width: windowWidth,
+                height: windowHeight,
               ),
               Padding(
-                padding: const EdgeInsets.only(top: offsetFromTop),
-                child: _buildGameTiles(gameHeight),
+                padding: EdgeInsets.only(
+                    left: offsetFromBorder, top: offsetFromBorder),
+                child: _buildGameTiles(tileSize),
               ),
               Positioned(
-                  left: 0, top: offsetFromTop, child: _buildScore(scoreHeight)),
+                  left: _mainInterface.gameManager.nbCols * tileSize +
+                      offsetFromBorder * 2,
+                  top: offsetFromBorder,
+                  child: _buildScore()),
             ],
           ),
         ),
