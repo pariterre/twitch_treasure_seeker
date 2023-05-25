@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 
 double easeOutElastic(double x) {
   const c4 = (2 * pi) / 3;
@@ -34,15 +35,21 @@ class GrowingContainer extends StatefulWidget {
 class _GrowingContainerState extends State<GrowingContainer>
     with TickerProviderStateMixin {
   late int fullAnimationTime =
-      widget.growingTime.inSeconds + widget.fadingTime.inSeconds;
-  late double growingTimeRatio =
-      widget.growingTime.inSeconds / fullAnimationTime;
-  late double fadingTimeRatio = widget.fadingTime.inSeconds / fullAnimationTime;
+      widget.growingTime.inMilliseconds + widget.fadingTime.inMilliseconds;
+
+  late double startingGrowingNormalizedTime = 0;
+  late double endingGrowingNormalizedTime =
+      widget.growingTime.inMilliseconds / fullAnimationTime;
+
+  late double startingFadingNormalizedTime = endingGrowingNormalizedTime;
+  late double endingFadingNormalizedTime = 1;
 
   late AnimationController animationController = AnimationController(
     vsync: this,
-    duration: Duration(seconds: fullAnimationTime),
-  )..forward();
+    duration: Duration(milliseconds: fullAnimationTime),
+  )
+    ..forward()
+    ..repeat();
 
   @override
   void dispose() {
@@ -51,7 +58,7 @@ class _GrowingContainerState extends State<GrowingContainer>
   }
 
   double get _animationSizeValue =>
-      min(animationController.value / growingTimeRatio, 1);
+      min(animationController.value / endingGrowingNormalizedTime, 1);
 
   double get _currentSize {
     return widget.startingSize +
@@ -60,9 +67,11 @@ class _GrowingContainerState extends State<GrowingContainer>
   }
 
   double get _animationOpacityValue {
-    if (_animationSizeValue < 1) return 0;
-    final sizeOffset = animationController.value / growingTimeRatio;
-    return max((animationController.value - sizeOffset) / fadingTimeRatio, 0);
+    final sizeOffset = animationController.value - endingGrowingNormalizedTime;
+    return max(
+        sizeOffset /
+            (endingFadingNormalizedTime - startingFadingNormalizedTime),
+        0);
   }
 
   double get _currentOpacity {
@@ -74,12 +83,20 @@ class _GrowingContainerState extends State<GrowingContainer>
     return AnimatedBuilder(
       animation: animationController,
       builder: (ctx, child) {
-        return Text(
-          style: TextStyle(
-              fontSize: _currentSize,
-              color: Colors.white.withOpacity(_currentOpacity)),
-          widget.title,
-          textAlign: TextAlign.center,
+        return Container(
+          decoration: BoxDecoration(
+              color:
+                  ThemeColor.main.withOpacity(max(_currentOpacity - 0.2, 0))),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Text(
+              style: TextStyle(
+                  fontSize: _currentSize,
+                  color: Colors.white.withOpacity(_currentOpacity)),
+              widget.title,
+              textAlign: TextAlign.center,
+            ),
+          ),
         );
       },
     );

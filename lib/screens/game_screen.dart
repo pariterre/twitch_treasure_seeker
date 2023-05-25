@@ -25,12 +25,29 @@ class _GameScreenState extends State<GameScreen> {
     _mainInterface =
         ModalRoute.of(context)!.settings.arguments as MainInterface;
 
-    _mainInterface.gameManager.onStateChanged = () => setState(() {});
+    _mainInterface.onStateChanged = () => setState(() {});
     _mainInterface.gameManager.newGame();
     _mainInterface.onGameOver = _onGameOver;
+    _mainInterface.onBombFound = _onBombFound;
+  }
+
+  String? _lastPlayerToHaveFoundABomb;
+  void _onBombFound(String playerName) {
+    setState(() {
+      _lastPlayerToHaveFoundABomb = playerName;
+    });
+
+    Future.delayed(const Duration(milliseconds: 2000))
+        .then((value) => setState(() {
+              _lastPlayerToHaveFoundABomb = null;
+            }));
   }
 
   void _onGameOver() {
+    _mainInterface.onStateChanged = null;
+    _mainInterface.onGameOver = null;
+    _mainInterface.onBombFound = null;
+
     // TODO: Add a proper ending screen before looping back to initial route
     Navigator.of(context).pushReplacementNamed(WaitingRoom.route,
         arguments: _mainInterface.twitchManager);
@@ -165,17 +182,23 @@ class _GameScreenState extends State<GameScreen> {
                       offsetFromBorder * 2,
                   top: offsetFromBorder + tileSize,
                   child: _buildScore()),
-              Text('coucou'),
-              Positioned(
-                  left: (_mainInterface.gameManager.nbCols + 1) * tileSize / 2,
-                  top: windowHeight * 0.25,
-                  child: const GrowingContainer(
-                    startingSize: 1,
-                    finalSize: 60,
-                    title: 'coucou',
-                    growingTime: Duration(seconds: 3),
-                    fadingTime: Duration(seconds: 1),
+              if (_lastPlayerToHaveFoundABomb != null)
+                Positioned(
+                  left: offsetFromBorder,
+                  right: windowWidth -
+                      ((_mainInterface.gameManager.nbCols + 1.5) * tileSize +
+                          2 * offsetFromBorder),
+                  top: 0,
+                  bottom: windowHeight * 1 / 4,
+                  child: Center(
+                      child: GrowingContainer(
+                    startingSize: windowHeight * 0.01,
+                    finalSize: windowHeight * 0.04,
+                    title: 'Bleuet trouvé par\n$_lastPlayerToHaveFoundABomb!',
+                    growingTime: const Duration(seconds: 1, milliseconds: 500),
+                    fadingTime: const Duration(milliseconds: 500),
                   )),
+                ),
             ],
           ),
         ),

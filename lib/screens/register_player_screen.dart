@@ -22,10 +22,12 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
     _mainInterface =
         ModalRoute.of(context)!.settings.arguments as MainInterface;
     _mainInterface.onRequestStartPlaying = startPlaying;
-    _mainInterface.gameManager.onStateChanged = () => setState(() {});
+    _mainInterface.onStateChanged = () => setState(() {});
   }
 
   void startPlaying() {
+    _mainInterface.onStateChanged = null;
+
     Navigator.of(context)
         .pushReplacementNamed(GameScreen.route, arguments: _mainInterface);
   }

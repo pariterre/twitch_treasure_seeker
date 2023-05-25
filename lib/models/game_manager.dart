@@ -32,13 +32,6 @@ class GameManager {
   bool _canRegister = true;
   void closeRegistration() => _canRegister = false;
 
-  // This is a callback to current window that need to be redrawn when
-  // the grid changes
-  void Function()? _onStateChanged;
-  set onStateChanged(void Function()? value) {
-    _onStateChanged = value;
-  }
-
   GameManager() {
     _generateGrid();
   }
@@ -60,7 +53,6 @@ class GameManager {
     for (final player in _players.keys) {
       _players[player]!.reset(bombs: _nbBombs);
     }
-    if (_onStateChanged != null) _onStateChanged!();
   }
 
   ///
@@ -72,7 +64,6 @@ class GameManager {
 
     _players[username] = Player(username: username);
 
-    if (_onStateChanged != null) _onStateChanged!();
     return AddPlayerStatus.success;
   }
 
@@ -145,7 +136,6 @@ class GameManager {
       // Prepare the isChecked structure and launch the recursive procedure
       isChecked = List.filled(nbRows * nbCols, false);
       await _revealTile(idx, isChecked: isChecked);
-      if (_onStateChanged != null) _onStateChanged!();
       return;
     }
 
