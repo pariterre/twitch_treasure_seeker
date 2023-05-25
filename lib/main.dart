@@ -25,6 +25,7 @@ void main() async {
       WaitingRoom.route: (ctx) => const WaitingRoom(),
       GameScreen.route: (ctx) => const GameScreen(),
       RegisterPlayersScreen.route: (ctx) => const RegisterPlayersScreen(),
+      // TODO add a configuration room
     },
   ));
 }

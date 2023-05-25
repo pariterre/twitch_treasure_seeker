@@ -3,6 +3,7 @@ import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/waiting_room.dart';
+import 'package:twitched_minesweeper/widgets/growing_container.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
 class GameScreen extends StatefulWidget {
@@ -164,6 +165,17 @@ class _GameScreenState extends State<GameScreen> {
                       offsetFromBorder * 2,
                   top: offsetFromBorder + tileSize,
                   child: _buildScore()),
+              Text('coucou'),
+              Positioned(
+                  left: (_mainInterface.gameManager.nbCols + 1) * tileSize / 2,
+                  top: windowHeight * 0.25,
+                  child: const GrowingContainer(
+                    startingSize: 1,
+                    finalSize: 60,
+                    title: 'coucou',
+                    growingTime: Duration(seconds: 3),
+                    fadingTime: Duration(seconds: 1),
+                  )),
             ],
           ),
         ),
