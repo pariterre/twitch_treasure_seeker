@@ -25,10 +25,10 @@ class _WaitingRoomState extends State<WaitingRoom> {
         ModalRoute.of(context)!.settings.arguments as TwitchManager;
 
     _twitchInterface = MainInterface(twitchManager: _twitchManager);
-    _twitchInterface.onRequestGameStart = onRequestGameStart;
+    _twitchInterface.onRequestLaunchGame = onRequestLaunchGame;
   }
 
-  void onRequestGameStart() {
+  void onRequestLaunchGame() {
     Navigator.of(context).pushReplacementNamed(RegisterPlayersScreen.route,
         arguments: _twitchInterface);
   }

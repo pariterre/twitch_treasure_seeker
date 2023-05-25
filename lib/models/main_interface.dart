@@ -8,19 +8,28 @@ enum _Status {
 }
 
 class MainInterface {
+  final gameManager = GameManager();
+  _Status _status = _Status.waitForRequestGameStart;
+
+  Function()? onRequestLaunchGame;
+  Function()? onRequestStartPlaying;
+
+  TwitchManager twitchManager;
+
   MainInterface({required this.twitchManager}) {
     twitchManager.irc!.messageCallback = _messageReceived;
   }
 
-  final gameManager = GameManager();
-  _Status _status = _Status.waitForRequestGameStart;
+  bool _isModerator(String username) {
+    return username == twitchManager.api.streamerUsername ||
+        username == twitchManager.api.moderatorUsername;
+  }
 
   void _messageReceived(String username, String message) {
     if (_status == _Status.waitForRequestGameStart) {
-      if ((username == 'pariterre' || username == 'botbleuet') &&
-          message == '!trouveBleuet') {
+      if (_isModerator(username) && message == '!trouveBleuet') {
         _status = _Status.waitForPlayerToJoin;
-        if (onRequestGameStart != null) onRequestGameStart!();
+        if (onRequestLaunchGame != null) onRequestLaunchGame!();
       }
       return;
     }
@@ -29,8 +38,7 @@ class MainInterface {
       if (message == '!joindre') {
         gameManager.addPlayer(username);
       }
-      if ((username == 'pariterre' || username == 'botbleuet') &&
-          message == '!start') {
+      if (_isModerator(username) && message == '!start') {
         _status = _Status.play;
         if (onRequestStartPlaying != null) onRequestStartPlaying!();
       }
@@ -53,9 +61,4 @@ class MainInterface {
       }
     }
   }
-
-  Function()? onRequestGameStart;
-  Function()? onRequestStartPlaying;
-
-  TwitchManager twitchManager;
 }
