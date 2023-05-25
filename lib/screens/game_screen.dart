@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/game_manager.dart';
+import 'package:twitched_minesweeper/models/enums.dart';
+import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({
-    super.key,
-    required this.gameManager,
-  });
+  const GameScreen({super.key});
 
-  final GameManager gameManager;
   static const route = '/game-screen';
 
   @override
@@ -16,25 +13,32 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  late MainInterface _mainInterface;
+
   @override
-  void initState() {
-    super.initState();
-    widget.gameManager.onStateChanged = () => setState(() {});
-    widget.gameManager.newGame();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _mainInterface =
+        ModalRoute.of(context)!.settings.arguments as MainInterface;
+
+    _mainInterface.gameManager.onStateChanged = () => setState(() {});
+    _mainInterface.gameManager.newGame();
   }
 
   Widget _buildGameTiles(double availableHeight) {
-    final tileSize = availableHeight / widget.gameManager.nbRows;
+    final tileSize = availableHeight / _mainInterface.gameManager.nbRows;
 
     return SizedBox(
       height: availableHeight,
-      width: widget.gameManager.nbCols * tileSize - 1,
+      width: _mainInterface.gameManager.nbCols * tileSize - 1,
       child: GridView.count(
-        crossAxisCount: widget.gameManager.nbCols,
+        crossAxisCount: _mainInterface.gameManager.nbCols,
         children: List.generate(
-            widget.gameManager.nbRows * widget.gameManager.nbCols, (index) {
+            _mainInterface.gameManager.nbRows *
+                _mainInterface.gameManager.nbCols, (index) {
           return SweeperTile(
-              gameManager: widget.gameManager,
+              gameManager: _mainInterface.gameManager,
               tileIndex: index,
               tileSize: tileSize);
         }, growable: false),
@@ -48,7 +52,7 @@ class _GameScreenState extends State<GameScreen> {
       children: [
         ElevatedButton(
             onPressed: () {
-              widget.gameManager.newGame();
+              _mainInterface.gameManager.newGame();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
             child: const Padding(
@@ -62,7 +66,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget _buildScore(double height) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 45, 74, 168),
+        color: ThemeColor.main,
         borderRadius: BorderRadius.circular(5),
       ),
       height: height,
@@ -81,16 +85,17 @@ class _GameScreenState extends State<GameScreen> {
               padding: const EdgeInsets.only(left: 12.0),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: widget.gameManager.players
-                      .map((e) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4.0),
-                            child: Text(
-                              '${e.username}: ${e.score} (${e.bombs} bombs)',
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 16),
-                            ),
-                          ))
-                      .toList()),
+                  children: _mainInterface.gameManager.players.keys.map((name) {
+                    final player = _mainInterface.gameManager.players[name]!;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4.0),
+                      child: Text(
+                        '${player.username}: ${player.score} (${player.bombs} bombs)',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    );
+                  }).toList()),
             )
           ],
         ),
@@ -106,7 +111,7 @@ class _GameScreenState extends State<GameScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(color: Color.fromARGB(255, 0, 255, 0)),
+        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
         child: Center(
           child: Stack(
             alignment: Alignment.topCenter,

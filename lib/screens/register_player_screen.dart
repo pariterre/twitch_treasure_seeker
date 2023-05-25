@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/game_manager.dart';
+import 'package:twitched_minesweeper/models/enums.dart';
+import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
 
 class RegisterPlayersScreen extends StatefulWidget {
-  const RegisterPlayersScreen({
-    super.key,
-    required this.gameManager,
-  });
+  const RegisterPlayersScreen({super.key});
 
-  final GameManager gameManager;
   static const route = '/register-players';
 
   @override
@@ -16,10 +13,21 @@ class RegisterPlayersScreen extends StatefulWidget {
 }
 
 class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
+  late MainInterface _mainInterface;
+
   @override
-  void initState() {
-    super.initState();
-    widget.gameManager.onStateChanged = () => setState(() {});
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _mainInterface =
+        ModalRoute.of(context)!.settings.arguments as MainInterface;
+    _mainInterface.onRequestStartPlaying = startPlaying;
+    _mainInterface.gameManager.onStateChanged = () => setState(() {});
+  }
+
+  void startPlaying() {
+    Navigator.of(context)
+        .pushReplacementNamed(GameScreen.route, arguments: _mainInterface);
   }
 
   @override
@@ -28,7 +36,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(color: Color.fromARGB(255, 0, 255, 0)),
+        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
@@ -36,8 +44,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
               child: Container(
                   width: 300,
                   height: 500,
-                  decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 45, 74, 168)),
+                  decoration: const BoxDecoration(color: ThemeColor.main),
                   child: Stack(
                     children: [
                       Padding(
@@ -56,18 +63,18 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                                   const EdgeInsets.only(top: 10, left: 20.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: widget.gameManager.players
-                                    .map<Widget>((e) => Padding(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 4.0),
-                                          child: Text(
-                                            e.username,
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16),
-                                          ),
-                                        ))
-                                    .toList(),
+                                children: _mainInterface
+                                    .gameManager.players.keys
+                                    .map<Widget>((name) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    child: Text(
+                                      name,
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 16),
+                                    ),
+                                  );
+                                }).toList(),
                               ),
                             ),
                           ],
@@ -91,7 +98,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                                   padding: const EdgeInsets.only(
                                       left: 20, top: 10, bottom: 4.0),
                                   child: Text(
-                                    'Dimension: ${widget.gameManager.nbRows}x${widget.gameManager.nbCols}',
+                                    'Dimension: ${_mainInterface.gameManager.nbRows}x${_mainInterface.gameManager.nbCols}',
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 16),
                                   ),
@@ -100,7 +107,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                                   padding: const EdgeInsets.only(
                                       left: 20, bottom: 4.0),
                                   child: Text(
-                                    'Bombs: ${widget.gameManager.nbBombs}',
+                                    'Bombs: ${_mainInterface.gameManager.nbBombs}',
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 16),
                                   ),
@@ -116,8 +123,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
               child: ElevatedButton(
-                  onPressed: () => Navigator.of(context)
-                      .pushReplacementNamed(GameScreen.route),
+                  onPressed: startPlaying,
                   style:
                       ElevatedButton.styleFrom(backgroundColor: Colors.black),
                   child: const Padding(

@@ -1,16 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 
-List<Color> _tileColors = const [
-  Color.fromARGB(255, 9, 148, 183),
-  Color.fromARGB(255, 46, 146, 50),
-  Colors.red,
-  Color.fromARGB(255, 139, 105, 2),
-  Colors.purple,
-  Colors.brown,
-  Color.fromARGB(255, 212, 85, 0),
-  Colors.deepPurple,
-];
+extension TileColor on Tile {
+  Color get color {
+    switch (this) {
+      case Tile.one:
+        return const Color.fromARGB(255, 9, 148, 183);
+      case Tile.two:
+        return const Color.fromARGB(255, 121, 30, 249);
+      case Tile.three:
+        return Colors.red;
+      case Tile.four:
+        return const Color.fromARGB(255, 139, 105, 2);
+      case Tile.five:
+        return Colors.purple;
+      case Tile.six:
+        return Colors.brown;
+      case Tile.seven:
+        return const Color.fromARGB(255, 212, 85, 0);
+      case Tile.eight:
+        return Colors.deepPurple;
+      case Tile.bomb:
+        return const Color.fromARGB(255, 10, 41, 66);
+      default:
+        throw 'Wrong color';
+    }
+  }
+}
 
 class SweeperTile extends StatelessWidget {
   const SweeperTile({
@@ -26,32 +43,30 @@ class SweeperTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nbBombAround = gameManager.getTile(tileIndex);
+    final tile = gameManager.tile(tileIndex);
+    // index is the number of bomb for the first eight indices
+    final nbBombAround = tile.index;
     final textSize = tileSize * 3 / 4;
-    final tileValue = gameManager.getTile(tileIndex);
 
-    return InkWell(
-      onTap: () => gameManager.revealTile(tileIndex),
-      child: Container(
-        decoration: BoxDecoration(
-          color: gameManager.getTile(tileIndex) > -2
-              ? const Color.fromARGB(255, 204, 234, 248)
-              : const Color.fromARGB(255, 45, 74, 168),
-          border: Border.all(width: 3),
-        ),
-        child: tileValue > -2 && tileValue != 0
-            ? Center(
-                child: nbBombAround < 0
-                    ? Text('\u2600', style: TextStyle(fontSize: textSize))
-                    : Text(
-                        nbBombAround > 0 ? nbBombAround.toString() : '',
-                        style: TextStyle(
-                            fontSize: textSize,
-                            color: _tileColors[tileValue - 1],
-                            fontWeight: FontWeight.bold),
-                      ))
-            : null,
+    return Container(
+      decoration: BoxDecoration(
+        color:
+            tile == Tile.concealed ? ThemeColor.conceiled : ThemeColor.revealed,
+        border: Border.all(width: 3),
       ),
+      child: tile == Tile.concealed || tile == Tile.zero
+          ? null
+          : Center(
+              child: tile == Tile.bomb
+                  ? Text('\u2600',
+                      style: TextStyle(fontSize: textSize, color: tile.color))
+                  : Text(
+                      nbBombAround > 0 ? nbBombAround.toString() : '',
+                      style: TextStyle(
+                          fontSize: textSize,
+                          color: tile.color,
+                          fontWeight: FontWeight.bold),
+                    )),
     );
   }
 }

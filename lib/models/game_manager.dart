@@ -1,21 +1,28 @@
 import 'dart:math';
 
+import 'package:twitched_minesweeper/models/enums.dart';
+
 import 'player.dart';
 
 class GameManager {
-  
-  final List<Player> _players = [];
+  final Map<String, Player> _players = {};
 
   int _nbRows = 20;
-  int _nbCols = 10;
+  int get nbRows => _nbRows;
+
+  int _nbCols = 9;
+  int get nbCols => _nbCols;
+
   int _nbBombs = 15;
+  int get nbBombs => _nbBombs;
+
   List<int> _grid = [];
   List<bool> _isRevealed = [];
 
+  Map<String, Player> get players => _players;
   bool _canRegister = true;
   bool get registrationIsOpen => _canRegister;
   void closeRegistration() => _canRegister = false;
-
 
   // This is a callback to current window that need to be redrawn when
   // the grid changes
@@ -28,9 +35,6 @@ class GameManager {
     _generateGrid();
   }
 
-  int get nbRows => _nbRows;
-  int get nbCols => _nbCols;
-  int get nbBombs => _nbBombs;
   void setGameParameters(int nbRows, int nbCols, int nbBombs) {
     _nbRows = nbRows;
     _nbCols = nbCols;
@@ -44,8 +48,8 @@ class GameManager {
   /// Reset the board to initial and call the refresh the draw
   void newGame() {
     _generateGrid();
-    for (final player in _players) {
-      player.reset(bombs: _nbBombs);
+    for (final player in _players.keys) {
+      _players[player]!.reset(bombs: _nbBombs);
     }
     if (_onStateChanged != null) _onStateChanged!();
   }
@@ -55,30 +59,52 @@ class GameManager {
   void addPlayer(String username) {
     if (!_canRegister) return;
 
-    _players.add(Player(username: username));
+    _players[username] = Player(username: username);
 
     if (_onStateChanged != null) _onStateChanged!();
     return;
-  }
-  List<Player> get players => _players;
-
-  ///
-  /// Get if a specific row/col pair is inside or outside the current grid
-  bool _isInsideGrid(row, col) {
-    // Do not check rows or column outside of the grid
-    return (row >= 0 && col >= 0 && row < nbRows && col < nbCols);
   }
 
   ///
   /// Get the value of a tile of a specific [index]. If the tile is not
   /// revealed yet, this method returns -2; if the tile is a bomb, then it
   /// returns -1, otherwise it returns the number of bomb around it.
-  int getTile(int index) => _isRevealed[index] ? _grid[index] : -2;
+  Tile tile(int index) => _isRevealed[index]
+      ? (_grid[index] < 0 ? Tile.bomb : Tile.values[_grid[index]])
+      : Tile.concealed;
+
+  ///
+  /// Main interface for a user to reveal a tile from the grid
+  RevealResult revealTile(String username,
+      {required int row, required int col}) {
+    // Safe guards so the player who tries to reveal is actually a player
+    if (!players.containsKey(username)) return RevealResult.unrecognizedUser;
+    // and doesn't throw outside of the grid
+    if (!_isInsideGrid(row, col)) return RevealResult.outsideGrid;
+    // and is still allowed to throw
+    if (_players[username]!.bombs == 0) return RevealResult.noBombLeft;
+
+    final index = _index(row, col);
+
+    // Do not reveal a previously revealed tile
+    if (_isRevealed[index]) return RevealResult.alreadyRevealed;
+
+    // Start the recursive process of revealing all the required tiles
+    _revealTile(index);
+    _players[username]!.bombs--;
+    if (_grid[index] == -1) {
+      _players[username]!.score += 100;
+      return RevealResult.hit;
+    } else {
+      _players[username]!.score += _grid[index] * 10;
+      return RevealResult.miss;
+    }
+  }
 
   ///
   /// Reveal a tile. If it is a zero, it is recursively called to all its
   /// neighbourhood so it automatically reveals all the surroundings
-  void revealTile(int index, {List<bool>? isChecked}) {
+  Future<void> _revealTile(int index, {List<bool>? isChecked}) async {
     // If it is already open, do nothing
     if (_isRevealed[index] || (isChecked != null && isChecked[index])) return;
 
@@ -88,7 +114,7 @@ class GameManager {
     if (isChecked == null) {
       // Prepare the isChecked structure and launch the recursive procedure
       isChecked = List.filled(nbRows * nbCols, false);
-      revealTile(index, isChecked: isChecked);
+      await _revealTile(index, isChecked: isChecked);
       if (_onStateChanged != null) _onStateChanged!();
       return;
     }
@@ -117,7 +143,7 @@ class GameManager {
         final newIndex = _index(newRow, newCol);
         if (!_isRevealed[newIndex]) {
           // If it was a zero reveal to tiles around
-          revealTile(newIndex, isChecked: isChecked);
+          await _revealTile(newIndex, isChecked: isChecked);
         }
       }
     }
@@ -129,6 +155,13 @@ class GameManager {
   int _index(int row, int col) => row * nbCols + col;
   int _row(int index) => index ~/ nbCols;
   int _col(int index) => index % nbCols;
+
+  ///
+  /// Get if a specific row/col pair is inside or outside the current grid
+  bool _isInsideGrid(row, col) {
+    // Do not check rows or column outside of the grid
+    return (row >= 0 && col >= 0 && row < nbRows && col < nbCols);
+  }
 
   ///
   /// Generate a new grid with randomly positionned bomb
