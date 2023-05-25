@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
+import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 
 extension TileColor on Tile {
   Color get color {

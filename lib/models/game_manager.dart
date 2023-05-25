@@ -10,10 +10,10 @@ class GameManager {
   int _nbRows = 20;
   int get nbRows => _nbRows;
 
-  int _nbCols = 9;
+  int _nbCols = 10;
   int get nbCols => _nbCols;
 
-  int _nbBombs = 15;
+  int _nbBombs = 10;
   int get nbBombs => _nbBombs;
 
   List<int> _grid = [];

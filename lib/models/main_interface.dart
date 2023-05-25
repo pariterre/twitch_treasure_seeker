@@ -21,8 +21,8 @@ class MainInterface {
   }
 
   bool _isModerator(String username) {
-    return username == twitchManager.api.streamerUsername ||
-        username == twitchManager.api.moderatorUsername;
+    return username == twitchManager.api.streamerUsername.toLowerCase() ||
+        username == twitchManager.api.moderatorUsername.toLowerCase();
   }
 
   void _messageReceived(String username, String message) {

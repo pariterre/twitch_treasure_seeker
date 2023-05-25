@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
 class GameScreen extends StatefulWidget {
@@ -46,23 +46,6 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildGameControl() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ElevatedButton(
-            onPressed: () {
-              _mainInterface.gameManager.newGame();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Reset', style: TextStyle(fontSize: 20)),
-            ))
-      ],
-    );
-  }
-
   Widget _buildScore(double height) {
     return Container(
       decoration: BoxDecoration(
@@ -72,27 +55,32 @@ class _GameScreenState extends State<GameScreen> {
       height: height,
       width: 300,
       child: Padding(
-        padding: const EdgeInsets.only(left: 12.0, top: 10),
+        padding: EdgeInsets.only(
+            left: ThemePadding.small(context),
+            top: ThemePadding.small(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Score',
-              style: TextStyle(color: Colors.white, fontSize: 26),
+              style: TextStyle(
+                  color: Colors.white, fontSize: ThemeSize.title(context)),
             ),
             const SizedBox(height: 8),
             Padding(
-              padding: const EdgeInsets.only(left: 12.0),
+              padding: EdgeInsets.only(left: ThemePadding.small(context)),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: _mainInterface.gameManager.players.keys.map((name) {
                     final player = _mainInterface.gameManager.players[name]!;
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 4.0),
+                      padding: EdgeInsets.only(
+                          bottom: ThemePadding.interline(context)),
                       child: Text(
                         '${player.username}: ${player.score} (${player.bombs} bombs)',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: ThemeSize.text(context)),
                       ),
                     );
                   }).toList()),
@@ -105,9 +93,9 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const scoreHeight = 180.0;
-    final gameHeight =
-        MediaQuery.of(context).size.height - 4 * 12 - 60 - scoreHeight;
+    const offsetFromTop = 25.0;
+    const scoreHeight = 250.0;
+    final gameHeight = MediaQuery.of(context).size.height - 2 * offsetFromTop;
 
     return Scaffold(
       body: Container(
@@ -116,25 +104,16 @@ class _GameScreenState extends State<GameScreen> {
           child: Stack(
             alignment: Alignment.topCenter,
             children: [
-              Container(
+              SizedBox(
                 height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 12.0),
+                padding: const EdgeInsets.only(top: offsetFromTop),
                 child: _buildGameTiles(gameHeight),
               ),
-              Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 60.0),
-                    child: _buildScore(scoreHeight),
-                  )),
-              Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: _buildGameControl(),
-                  )),
+              Positioned(
+                  left: 0, top: offsetFromTop, child: _buildScore(scoreHeight)),
             ],
           ),
         ),

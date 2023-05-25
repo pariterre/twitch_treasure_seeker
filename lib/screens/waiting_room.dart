@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/register_player_screen.dart';
 
 class WaitingRoom extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
 
 class RegisterPlayersScreen extends StatefulWidget {
@@ -32,46 +32,63 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final windowWidth = MediaQuery.of(context).size.width;
+    final windowHeight = MediaQuery.of(context).size.height;
+
+    final smallPadding = ThemePadding.small(context);
+    final interlinePadding = ThemePadding.interline(context);
+
+    final titleSize = ThemeSize.title(context);
+    final textSize = ThemeSize.text(context);
+
     return Scaffold(
       body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
+        width: windowWidth,
+        height: windowHeight,
         decoration: const BoxDecoration(color: ThemeColor.greenScreen),
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
             Center(
               child: Container(
-                  width: 300,
-                  height: 500,
+                  width: windowHeight * 0.43,
+                  height: windowHeight * 0.36,
                   decoration: const BoxDecoration(color: ThemeColor.main),
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20, left: 40.0),
-                        child: Column(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        left: smallPadding,
+                        top: smallPadding,
+                        bottom: smallPadding * 1.5),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'The minesweepers',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 26),
+                            Text(
+                              'Les chercheurs de bleuets',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: titleSize),
                             ),
                             Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 10, left: 20.0),
+                              padding: EdgeInsets.only(
+                                  top: interlinePadding * 2,
+                                  left: smallPadding),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: _mainInterface
                                     .gameManager.players.keys
                                     .map<Widget>((name) {
                                   return Padding(
-                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    padding: EdgeInsets.only(
+                                        bottom: interlinePadding),
                                     child: Text(
                                       name,
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 16),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: textSize),
                                     ),
                                   );
                                 }).toList(),
@@ -79,59 +96,43 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                             ),
                           ],
                         ),
-                      ),
-                      Padding(
-                        padding:
-                            const EdgeInsets.only(top: 500 / 2 + 10, left: 40),
-                        child: Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Parameters',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 26),
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: titleSize),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 20, top: 10, bottom: 4.0),
-                                  child: Text(
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  left: smallPadding,
+                                  top: interlinePadding * 2),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
                                     'Dimension: ${_mainInterface.gameManager.nbRows}x${_mainInterface.gameManager.nbCols}',
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 16),
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: textSize),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 20, bottom: 4.0),
-                                  child: Text(
-                                    'Bombs: ${_mainInterface.gameManager.nbBombs}',
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 16),
+                                  SizedBox(height: interlinePadding),
+                                  Text(
+                                    'Essais: ${_mainInterface.gameManager.nbBombs}',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: textSize),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   )),
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: ElevatedButton(
-                  onPressed: startPlaying,
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('Start',
-                        style: TextStyle(color: Colors.white, fontSize: 20)),
-                  )),
-            )
           ],
         ),
       ),
