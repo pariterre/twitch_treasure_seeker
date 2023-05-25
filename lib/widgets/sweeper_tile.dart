@@ -36,18 +36,19 @@ class SweeperTile extends StatelessWidget {
     required this.gameManager,
     required this.tileIndex,
     required this.tileSize,
+    required this.textSize,
   });
 
   final GameManager gameManager;
   final int tileIndex;
   final double tileSize;
+  final double textSize;
 
   @override
   Widget build(BuildContext context) {
     final tile = gameManager.tile(tileIndex);
     // index is the number of bomb for the first eight indices
     final nbBombAround = tile.index;
-    final textSize = tileSize * 3 / 4;
 
     return Container(
       decoration: BoxDecoration(

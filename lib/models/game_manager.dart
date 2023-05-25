@@ -4,6 +4,13 @@ import 'package:twitched_minesweeper/models/enums.dart';
 
 import 'player.dart';
 
+///
+/// Easy accessors translating index into row/col pair or row/col pair into
+/// index
+int gridIndex(int row, int col, int nbCols) => row * nbCols + col;
+int gridRow(int index, int nbCols) => index ~/ nbCols;
+int gridCol(int index, int nbCols) => index % nbCols;
+
 class GameManager {
   int _maxPlayers = 10;
   int get maxPlayers => _maxPlayers;
@@ -88,7 +95,7 @@ class GameManager {
     // and is still allowed to throw
     if (_players[username]!.bombs == 0) return RevealResult.noBombLeft;
 
-    final index = _index(row, col);
+    final index = gridIndex(row, col, nbCols);
 
     // Do not reveal a previously revealed tile
     if (_isRevealed[index]) return RevealResult.alreadyRevealed;
@@ -108,9 +115,9 @@ class GameManager {
   ///
   /// Reveal a tile. If it is a zero, it is recursively called to all its
   /// neighbourhood so it automatically reveals all the surroundings
-  Future<void> _revealTile(int index, {List<bool>? isChecked}) async {
+  Future<void> _revealTile(int idx, {List<bool>? isChecked}) async {
     // If it is already open, do nothing
-    if (_isRevealed[index] || (isChecked != null && isChecked[index])) return;
+    if (_isRevealed[idx] || (isChecked != null && isChecked[idx])) return;
 
     // For each zeros encountered, we must check around if it is another zero
     // so it can be reveal. We must make sure we don't recheck a previously
@@ -118,20 +125,20 @@ class GameManager {
     if (isChecked == null) {
       // Prepare the isChecked structure and launch the recursive procedure
       isChecked = List.filled(nbRows * nbCols, false);
-      await _revealTile(index, isChecked: isChecked);
+      await _revealTile(idx, isChecked: isChecked);
       if (_onStateChanged != null) _onStateChanged!();
       return;
     }
 
     // Reveal the current tile
-    _isRevealed[index] = true;
+    _isRevealed[idx] = true;
 
     // If the current tile is not zero, stop revealing, otherwise reveal the
     // tiles around
-    if (_grid[index] != 0) return;
+    if (_grid[idx] != 0) return;
 
-    int currentTileRow = _row(index);
-    int currentTileCol = _col(index);
+    int currentTileRow = gridRow(idx, nbCols);
+    int currentTileCol = gridCol(idx, nbCols);
     for (var j = -1; j < 2; j++) {
       for (var k = -1; k < 2; k++) {
         // Do not reveal itself
@@ -144,7 +151,7 @@ class GameManager {
         if (!_isInsideGrid(newRow, newCol)) continue;
 
         // Reveal the tile if it was not already revealed
-        final newIndex = _index(newRow, newCol);
+        final newIndex = gridIndex(newRow, newCol, nbCols);
         if (!_isRevealed[newIndex]) {
           // If it was a zero reveal to tiles around
           await _revealTile(newIndex, isChecked: isChecked);
@@ -152,13 +159,6 @@ class GameManager {
       }
     }
   }
-
-  ///
-  /// Easy accessors translating index into row/col pair or row/col pair into
-  /// index
-  int _index(int row, int col) => row * nbCols + col;
-  int _row(int index) => index ~/ nbCols;
-  int _col(int index) => index % nbCols;
 
   ///
   /// Get if a specific row/col pair is inside or outside the current grid
@@ -192,8 +192,8 @@ class GameManager {
 
       var nbBombsAroundTile = 0;
 
-      final currentTileRow = _row(i);
-      final currentTileCol = _col(i);
+      final currentTileRow = gridRow(i, nbCols);
+      final currentTileCol = gridCol(i, nbCols);
       // Check the previous row to next row
       for (var j = -1; j < 2; j++) {
         // Check the previous col to next col
@@ -208,7 +208,7 @@ class GameManager {
           if (!_isInsideGrid(checkedTileRow, checkedTileCol)) continue;
 
           // If there is a bomb, add it to the counter
-          if (_grid[_index(checkedTileRow, checkedTileCol)] < 0) {
+          if (_grid[gridIndex(checkedTileRow, checkedTileCol, nbCols)] < 0) {
             nbBombsAroundTile++;
           }
         }

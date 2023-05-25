@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
@@ -26,18 +27,39 @@ class _GameScreenState extends State<GameScreen> {
     _mainInterface.gameManager.newGame();
   }
 
-  Widget _buildGameTiles(double tileSize) {
+  Widget _buildGrid(double tileSize) {
+    final textSize = tileSize * 3 / 4;
+    final gm = _mainInterface.gameManager;
+
     return SizedBox(
-      width: _mainInterface.gameManager.nbCols * tileSize - 1,
+      width: (gm.nbCols + 1) * tileSize,
       child: GridView.count(
-        crossAxisCount: _mainInterface.gameManager.nbCols,
+        crossAxisCount: gm.nbCols + 1,
         children: List.generate(
-            _mainInterface.gameManager.nbRows *
-                _mainInterface.gameManager.nbCols, (index) {
+            gm.nbRows * gm.nbCols + gm.nbRows + gm.nbCols + 1, (index) {
+          // We have to construct the grid alongside the name of the
+          // rows and cols. So every row and col being 0 is the name, otherwise
+          // it is the grid (with its index offset by 1)
+          final row = gridRow(index, gm.nbCols + 1);
+          final col = gridCol(index, gm.nbCols + 1);
+          if (row == 0 && col == 0) return Container();
+          if (row == 0 || col == 0) {
+            return Center(
+                child: Text(
+              '${col == 0 ? String.fromCharCode('A'.codeUnits[0] + row - 1) : col}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: textSize * 0.75, fontWeight: FontWeight.bold),
+            ));
+          }
+
+          final tileIndex = gridIndex(row - 1, col - 1, gm.nbCols);
           return SweeperTile(
-              gameManager: _mainInterface.gameManager,
-              tileIndex: index,
-              tileSize: tileSize);
+            gameManager: gm,
+            tileIndex: tileIndex,
+            tileSize: tileSize,
+            textSize: textSize,
+          );
         }, growable: false),
       ),
     );
@@ -84,7 +106,7 @@ class _GameScreenState extends State<GameScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${player.username}:',
+                            player.username,
                             style: TextStyle(
                                 color: Colors.white, fontSize: textSize),
                           ),
@@ -92,7 +114,7 @@ class _GameScreenState extends State<GameScreen> {
                             '${player.score} bleuets (${player.bombs} essais)',
                             style: TextStyle(
                                 color: Colors.white, fontSize: textSize),
-                          )
+                          ),
                         ],
                       ),
                     );
@@ -112,7 +134,7 @@ class _GameScreenState extends State<GameScreen> {
     final offsetFromBorder = windowHeight * 0.02;
     final gridHeight = windowHeight - 2 * offsetFromBorder;
 
-    final tileSize = gridHeight / _mainInterface.gameManager.nbRows;
+    final tileSize = gridHeight / (_mainInterface.gameManager.nbRows + 1);
 
     return Scaffold(
       body: Container(
@@ -127,12 +149,12 @@ class _GameScreenState extends State<GameScreen> {
               Padding(
                 padding: EdgeInsets.only(
                     left: offsetFromBorder, top: offsetFromBorder),
-                child: _buildGameTiles(tileSize),
+                child: _buildGrid(tileSize),
               ),
               Positioned(
-                  left: _mainInterface.gameManager.nbCols * tileSize +
+                  left: (_mainInterface.gameManager.nbCols + 1) * tileSize +
                       offsetFromBorder * 2,
-                  top: offsetFromBorder,
+                  top: offsetFromBorder + tileSize,
                   child: _buildScore()),
             ],
           ),
