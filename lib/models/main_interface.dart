@@ -2,17 +2,18 @@ import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 
 enum _Status {
-  waitForRequestGameStart,
+  waitForRequestLaunchGame,
   waitForPlayerToJoin,
   play,
 }
 
 class MainInterface {
   final gameManager = GameManager();
-  _Status _status = _Status.waitForRequestGameStart;
+  _Status _status = _Status.waitForRequestLaunchGame;
 
   Function()? onRequestLaunchGame;
   Function()? onRequestStartPlaying;
+  Function()? onGameOver;
 
   TwitchManager twitchManager;
 
@@ -26,7 +27,7 @@ class MainInterface {
   }
 
   void _messageReceived(String username, String message) {
-    if (_status == _Status.waitForRequestGameStart) {
+    if (_status == _Status.waitForRequestLaunchGame) {
       if (_isModerator(username) && message == '!chercheursDeBleuets') {
         _status = _Status.waitForPlayerToJoin;
         if (onRequestLaunchGame != null) onRequestLaunchGame!();
@@ -42,6 +43,8 @@ class MainInterface {
         _status = _Status.play;
         if (onRequestStartPlaying != null) onRequestStartPlaying!();
       }
+
+      // TODO change parameters of the game
       return;
     }
 
@@ -58,6 +61,12 @@ class MainInterface {
         final row = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
         final col = int.parse(groups[1]!) - 1;
         final result = gameManager.revealTile(username, row: row, col: col);
+
+        // If the game is over, return to initial window
+        if (gameManager.isGameOver) {
+          _status = _Status.waitForRequestLaunchGame;
+          if (onGameOver != null) onGameOver!();
+        }
       }
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
+import 'package:twitched_minesweeper/screens/waiting_room.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
 class GameScreen extends StatefulWidget {
@@ -25,6 +26,13 @@ class _GameScreenState extends State<GameScreen> {
 
     _mainInterface.gameManager.onStateChanged = () => setState(() {});
     _mainInterface.gameManager.newGame();
+    _mainInterface.onGameOver = _onGameOver;
+  }
+
+  void _onGameOver() {
+    // TODO: Add a proper ending screen before looping back to initial route
+    Navigator.of(context).pushReplacementNamed(WaitingRoom.route,
+        arguments: _mainInterface.twitchManager);
   }
 
   Widget _buildGrid(double tileSize) {

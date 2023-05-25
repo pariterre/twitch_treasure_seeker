@@ -11,6 +11,7 @@ enum RevealResult {
   noBombLeft,
   alreadyRevealed,
   unrecognizedUser,
+  gameOver,
 }
 
 enum Tile {

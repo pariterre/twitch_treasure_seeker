@@ -85,9 +85,26 @@ class GameManager {
       : Tile.concealed;
 
   ///
+  /// Get the number of bombs that were found
+  int get bombsFound {
+    int cmp = 0;
+    for (var i = 0; i < _grid.length; i++) {
+      if (tile(i) == Tile.bomb) cmp++;
+    }
+    return cmp;
+  }
+
+  bool get isGameOver {
+    return bombsFound == nbBombs ||
+        _players.keys.fold<int>(0, (prev, player) => _players[player]!.bombs) ==
+            0;
+  }
+
+  ///
   /// Main interface for a user to reveal a tile from the grid
   RevealResult revealTile(String username,
       {required int row, required int col}) {
+    if (isGameOver) return RevealResult.gameOver;
     // Safe guards so the player who tries to reveal is actually a player
     if (!players.containsKey(username)) return RevealResult.unrecognizedUser;
     // and doesn't throw outside of the grid
@@ -103,6 +120,8 @@ class GameManager {
     // Start the recursive process of revealing all the required tiles
     _revealTile(index);
     _players[username]!.bombs--;
+
+    // Give points if necessary
     if (_grid[index] == -1) {
       _players[username]!.score += 100;
       return RevealResult.hit;
