@@ -27,7 +27,7 @@ class MainInterface {
 
   void _messageReceived(String username, String message) {
     if (_status == _Status.waitForRequestGameStart) {
-      if (_isModerator(username) && message == '!trouveBleuet') {
+      if (_isModerator(username) && message == '!chercheursDeBleuets') {
         _status = _Status.waitForPlayerToJoin;
         if (onRequestLaunchGame != null) onRequestLaunchGame!();
       }
@@ -36,7 +36,7 @@ class MainInterface {
 
     if (_status == _Status.waitForPlayerToJoin) {
       if (message == '!joindre') {
-        gameManager.addPlayer(username);
+        final result = gameManager.addPlayer(username);
       }
       if (_isModerator(username) && message == '!start') {
         _status = _Status.play;

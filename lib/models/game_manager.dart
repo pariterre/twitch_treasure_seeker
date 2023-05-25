@@ -5,6 +5,8 @@ import 'package:twitched_minesweeper/models/enums.dart';
 import 'player.dart';
 
 class GameManager {
+  int _maxPlayers = 10;
+  int get maxPlayers => _maxPlayers;
   final Map<String, Player> _players = {};
 
   int _nbRows = 20;
@@ -21,7 +23,6 @@ class GameManager {
 
   Map<String, Player> get players => _players;
   bool _canRegister = true;
-  bool get registrationIsOpen => _canRegister;
   void closeRegistration() => _canRegister = false;
 
   // This is a callback to current window that need to be redrawn when
@@ -35,6 +36,7 @@ class GameManager {
     _generateGrid();
   }
 
+  void setMaximumPlayers(int newMaximum) => _maxPlayers = newMaximum;
   void setGameParameters(int nbRows, int nbCols, int nbBombs) {
     _nbRows = nbRows;
     _nbCols = nbCols;
@@ -56,13 +58,15 @@ class GameManager {
 
   ///
   /// Add a new player to the player pool
-  void addPlayer(String username) {
-    if (!_canRegister) return;
+  AddPlayerStatus addPlayer(String username) {
+    // This is to prevent adding player when the game is started
+    if (!_canRegister) return AddPlayerStatus.registrationIsClosed;
+    if (_players.length >= _maxPlayers) return AddPlayerStatus.noMoreSpaceLeft;
 
     _players[username] = Player(username: username);
 
     if (_onStateChanged != null) _onStateChanged!();
-    return;
+    return AddPlayerStatus.success;
   }
 
   ///

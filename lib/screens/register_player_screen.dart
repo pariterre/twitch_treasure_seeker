@@ -41,6 +41,8 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
     final titleSize = ThemeSize.title(context);
     final textSize = ThemeSize.text(context);
 
+    final players = _mainInterface.gameManager.players;
+
     return Scaffold(
       body: Container(
         width: windowWidth,
@@ -51,8 +53,9 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
           children: [
             Center(
               child: Container(
-                  width: windowHeight * 0.43,
-                  height: windowHeight * 0.36,
+                  width: windowHeight * 0.45,
+                  height: windowHeight * 0.2 +
+                      players.length * (textSize + interlinePadding),
                   decoration: const BoxDecoration(color: ThemeColor.main),
                   child: Padding(
                     padding: EdgeInsets.only(
@@ -68,7 +71,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Les chercheurs de bleuets',
+                              'Les chercheurs de bleuets (${players.length}/${_mainInterface.gameManager.maxPlayers})',
                               style: TextStyle(
                                   color: Colors.white, fontSize: titleSize),
                             ),
@@ -78,9 +81,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                                   left: smallPadding),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: _mainInterface
-                                    .gameManager.players.keys
-                                    .map<Widget>((name) {
+                                children: players.keys.map<Widget>((name) {
                                   return Padding(
                                     padding: EdgeInsets.only(
                                         bottom: interlinePadding),

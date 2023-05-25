@@ -1,3 +1,9 @@
+enum AddPlayerStatus {
+  success,
+  registrationIsClosed,
+  noMoreSpaceLeft,
+}
+
 enum RevealResult {
   hit,
   miss,
