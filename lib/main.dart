@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
+import 'package:twitched_minesweeper/screens/end_screen.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
 import 'package:twitched_minesweeper/screens/register_player_screen.dart';
 import 'package:twitched_minesweeper/screens/waiting_room.dart';
@@ -25,6 +26,7 @@ void main() async {
       WaitingRoom.route: (ctx) => const WaitingRoom(),
       GameScreen.route: (ctx) => const GameScreen(),
       RegisterPlayersScreen.route: (ctx) => const RegisterPlayersScreen(),
+      EndScreen.route: (ctx) => const EndScreen(),
       // TODO add a configuration room
     },
   ));

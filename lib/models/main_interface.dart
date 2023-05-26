@@ -6,6 +6,7 @@ enum _Status {
   waitForRequestLaunchGame,
   waitForPlayerToJoin,
   play,
+  endGame,
 }
 
 class MainInterface {
@@ -13,19 +14,28 @@ class MainInterface {
   _Status _status = _Status.waitForRequestLaunchGame;
 
   // This is called when the moderator requested launching the game
-  Function()? onRequestLaunchGame;
+  Function()? _onRequestLaunchGame;
+  set onRequestLaunchGame(Function()? value) {
+    _onRequestLaunchGame = value;
+    if (value != null) _status = _Status.waitForRequestLaunchGame;
+  }
 
   // This is called when the moderator requested to start the game
-  Function()? onRequestStartPlaying;
+  Function()? _onRequestStartPlaying;
+  set onRequestStartPlaying(Function()? value) =>
+      _onRequestStartPlaying = value;
 
   // This is called when the game is over
-  Function()? onGameOver;
+  Function()? _onGameOver;
+  set onGameOver(Function()? value) => _onGameOver = value;
 
   // This is called at each interaction of a user to redraw the map if necessary
-  void Function()? onStateChanged;
+  void Function()? _onStateChanged;
+  set onStateChanged(Function()? value) => _onStateChanged = value;
 
   // This is called whenever a bomb is found so it can be drawn on the screen
-  void Function(String playerName)? onBombFound;
+  void Function(String playerName)? _onBombFound;
+  set onBombFound(Function(String playerName)? value) => onBombFound = value;
 
   TwitchManager twitchManager;
 
@@ -42,19 +52,25 @@ class MainInterface {
     if (_status == _Status.waitForRequestLaunchGame) {
       if (_isModerator(username) && message == '!chercheursDeBleuets') {
         _status = _Status.waitForPlayerToJoin;
-        if (onRequestLaunchGame != null) onRequestLaunchGame!();
+        if (_onRequestLaunchGame != null) _onRequestLaunchGame!();
       }
       return;
     }
 
     if (_status == _Status.waitForPlayerToJoin) {
       if (message == '!joindre') {
-        final result = gameManager.addPlayer(username);
-        if (onStateChanged != null) onStateChanged!();
+        gameManager.addPlayer(username);
+        if (_onStateChanged != null) _onStateChanged!();
+        return;
       }
-      if (_isModerator(username) && message == '!start') {
-        _status = _Status.play;
-        if (onRequestStartPlaying != null) onRequestStartPlaying!();
+
+      if (_isModerator(username)) {
+        if (message == '!start') {
+          _status = _Status.play;
+          if (_onRequestStartPlaying != null) _onRequestStartPlaying!();
+          return;
+        }
+        if (message == '!changeBomb') {}
       }
 
       // TODO change parameters of the game
@@ -75,15 +91,15 @@ class MainInterface {
         final col = int.parse(groups[1]!) - 1;
         final result = gameManager.revealTile(username, row: row, col: col);
 
-        if (result == RevealResult.hit && onBombFound != null) {
-          onBombFound!(username);
+        if (result == RevealResult.hit && _onBombFound != null) {
+          _onBombFound!(username);
         }
-        if (onStateChanged != null) onStateChanged!();
+        if (_onStateChanged != null) _onStateChanged!();
 
-        // If the game is over, return to initial window
+        // If the game is over
         if (gameManager.isGameOver) {
-          _status = _Status.waitForRequestLaunchGame;
-          if (onGameOver != null) onGameOver!();
+          _status = _Status.endGame;
+          if (_onGameOver != null) _onGameOver!();
         }
       }
     }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
@@ -57,7 +59,7 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
               child: Container(
                   width: windowHeight * 0.45,
                   height: windowHeight * 0.2 +
-                      players.length * (textSize + interlinePadding),
+                      max(players.length, 1) * (textSize + interlinePadding),
                   decoration: const BoxDecoration(color: ThemeColor.main),
                   child: Padding(
                     padding: EdgeInsets.only(
@@ -83,18 +85,31 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                                   left: smallPadding),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: players.keys.map<Widget>((name) {
-                                  return Padding(
-                                    padding: EdgeInsets.only(
-                                        bottom: interlinePadding),
-                                    child: Text(
-                                      name,
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: textSize),
-                                    ),
-                                  );
-                                }).toList(),
+                                children: players.isEmpty
+                                    ? [
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              bottom: interlinePadding),
+                                          child: Text(
+                                            'Aucun joueur pour le moment',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: textSize),
+                                          ),
+                                        )
+                                      ]
+                                    : players.keys.map<Widget>((name) {
+                                        return Padding(
+                                          padding: EdgeInsets.only(
+                                              bottom: interlinePadding),
+                                          child: Text(
+                                            name,
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: textSize),
+                                          ),
+                                        );
+                                      }).toList(),
                               ),
                             ),
                           ],
@@ -115,14 +130,14 @@ class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Dimension: ${_mainInterface.gameManager.nbRows}x${_mainInterface.gameManager.nbCols}',
+                                    'Dimension du terrain : ${_mainInterface.gameManager.nbRows}x${_mainInterface.gameManager.nbCols}',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: textSize),
                                   ),
                                   SizedBox(height: interlinePadding),
                                   Text(
-                                    'Essais: ${_mainInterface.gameManager.nbBombs}',
+                                    'Nombre d\'essais : ${_mainInterface.gameManager.nbBombs}',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: textSize),

@@ -29,6 +29,8 @@ class _WaitingRoomState extends State<WaitingRoom> {
   }
 
   void onRequestLaunchGame() {
+    _twitchInterface.onRequestLaunchGame = null;
+
     Navigator.of(context).pushReplacementNamed(RegisterPlayersScreen.route,
         arguments: _twitchInterface);
   }

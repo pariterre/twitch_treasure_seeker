@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/screens/waiting_room.dart';
+import 'package:twitched_minesweeper/screens/end_screen.dart';
 import 'package:twitched_minesweeper/widgets/growing_container.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
@@ -17,6 +17,9 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late MainInterface _mainInterface;
+
+  final _growingTextTime = const Duration(seconds: 1, milliseconds: 500);
+  final _fadingTextTime = const Duration(milliseconds: 500);
 
   @override
   void didChangeDependencies() {
@@ -37,7 +40,9 @@ class _GameScreenState extends State<GameScreen> {
       _lastPlayerToHaveFoundABomb = playerName;
     });
 
-    Future.delayed(const Duration(milliseconds: 2000))
+    Future.delayed(Duration(
+            milliseconds: _growingTextTime.inMicroseconds +
+                _fadingTextTime.inMilliseconds))
         .then((value) => setState(() {
               _lastPlayerToHaveFoundABomb = null;
             }));
@@ -48,9 +53,11 @@ class _GameScreenState extends State<GameScreen> {
     _mainInterface.onGameOver = null;
     _mainInterface.onBombFound = null;
 
-    // TODO: Add a proper ending screen before looping back to initial route
-    Navigator.of(context).pushReplacementNamed(WaitingRoom.route,
-        arguments: _mainInterface.twitchManager);
+    Future.delayed(Duration(
+        milliseconds:
+            _growingTextTime.inMicroseconds + _fadingTextTime.inMilliseconds));
+    Navigator.of(context)
+        .pushReplacementNamed(EndScreen.route, arguments: _mainInterface);
   }
 
   Widget _buildGrid(double tileSize) {
@@ -195,8 +202,8 @@ class _GameScreenState extends State<GameScreen> {
                     startingSize: windowHeight * 0.01,
                     finalSize: windowHeight * 0.04,
                     title: 'Bleuet trouvé par\n$_lastPlayerToHaveFoundABomb!',
-                    growingTime: const Duration(seconds: 1, milliseconds: 500),
-                    fadingTime: const Duration(milliseconds: 500),
+                    growingTime: _growingTextTime,
+                    fadingTime: _fadingTextTime,
                   )),
                 ),
             ],

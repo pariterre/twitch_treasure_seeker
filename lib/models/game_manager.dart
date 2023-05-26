@@ -46,6 +46,18 @@ class GameManager {
     }
   }
 
+  String get playerWithHighestScore {
+    String out = "";
+    var highestScore = -1;
+    for (final player in players.keys) {
+      if (players[player]!.score > highestScore) {
+        out = player;
+        highestScore = players[player]!.score;
+      }
+    }
+    return out;
+  }
+
   ///
   /// Reset the board to initial and call the refresh the draw
   void newGame() {
