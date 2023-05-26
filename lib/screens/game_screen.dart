@@ -41,11 +41,14 @@ class _GameScreenState extends State<GameScreen> {
     });
 
     Future.delayed(Duration(
-            milliseconds: _growingTextTime.inMicroseconds +
+            milliseconds: _growingTextTime.inMilliseconds +
                 _fadingTextTime.inMilliseconds))
-        .then((value) => setState(() {
-              _lastPlayerToHaveFoundABomb = null;
-            }));
+        .then((value) {
+      if (!mounted) return;
+      setState(() {
+        _lastPlayerToHaveFoundABomb = null;
+      });
+    });
   }
 
   void _onGameOver() {
@@ -55,7 +58,7 @@ class _GameScreenState extends State<GameScreen> {
 
     Future.delayed(Duration(
         milliseconds:
-            _growingTextTime.inMicroseconds + _fadingTextTime.inMilliseconds));
+            _growingTextTime.inMilliseconds + _fadingTextTime.inMilliseconds));
     Navigator.of(context)
         .pushReplacementNamed(EndScreen.route, arguments: _mainInterface);
   }

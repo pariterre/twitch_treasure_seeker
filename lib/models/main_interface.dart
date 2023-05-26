@@ -35,7 +35,7 @@ class MainInterface {
 
   // This is called whenever a bomb is found so it can be drawn on the screen
   void Function(String playerName)? _onBombFound;
-  set onBombFound(Function(String playerName)? value) => onBombFound = value;
+  set onBombFound(Function(String playerName)? value) => _onBombFound = value;
 
   TwitchManager twitchManager;
 
@@ -70,10 +70,28 @@ class MainInterface {
           if (_onRequestStartPlaying != null) _onRequestStartPlaying!();
           return;
         }
-        if (message == '!changeBomb') {}
-      }
 
-      // TODO change parameters of the game
+        var re = RegExp(
+            r'^!setGameParameters ([0-9]{1,2}) ([0-9]{1,2}) ([0-9]{1,2})$');
+        if (re.hasMatch(message)) {
+          final groups = re.allMatches(message).toList()[0].groups([1, 2, 3]);
+          final newNbRows = int.parse(groups[0]!);
+          final newNbCols = int.parse(groups[1]!);
+          final newNbBombs = int.parse(groups[2]!);
+          gameManager.setGameParameters(newNbRows, newNbCols, newNbBombs);
+          if (_onStateChanged != null) _onStateChanged!();
+          return;
+        }
+
+        re = RegExp(r'^!setMaxPlayers ([0-9]{1,2})$');
+        if (re.hasMatch(message)) {
+          final groups = re.allMatches(message).toList()[0].groups([1]);
+          final newNbMaxPlayers = int.parse(groups[0]!);
+          gameManager.setMaximumPlayers(newNbMaxPlayers);
+          if (_onStateChanged != null) _onStateChanged!();
+          return;
+        }
+      }
       return;
     }
 
