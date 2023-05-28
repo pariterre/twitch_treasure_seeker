@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
+import 'package:twitched_minesweeper/screens/configuration_room.dart';
 import 'package:twitched_minesweeper/screens/end_screen.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
-import 'package:twitched_minesweeper/screens/register_player_screen.dart';
-import 'package:twitched_minesweeper/screens/waiting_room.dart';
+import 'package:twitched_minesweeper/screens/lobby_screen.dart';
+import 'package:twitched_minesweeper/screens/idle_room.dart';
 
 void main() async {
   runApp(MaterialApp(
@@ -11,7 +12,7 @@ void main() async {
     routes: {
       TwitchAuthenticationScreen.route: (ctx) =>
           const TwitchAuthenticationScreen(
-            nextRoute: WaitingRoom.route,
+            nextRoute: ConfigurationRoom.route,
             appId: 'eqt0u8wre5boab7thsjb6b8sh57qy3',
             scope: [
               TwitchScope.chatRead,
@@ -23,11 +24,11 @@ void main() async {
             withModerator: true,
             forceNewAuthentication: false,
           ),
-      WaitingRoom.route: (ctx) => const WaitingRoom(),
+      ConfigurationRoom.route: (ctx) => const ConfigurationRoom(),
+      IdleRoom.route: (ctx) => const IdleRoom(),
       GameScreen.route: (ctx) => const GameScreen(),
-      RegisterPlayersScreen.route: (ctx) => const RegisterPlayersScreen(),
+      LobbyScreen.route: (ctx) => const LobbyScreen(),
       EndScreen.route: (ctx) => const EndScreen(),
-      // TODO add a configuration room
     },
   ));
 }

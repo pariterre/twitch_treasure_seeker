@@ -5,16 +5,16 @@ import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
 
-class RegisterPlayersScreen extends StatefulWidget {
-  const RegisterPlayersScreen({super.key});
+class LobbyScreen extends StatefulWidget {
+  const LobbyScreen({super.key});
 
-  static const route = '/register-players';
+  static const route = '/lobby-screen';
 
   @override
-  State<RegisterPlayersScreen> createState() => _RegisterPlayersScreenState();
+  State<LobbyScreen> createState() => _LobbyScreenState();
 }
 
-class _RegisterPlayersScreenState extends State<RegisterPlayersScreen> {
+class _LobbyScreenState extends State<LobbyScreen> {
   late MainInterface _mainInterface;
 
   @override

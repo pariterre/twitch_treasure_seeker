@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/main_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/screens/waiting_room.dart';
+import 'package:twitched_minesweeper/screens/idle_room.dart';
 
 class EndScreen extends StatelessWidget {
   const EndScreen({super.key});
@@ -49,8 +49,8 @@ class EndScreen extends StatelessWidget {
     final offsetFromBorder = windowHeight * 0.02;
 
     Future.delayed(const Duration(seconds: 10)).then((_) {
-      Navigator.of(context).pushReplacementNamed(WaitingRoom.route,
-          arguments: mainInterface.twitchManager);
+      Navigator.of(context)
+          .pushReplacementNamed(IdleRoom.route, arguments: mainInterface);
     });
 
     return Scaffold(

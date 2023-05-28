@@ -36,6 +36,10 @@ class GameManager {
     _generateGrid();
   }
 
+  void reset() {
+    _players.clear();
+  }
+
   void setGameParameters(
       {int? maximumPlayers, int? nbRows, int? nbCols, int? nbBombs}) {
     maximumPlayers = maximumPlayers ?? _maxPlayers;
