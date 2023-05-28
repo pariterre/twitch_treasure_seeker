@@ -64,7 +64,6 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Widget _buildDimensionsForm() {
-    final windowHeight = MediaQuery.of(context).size.height;
     final textSize = ThemeSize.text(context);
 
     return Row(
@@ -108,7 +107,6 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     final interlinePadding = ThemePadding.interline(context);
 
     final titleSize = ThemeSize.title(context);
-    final textSize = ThemeSize.text(context);
 
     return Theme(
       data: ThemeData(
