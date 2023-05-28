@@ -36,14 +36,34 @@ class GameManager {
     _generateGrid();
   }
 
-  void setMaximumPlayers(int newMaximum) => _maxPlayers = newMaximum;
-  void setGameParameters(int nbRows, int nbCols, int nbBombs) {
-    _nbRows = nbRows;
-    _nbCols = nbCols;
-    _nbBombs = nbBombs;
+  void setGameParameters(
+      {int? maximumPlayers, int? nbRows, int? nbCols, int? nbBombs}) {
+    maximumPlayers = maximumPlayers ?? _maxPlayers;
+    nbRows = nbRows ?? _nbRows;
+    nbCols = nbCols ?? _nbCols;
+    nbBombs = nbBombs ?? _nbBombs;
+
+    if (maximumPlayers < 1) {
+      throw 'Maximum number of players must be greater or equal to 1';
+    }
+    if (nbRows < 1) {
+      throw 'Number of rows must be greater or equal to 1';
+    }
+    if (nbCols < 1) {
+      throw 'Number of cols must be greater or equal to 1';
+    }
+    if (nbBombs < 1) {
+      throw 'Number of bombs must be greater or equal to 1';
+    }
+
     if (_nbBombs > _nbRows * _nbCols) {
       throw 'Too many bombs for the number of tiles';
     }
+
+    _maxPlayers = maximumPlayers;
+    _nbRows = nbRows;
+    _nbCols = nbCols;
+    _nbBombs = nbBombs;
   }
 
   String get playerWithHighestScore {

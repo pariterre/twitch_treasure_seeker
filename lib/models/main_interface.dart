@@ -37,6 +37,42 @@ class MainInterface {
   void Function(String playerName)? _onBombFound;
   set onBombFound(Function(String playerName)? value) => _onBombFound = value;
 
+  void _checkForSetParameters({required String message}) {
+    RegExp re;
+
+    re = RegExp(r'^!setMaxPlayers ([0-9]{1,2})$');
+    if (re.hasMatch(message)) {
+      final groups = re.allMatches(message).toList()[0].groups([1]);
+      gameManager.setGameParameters(maximumPlayers: int.parse(groups[0]!));
+      if (_onStateChanged != null) _onStateChanged!();
+      return;
+    }
+
+    re = RegExp(r'^!setRows ([0-9]{1,2})$');
+    if (re.hasMatch(message)) {
+      final groups = re.allMatches(message).toList()[0].groups([1]);
+      gameManager.setGameParameters(nbRows: int.parse(groups[0]!));
+      if (_onStateChanged != null) _onStateChanged!();
+      return;
+    }
+
+    re = RegExp(r'^!setCols ([0-9]{1,2})$');
+    if (re.hasMatch(message)) {
+      final groups = re.allMatches(message).toList()[0].groups([1]);
+      gameManager.setGameParameters(nbCols: int.parse(groups[0]!));
+      if (_onStateChanged != null) _onStateChanged!();
+      return;
+    }
+
+    re = RegExp(r'^!setBombs ([0-9]{1,2})$');
+    if (re.hasMatch(message)) {
+      final groups = re.allMatches(message).toList()[0].groups([1]);
+      gameManager.setGameParameters(nbBombs: int.parse(groups[0]!));
+      if (_onStateChanged != null) _onStateChanged!();
+      return;
+    }
+  }
+
   TwitchManager twitchManager;
 
   MainInterface({required this.twitchManager}) {
@@ -71,26 +107,7 @@ class MainInterface {
           return;
         }
 
-        var re = RegExp(
-            r'^!setGameParameters ([0-9]{1,2}) ([0-9]{1,2}) ([0-9]{1,2})$');
-        if (re.hasMatch(message)) {
-          final groups = re.allMatches(message).toList()[0].groups([1, 2, 3]);
-          final newNbRows = int.parse(groups[0]!);
-          final newNbCols = int.parse(groups[1]!);
-          final newNbBombs = int.parse(groups[2]!);
-          gameManager.setGameParameters(newNbRows, newNbCols, newNbBombs);
-          if (_onStateChanged != null) _onStateChanged!();
-          return;
-        }
-
-        re = RegExp(r'^!setMaxPlayers ([0-9]{1,2})$');
-        if (re.hasMatch(message)) {
-          final groups = re.allMatches(message).toList()[0].groups([1]);
-          final newNbMaxPlayers = int.parse(groups[0]!);
-          gameManager.setMaximumPlayers(newNbMaxPlayers);
-          if (_onStateChanged != null) _onStateChanged!();
-          return;
-        }
+        _checkForSetParameters(message: message);
       }
       return;
     }
