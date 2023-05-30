@@ -34,10 +34,10 @@ class _GameScreenState extends State<GameScreen> {
     _mainInterface.onBombFound = _onBombFound;
   }
 
-  String? _lastPlayerToHaveFoundABomb;
-  void _onBombFound(String playerName) {
+  String? _currentBombMessage;
+  void _onBombFound(String message) {
     setState(() {
-      _lastPlayerToHaveFoundABomb = playerName;
+      _currentBombMessage = message;
     });
 
     Future.delayed(Duration(
@@ -46,7 +46,7 @@ class _GameScreenState extends State<GameScreen> {
         .then((value) {
       if (!mounted) return;
       setState(() {
-        _lastPlayerToHaveFoundABomb = null;
+        _currentBombMessage = null;
       });
     });
   }
@@ -192,7 +192,7 @@ class _GameScreenState extends State<GameScreen> {
                       offsetFromBorder * 2,
                   top: offsetFromBorder + tileSize,
                   child: _buildScore()),
-              if (_lastPlayerToHaveFoundABomb != null)
+              if (_currentBombMessage != null)
                 Positioned(
                   left: offsetFromBorder,
                   right: windowWidth -
@@ -204,7 +204,7 @@ class _GameScreenState extends State<GameScreen> {
                       child: GrowingContainer(
                     startingSize: windowHeight * 0.01,
                     finalSize: windowHeight * 0.04,
-                    title: 'Bleuet trouvé par\n$_lastPlayerToHaveFoundABomb!',
+                    title: _currentBombMessage!,
                     growingTime: _growingTextTime,
                     fadingTime: _fadingTextTime,
                   )),

@@ -13,6 +13,8 @@ class MainInterface {
   final gameManager = GameManager();
   _Status _status = _Status.waitForRequestLaunchGame;
 
+  String foundBombMessage = 'Bleuet trouvé par\n{username}!';
+
   // This is called when the moderator requested launching the game
   Function()? _onRequestLaunchGame;
   set onRequestLaunchGame(Function()? value) {
@@ -35,7 +37,7 @@ class MainInterface {
 
   // This is called whenever a bomb is found so it can be drawn on the screen
   void Function(String playerName)? _onBombFound;
-  set onBombFound(Function(String playerName)? value) => _onBombFound = value;
+  set onBombFound(Function(String message)? value) => _onBombFound = value;
 
   void _checkForSetParameters({required String message}) {
     RegExp re;
@@ -127,7 +129,9 @@ class MainInterface {
         final result = gameManager.revealTile(username, row: row, col: col);
 
         if (result == RevealResult.hit && _onBombFound != null) {
-          _onBombFound!(username);
+          final formattedMessage =
+              foundBombMessage.replaceAll('{username}', username);
+          _onBombFound!(formattedMessage);
         }
         if (_onStateChanged != null) _onStateChanged!();
 

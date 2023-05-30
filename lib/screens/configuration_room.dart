@@ -140,8 +140,6 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Widget _buildParameters() {
-    final windowHeight = MediaQuery.of(context).size.height;
-
     final smallPadding = ThemePadding.small(context);
     final interlinePadding = ThemePadding.interline(context);
 
@@ -161,9 +159,41 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
               OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         ),
       ),
-      child: Center(
-        child: Container(
-            height: windowHeight * 0.5,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+          'Parameters',
+          style: TextStyle(color: Colors.white, fontSize: titleSize),
+        ),
+        Container(
+          padding:
+              EdgeInsets.only(left: smallPadding, top: interlinePadding * 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildMaxPlayersForm(),
+              SizedBox(height: 4 * interlinePadding),
+              _buildDimensionsForm(),
+              SizedBox(height: 4 * interlinePadding),
+              _buildBombsForm(),
+            ],
+          ),
+        ),
+      ]),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final windowHeight = MediaQuery.of(context).size.height;
+
+    final smallPadding = ThemePadding.small(context);
+
+    return Scaffold(
+      body: Container(
+        height: windowHeight,
+        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
+        child: Center(
+          child: Container(
             width: windowHeight * 0.5,
             decoration: const BoxDecoration(color: ThemeColor.main),
             child: Padding(
@@ -173,47 +203,24 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
                   bottom: smallPadding * 1.5,
                   right: smallPadding),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Parameters',
-                      style:
-                          TextStyle(color: Colors.white, fontSize: titleSize),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildParameters(),
+                  ElevatedButton(
+                    onPressed: _goToIdleRoom,
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.white),
+                    child: const Text(
+                      'Start',
+                      style: TextStyle(color: Colors.black),
                     ),
-                    Container(
-                      padding: EdgeInsets.only(
-                          left: smallPadding, top: interlinePadding * 2),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildMaxPlayersForm(),
-                          SizedBox(height: 4 * interlinePadding),
-                          _buildDimensionsForm(),
-                          SizedBox(height: 4 * interlinePadding),
-                          _buildBombsForm(),
-                        ],
-                      ),
-                    ),
-                  ]),
-            )),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final windowHeight = MediaQuery.of(context).size.height;
-
-    return Scaffold(
-      body: Container(
-        height: windowHeight,
-        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            _buildParameters(),
-            ElevatedButton(onPressed: _goToIdleRoom, child: const Text('Start'))
-          ],
+                  )
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
