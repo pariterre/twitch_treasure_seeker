@@ -14,7 +14,7 @@ class ConfigurationRoom extends StatefulWidget {
 }
 
 class _ConfigurationRoomState extends State<ConfigurationRoom> {
-  late final MainInterface _mainInterface;
+  MainInterface? _mainInterface;
 
   final _nbMaxPlayersController = TextEditingController();
   final _nbRowsController = TextEditingController();
@@ -25,20 +25,21 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _mainInterface = MainInterface(
-        twitchManager:
-            ModalRoute.of(context)!.settings.arguments as TwitchManager);
-
-    // Set default parameters
-    _nbMaxPlayersController.text =
-        _mainInterface.gameManager.maxPlayers.toString();
-    _nbRowsController.text = _mainInterface.gameManager.nbRows.toString();
-    _nbColsController.text = _mainInterface.gameManager.nbCols.toString();
-    _nbBombsController.text = _mainInterface.gameManager.nbBombs.toString();
+    if (_mainInterface == null) {
+      _mainInterface = MainInterface(
+          twitchManager:
+              ModalRoute.of(context)!.settings.arguments as TwitchManager);
+      // Set default parameters
+      _nbMaxPlayersController.text =
+          _mainInterface!.gameManager.maxPlayers.toString();
+      _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
+      _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
+      _nbBombsController.text = _mainInterface!.gameManager.nbBombs.toString();
+    }
   }
 
   void _goToIdleRoom() {
-    _mainInterface.gameManager.setGameParameters(
+    _mainInterface!.gameManager.setGameParameters(
       maximumPlayers: int.tryParse(_nbMaxPlayersController.text),
       nbRows: int.tryParse(_nbRowsController.text),
       nbCols: int.tryParse(_nbColsController.text),

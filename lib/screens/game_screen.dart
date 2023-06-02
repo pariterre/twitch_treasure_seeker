@@ -80,13 +80,18 @@ class _GameScreenState extends State<GameScreen> {
           final col = gridCol(index, gm.nbCols + 1);
           if (row == 0 && col == 0) return Container();
           if (row == 0 || col == 0) {
-            return Center(
-                child: Text(
-              '${col == 0 ? String.fromCharCode('A'.codeUnits[0] + row - 1) : col}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: textSize * 0.75, fontWeight: FontWeight.bold),
-            ));
+            return Container(
+              decoration: BoxDecoration(
+                  color: ThemeColor.conceiledContrast,
+                  border: Border.all(width: tileSize * 0.02)),
+              child: Center(
+                  child: Text(
+                '${col == 0 ? String.fromCharCode('A'.codeUnits[0] + row - 1) : col}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: textSize * 0.75, fontWeight: FontWeight.bold),
+              )),
+            );
           }
 
           final tileIndex = gridIndex(row - 1, col - 1, gm.nbCols);
