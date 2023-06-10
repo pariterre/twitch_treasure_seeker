@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:twitch_manager/twitch_app_info.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/screens/configuration_room.dart';
 import 'package:twitched_minesweeper/screens/end_screen.dart';
@@ -10,19 +11,24 @@ void main() async {
   runApp(MaterialApp(
     initialRoute: TwitchAuthenticationScreen.route,
     routes: {
-      TwitchAuthenticationScreen.route: (ctx) =>
-          const TwitchAuthenticationScreen(
-            nextRoute: ConfigurationRoom.route,
-            appId: 'eqt0u8wre5boab7thsjb6b8sh57qy3',
-            scope: [
-              TwitchScope.chatRead,
-              TwitchScope.chatEdit,
-              TwitchScope.chatters,
-              TwitchScope.readFollowers,
-              TwitchScope.readSubscribers,
-            ],
-            withModerator: true,
-            forceNewAuthentication: false,
+      TwitchAuthenticationScreen.route: (ctx) => TwitchAuthenticationScreen(
+            appInfo: TwitchAppInfo(
+              appName: 'Minesweeper',
+              twitchAppId: 'eqt0u8wre5boab7thsjb6b8sh57qy3',
+              scope: [
+                TwitchScope.chatRead,
+                TwitchScope.chatEdit,
+                TwitchScope.chatters,
+                TwitchScope.readFollowers,
+                TwitchScope.readSubscribers,
+                TwitchScope.readModerator,
+              ],
+              redirectAddress: 'http://localhost:3000',
+            ),
+            onFinishedConnexion: (manager) => Navigator.of(ctx)
+                .pushReplacementNamed(ConfigurationRoom.route,
+                    arguments: manager),
+            loadPreviousSession: true,
           ),
       ConfigurationRoom.route: (ctx) => const ConfigurationRoom(),
       IdleRoom.route: (ctx) => const IdleRoom(),

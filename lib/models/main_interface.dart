@@ -76,19 +76,24 @@ class MainInterface {
   }
 
   TwitchManager twitchManager;
+  List<String>? _moderators;
 
   MainInterface({required this.twitchManager}) {
-    twitchManager.irc!.messageCallback = _messageReceived;
+    twitchManager.irc.messageCallback = _messageReceived;
   }
 
-  bool _isModerator(String username) {
-    return username == twitchManager.api.streamerUsername.toLowerCase() ||
-        username == twitchManager.api.moderatorUsername.toLowerCase();
+  Future<bool> _isModerator(String username) async {
+    if (_moderators == null) {
+      _moderators = await twitchManager.api.fetchModerators();
+      _moderators!
+          .add((await twitchManager.api.login(twitchManager.api.streamerId))!);
+    }
+    return _moderators!.contains(username);
   }
 
-  void _messageReceived(String username, String message) {
+  void _messageReceived(String username, String message) async {
     if (_status == _Status.waitForRequestLaunchGame) {
-      if (_isModerator(username) && message == '!chercheursDeBleuets') {
+      if (await _isModerator(username) && message == '!chercheursDeBleuets') {
         _status = _Status.waitForPlayerToJoin;
         if (_onRequestLaunchGame != null) _onRequestLaunchGame!();
       }
@@ -102,7 +107,7 @@ class MainInterface {
         return;
       }
 
-      if (_isModerator(username)) {
+      if (await _isModerator(username)) {
         if (message == '!start') {
           _status = _Status.play;
           if (_onRequestStartPlaying != null) _onRequestStartPlaying!();
