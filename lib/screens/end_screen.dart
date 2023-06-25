@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/idle_room.dart';
 
@@ -8,7 +8,7 @@ class EndScreen extends StatelessWidget {
 
   static const route = '/end-screen';
 
-  Widget _buildCongratulation(context, MainInterface mainInterface) {
+  Widget _buildCongratulation(context, GameInterface mainInterface) {
     final smallPadding = ThemePadding.small(context);
 
     final titleSize = ThemeSize.title(context);
@@ -41,7 +41,7 @@ class EndScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mainInterface =
-        ModalRoute.of(context)!.settings.arguments as MainInterface;
+        ModalRoute.of(context)!.settings.arguments as GameInterface;
 
     final windowWidth = MediaQuery.of(context).size.width;
     final windowHeight = MediaQuery.of(context).size.height;

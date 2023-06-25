@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/lobby_screen.dart';
 
@@ -13,14 +13,14 @@ class IdleRoom extends StatefulWidget {
 }
 
 class _IdleRoomState extends State<IdleRoom> {
-  late final MainInterface _mainInterface;
+  late final GameInterface _mainInterface;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
     _mainInterface =
-        ModalRoute.of(context)!.settings.arguments as MainInterface;
+        ModalRoute.of(context)!.settings.arguments as GameInterface;
     _mainInterface.gameManager.reset();
     _mainInterface.onRequestLaunchGame = onRequestLaunchGame;
   }

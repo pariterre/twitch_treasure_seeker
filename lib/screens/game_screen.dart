@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
-import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/end_screen.dart';
 import 'package:twitched_minesweeper/widgets/growing_container.dart';
@@ -16,7 +16,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late MainInterface _mainInterface;
+  late GameInterface _mainInterface;
 
   final _growingTextTime = const Duration(seconds: 1, milliseconds: 500);
   final _fadingTextTime = const Duration(milliseconds: 500);
@@ -26,7 +26,7 @@ class _GameScreenState extends State<GameScreen> {
     super.didChangeDependencies();
 
     _mainInterface =
-        ModalRoute.of(context)!.settings.arguments as MainInterface;
+        ModalRoute.of(context)!.settings.arguments as GameInterface;
 
     _mainInterface.onStateChanged = () => setState(() {});
     _mainInterface.gameManager.newGame();

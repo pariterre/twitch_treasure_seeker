@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/idle_room.dart';
 
@@ -14,7 +14,7 @@ class ConfigurationRoom extends StatefulWidget {
 }
 
 class _ConfigurationRoomState extends State<ConfigurationRoom> {
-  MainInterface? _mainInterface;
+  GameInterface? _mainInterface;
 
   final _nbMaxPlayersController = TextEditingController();
   final _nbRowsController = TextEditingController();
@@ -26,7 +26,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     super.didChangeDependencies();
 
     if (_mainInterface == null) {
-      _mainInterface = MainInterface(
+      _mainInterface = GameInterface(
           twitchManager:
               ModalRoute.of(context)!.settings.arguments as TwitchManager);
       // Set default parameters

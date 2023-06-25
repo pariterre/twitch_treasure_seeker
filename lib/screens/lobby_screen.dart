@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/main_interface.dart';
+import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/models/player.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
@@ -16,14 +16,14 @@ class LobbyScreen extends StatefulWidget {
 }
 
 class _LobbyScreenState extends State<LobbyScreen> {
-  late MainInterface _mainInterface;
+  late GameInterface _mainInterface;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
     _mainInterface =
-        ModalRoute.of(context)!.settings.arguments as MainInterface;
+        ModalRoute.of(context)!.settings.arguments as GameInterface;
     _mainInterface.onRequestStartPlaying = startPlaying;
     _mainInterface.onStateChanged = () => setState(() {});
   }
