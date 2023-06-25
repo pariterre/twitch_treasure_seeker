@@ -1,3 +1,9 @@
+enum GameStatus {
+  initial,
+  isRunning,
+  isOver,
+}
+
 enum AddPlayerStatus {
   success,
   registrationIsClosed,

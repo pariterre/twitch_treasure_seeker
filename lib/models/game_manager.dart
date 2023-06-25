@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:twitched_minesweeper/models/enums.dart';
@@ -12,34 +13,52 @@ int gridRow(int index, int nbCols) => index ~/ nbCols;
 int gridCol(int index, int nbCols) => index % nbCols;
 
 class GameManager {
+  var _status = GameStatus.initial;
+  Function()? updateState;
+
+  // speed a which each movements are triggered
+  final _gameSpeed = const Duration(seconds: 1);
+
+  // Maximum number of players allowed to play
   int _maxPlayers = 10;
   int get maxPlayers => _maxPlayers;
   final Map<String, Player> _players = {};
 
+  // Size of the grid
   int _nbRows = 20;
   int get nbRows => _nbRows;
 
   int _nbCols = 10;
   int get nbCols => _nbCols;
 
+  // Number of bombs on the grid
   int _nbBombs = 10;
   int get nbBombs => _nbBombs;
 
+  // The actual grid
   List<int> _grid = [];
   List<bool> _isRevealed = [];
 
+  // The player stored by username
   Map<String, Player> get players => _players;
+
+  // If the game is still open for registration
   bool _canRegister = true;
   void closeRegistration() => _canRegister = false;
 
   GameManager() {
     _generateGrid();
+    _startTimer();
   }
 
-  void reset() {
+  ///
+  /// Reset the players
+  void resetPlayers() {
     _players.clear();
   }
 
+  ///
+  /// Set the game parameters
   void setGameParameters(
       {int? maximumPlayers, int? nbRows, int? nbCols, int? nbBombs}) {
     maximumPlayers = maximumPlayers ?? _maxPlayers;
@@ -70,6 +89,8 @@ class GameManager {
     _nbBombs = nbBombs;
   }
 
+  ///
+  /// Get the player that has the highest score
   String get playerWithHighestScore {
     String out = "";
     var highestScore = -1;
@@ -85,6 +106,7 @@ class GameManager {
   ///
   /// Reset the board to initial and call the refresh the draw
   void newGame() {
+    _status = GameStatus.initial;
     _generateGrid();
     for (final player in _players.keys) {
       _players[player]!.reset(bombs: _nbBombs);
@@ -121,10 +143,24 @@ class GameManager {
     return cmp;
   }
 
+  void startGame() {
+    if (_status != GameStatus.initial) return;
+
+    _status = GameStatus.isRunning;
+  }
+
+  ///
+  /// Is the game over based
   bool get isGameOver {
-    return bombsFound == nbBombs ||
-        _players.keys.fold<int>(0, (prev, player) => _players[player]!.bombs) ==
-            0;
+    if (_status == GameStatus.isOver) return true;
+
+    // If all the bombs are found or noone has any bomb left to throw
+    if (bombsFound == nbBombs ||
+        _players.keys.fold<int>(0, (prev, p) => _players[p]!.bombs) == 0) {
+      _status = GameStatus.isOver;
+    }
+
+    return _status == GameStatus.isOver;
   }
 
   ///
@@ -146,14 +182,15 @@ class GameManager {
 
     // Start the recursive process of revealing all the required tiles
     _revealTile(index);
+
+    // Remove a bomb from the user
     _players[username]!.bombs--;
 
     // Give points if necessary
     if (_grid[index] == -1) {
-      _players[username]!.score += 100;
+      _players[username]!.score += 1;
       return RevealResult.hit;
     } else {
-      _players[username]!.score += _grid[index] * 10;
       return RevealResult.miss;
     }
   }
@@ -203,6 +240,28 @@ class GameManager {
         }
       }
     }
+  }
+
+  ///
+  /// Start the timer that calls the game loop
+  void _startTimer() {
+    // TODO allow to parametrize
+    Timer(_gameSpeed, _gameLoop);
+  }
+
+  ///
+  /// Internal loop that is called each time step. It advances the player
+  /// towards their next position and check the state of the tiles
+  void _gameLoop() {
+    if (_status != GameStatus.isRunning) return;
+
+    for (final p in _players.keys) {
+      _players[p]!.march();
+      revealTile(p, row: _players[p]!.x, col: _players[p]!.y);
+    }
+
+    // Notify the game interface of the new state of the game
+    if (updateState != null) updateState!();
   }
 
   ///

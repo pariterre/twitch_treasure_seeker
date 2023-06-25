@@ -21,7 +21,7 @@ class _IdleRoomState extends State<IdleRoom> {
 
     _mainInterface =
         ModalRoute.of(context)!.settings.arguments as GameInterface;
-    _mainInterface.gameManager.reset();
+    _mainInterface.gameManager.resetPlayers();
     _mainInterface.onRequestLaunchGame = onRequestLaunchGame;
   }
 
