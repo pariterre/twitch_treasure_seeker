@@ -11,7 +11,9 @@ void main() async {
     initialRoute: TwitchAuthenticationScreen.route,
     routes: {
       TwitchAuthenticationScreen.route: (ctx) => TwitchAuthenticationScreen(
-            useMock: true,
+            mockOptions: const TwitchMockOptions(
+              isActive: true,
+            ),
             appInfo: TwitchAppInfo(
               appName: 'Minesweeper',
               twitchAppId: 'eqt0u8wre5boab7thsjb6b8sh57qy3',

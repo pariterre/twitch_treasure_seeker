@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/lobby_screen.dart';
@@ -34,7 +35,13 @@ class _IdleRoomState extends State<IdleRoom> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        decoration: const BoxDecoration(color: ThemeColor.greenScreen));
+    return Scaffold(
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
+        child: TwitchDebugPanel(manager: _mainInterface.twitchManager),
+      ),
+    );
   }
 }
