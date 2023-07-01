@@ -36,11 +36,15 @@ class _IdleRoomState extends State<IdleRoom> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-        child: TwitchDebugPanel(manager: _mainInterface.twitchManager),
+      body: Stack(
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(color: ThemeColor.greenScreen),
+          ),
+          TwitchDebugPanel(manager: _mainInterface.twitchManager),
+        ],
       ),
     );
   }
