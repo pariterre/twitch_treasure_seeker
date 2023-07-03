@@ -28,7 +28,7 @@ int gridCol(int index, int nbCols) => index < 0 ? -1 : index % nbCols;
 
 class GameManager {
   var _status = GameStatus.initial;
-  final Function() onStateChanged;
+  final Function() requestRedrawCallback;
   final Function(Player) onTreasureFound;
 
   // speed a which each movements are triggered
@@ -67,7 +67,8 @@ class GameManager {
   bool _canRegister = true;
   void closeRegistration() => _canRegister = false;
 
-  GameManager({required this.onStateChanged, required this.onTreasureFound}) {
+  GameManager(
+      {required this.requestRedrawCallback, required this.onTreasureFound}) {
     _generateGrid();
     _startTimer();
   }
@@ -337,8 +338,7 @@ class GameManager {
     }
 
     // Notify the game interface of the new state of the game
-    // TODO Better energy consumption on onStateChanged?
-    onStateChanged();
+    requestRedrawCallback();
   }
 
   ///

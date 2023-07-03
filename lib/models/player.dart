@@ -56,21 +56,27 @@ class Player {
     return true;
   }
 
+  ///
+  /// Is the player exhausted (has no energy left)
   bool get isExhausted => energy <= 0;
 
-  void rest() {
+  ///
+  /// Rest the player, returns true if player has increased its stamina
+  bool rest() {
     // If not rested, then wait
     if (restingCmp < minimumRestingTime) {
       restingCmp++;
-      return;
+      return false;
     }
 
     // If well rested and not at its maximum stamina
     if (energy < maxEnergy) {
       energy++;
-      // Penalize long movement
+      // Penalize long movement by restarting resting period
       if (_nextPosition.isNotEmpty) restingCmp = 0;
+      return true;
     }
+    return false;
   }
 
   ///

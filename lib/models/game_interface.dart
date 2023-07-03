@@ -9,7 +9,7 @@ enum _Status {
 }
 
 class GameInterface {
-  late final gameManager = GameManager(onStateChanged: () {
+  late final gameManager = GameManager(requestRedrawCallback: () {
     if (_onStateChanged != null) _onStateChanged!();
   }, onTreasureFound: (player) {
     if (_onTreasureFound != null) _onTreasureFound!(player.username);
@@ -184,7 +184,9 @@ class GameInterface {
       restingTime: restingTime,
       gameSpeed: gameSpeed,
     );
-    if (_onStateChanged != null) _onStateChanged!();
+    if (_onStateChanged != null) {
+      _onStateChanged!();
+    }
   }
 
   ///

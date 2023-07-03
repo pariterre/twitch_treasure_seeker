@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/end_screen.dart';
+import 'package:twitched_minesweeper/widgets/game_grid.dart';
+import 'package:twitched_minesweeper/widgets/game_score.dart';
 import 'package:twitched_minesweeper/widgets/growing_container.dart';
-import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -17,175 +17,38 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late GameInterface _mainInterface;
-
+  late final _gameInterface =
+      ModalRoute.of(context)!.settings.arguments as GameInterface;
   final _growingTextTime = const Duration(seconds: 1, milliseconds: 500);
   final _fadingTextTime = const Duration(milliseconds: 500);
+
+  final _congratulationMessageKey = GlobalKey<GrowingContainerState>();
+
+  void _onTreasureFound(String username) {
+    _congratulationMessageKey.currentState!
+        .showMessage('$username a trouvé\nun bleuet');
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _mainInterface =
-        ModalRoute.of(context)!.settings.arguments as GameInterface;
-
-    _mainInterface.onStateChanged = () => setState(() {});
-    _mainInterface.gameManager.newGame();
-    _mainInterface.onGameOver = _onGameOver;
-    _mainInterface.onTreasureFound = _onTreasureFound;
-  }
-
-  String? _currentTreasureFoundMessage;
-  void _onTreasureFound(String username) {
-    setState(() {
-      _currentTreasureFoundMessage = '$username a trouvé un bleuet';
-    });
-
-    Future.delayed(Duration(
-            milliseconds: _growingTextTime.inMilliseconds +
-                _fadingTextTime.inMilliseconds))
-        .then((value) {
-      if (!mounted) return;
-      setState(() {
-        _currentTreasureFoundMessage = null;
-      });
-    });
+    _gameInterface.onStateChanged = () => setState(() {});
+    _gameInterface.gameManager.newGame();
+    _gameInterface.onGameOver = () => _onGameOver();
+    _gameInterface.onTreasureFound = _onTreasureFound;
   }
 
   void _onGameOver() {
-    _mainInterface.onStateChanged = null;
-    _mainInterface.onGameOver = null;
-    _mainInterface.onTreasureFound = null;
+    _gameInterface.onStateChanged = null;
+    _gameInterface.onGameOver = null;
+    _gameInterface.onTreasureFound = null;
 
     Future.delayed(Duration(
         milliseconds:
             _growingTextTime.inMilliseconds + _fadingTextTime.inMilliseconds));
     Navigator.of(context)
-        .pushReplacementNamed(EndScreen.route, arguments: _mainInterface);
-  }
-
-  Widget _buildGrid(double tileSize) {
-    final textSize = tileSize * 3 / 4;
-    final gm = _mainInterface.gameManager;
-
-    return SizedBox(
-      width: (gm.nbCols + 1) * tileSize,
-      child: GridView.count(
-        crossAxisCount: gm.nbCols + 1,
-        children: List.generate(
-            gm.nbRows * gm.nbCols + gm.nbRows + gm.nbCols + 1, (index) {
-          // We have to construct the grid alongside the name of the
-          // rows and cols. So every row and col being 0 is the name, otherwise
-          // it is the grid (with its index offset by 1)
-          final row = gridRow(index, gm.nbCols + 1);
-          final col = gridCol(index, gm.nbCols + 1);
-
-          // Starting tile
-          if (row == 0 && col == 0) {
-            return SweeperTile(
-              gameManager: gm,
-              tileIndex: -1,
-              tileSize: tileSize,
-              textSize: textSize,
-            );
-          }
-
-          // Header of SweeperTile
-          if (row == 0 || col == 0) {
-            return Container(
-              decoration: BoxDecoration(
-                  color: ThemeColor.conceiledContrast,
-                  border: Border.all(width: tileSize * 0.02)),
-              child: Center(
-                  child: Text(
-                '${col == 0 ? String.fromCharCode('A'.codeUnits[0] + row - 1) : col}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: textSize * 0.75, fontWeight: FontWeight.bold),
-              )),
-            );
-          }
-
-          final tileIndex = gridIndex(row - 1, col - 1, gm.nbCols);
-          return SweeperTile(
-            gameManager: gm,
-            tileIndex: tileIndex,
-            tileSize: tileSize,
-            textSize: textSize,
-          );
-        }, growable: false),
-      ),
-    );
-  }
-
-  Widget _buildScore() {
-    final windowHeight = MediaQuery.of(context).size.height;
-
-    final smallPadding = ThemePadding.small(context);
-    final interlinePadding = ThemePadding.interline(context);
-
-    final titleSize = ThemeSize.title(context);
-    final textSize = ThemeSize.text(context);
-
-    final players = _mainInterface.gameManager.players;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: ThemeColor.main,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      height: windowHeight * 0.08 +
-          players.length * (textSize + 2 * interlinePadding + 1),
-      width: windowHeight * 0.40,
-      child: Padding(
-        padding: EdgeInsets.only(left: smallPadding, top: smallPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Score',
-              style: TextStyle(color: Colors.white, fontSize: titleSize),
-            ),
-            SizedBox(height: interlinePadding * 2),
-            Padding(
-              padding: EdgeInsets.only(right: smallPadding),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: players.keys.map((name) {
-                    final player = _mainInterface.gameManager.players[name]!;
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: interlinePadding),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                  height: textSize,
-                                  child: CircleAvatar(
-                                      backgroundColor: player.color)),
-                              Text(
-                                player.username,
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: textSize),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            '${player.score} bleuets (${player.energy} énergies)',
-                            style: TextStyle(
-                                color: Colors.white, fontSize: textSize),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList()),
-            )
-          ],
-        ),
-      ),
-    );
+        .pushReplacementNamed(EndScreen.route, arguments: _gameInterface);
   }
 
   @override
@@ -196,7 +59,7 @@ class _GameScreenState extends State<GameScreen> {
     final offsetFromBorder = windowHeight * 0.02;
     final gridHeight = windowHeight - 2 * offsetFromBorder;
 
-    final tileSize = gridHeight / (_mainInterface.gameManager.nbRows + 1);
+    final tileSize = gridHeight / (_gameInterface.gameManager.nbRows + 1);
 
     return Scaffold(
       body: Container(
@@ -211,36 +74,36 @@ class _GameScreenState extends State<GameScreen> {
               Padding(
                 padding: EdgeInsets.only(
                     left: offsetFromBorder, top: offsetFromBorder),
-                child: _buildGrid(tileSize),
+                child:
+                    GameGrid(gameInterface: _gameInterface, tileSize: tileSize),
               ),
               Positioned(
-                  left: (_mainInterface.gameManager.nbCols + 1) * tileSize +
+                  left: (_gameInterface.gameManager.nbCols + 1) * tileSize +
                       offsetFromBorder * 2,
                   top: offsetFromBorder + tileSize,
-                  child: _buildScore()),
-              if (_currentTreasureFoundMessage != null)
-                Positioned(
-                  left: offsetFromBorder,
-                  right: windowWidth -
-                      ((_mainInterface.gameManager.nbCols + 1.5) * tileSize +
-                          2 * offsetFromBorder),
-                  top: 0,
-                  bottom: windowHeight * 1 / 4,
-                  child: Center(
-                      child: GrowingContainer(
-                    startingSize: windowHeight * 0.01,
-                    finalSize: windowHeight * 0.04,
-                    title: _currentTreasureFoundMessage!,
-                    growingTime: _growingTextTime,
-                    fadingTime: _fadingTextTime,
-                  )),
-                ),
+                  child: GameScore(gameInterface: _gameInterface)),
+              Positioned(
+                left: offsetFromBorder,
+                right: windowWidth -
+                    ((_gameInterface.gameManager.nbCols + 1.5) * tileSize +
+                        2 * offsetFromBorder),
+                top: 0,
+                bottom: windowHeight * 1 / 4,
+                child: Center(
+                    child: GrowingContainer(
+                  key: _congratulationMessageKey,
+                  startingSize: windowHeight * 0.01,
+                  finalSize: windowHeight * 0.04,
+                  growingTime: _growingTextTime,
+                  fadingTime: _fadingTextTime,
+                )),
+              ),
               Align(
                   alignment: Alignment.centerRight,
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
                     child:
-                        TwitchDebugPanel(manager: _mainInterface.twitchManager),
+                        TwitchDebugPanel(manager: _gameInterface.twitchManager),
                   )),
             ],
           ),

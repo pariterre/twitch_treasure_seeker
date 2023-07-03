@@ -14,26 +14,27 @@ double easeOutElastic(double x) {
 }
 
 class GrowingContainer extends StatefulWidget {
-  const GrowingContainer(
-      {super.key,
-      required this.title,
-      required this.startingSize,
-      required this.finalSize,
-      required this.growingTime,
-      required this.fadingTime});
+  const GrowingContainer({
+    super.key,
+    required this.startingSize,
+    required this.finalSize,
+    required this.growingTime,
+    required this.fadingTime,
+  });
 
-  final String title;
   final double startingSize;
   final double finalSize;
   final Duration growingTime;
   final Duration fadingTime;
 
   @override
-  State<GrowingContainer> createState() => _GrowingContainerState();
+  State<GrowingContainer> createState() => GrowingContainerState();
 }
 
-class _GrowingContainerState extends State<GrowingContainer>
+class GrowingContainerState extends State<GrowingContainer>
     with TickerProviderStateMixin {
+  String? _text;
+
   late int fullAnimationTime =
       widget.growingTime.inMilliseconds + widget.fadingTime.inMilliseconds;
 
@@ -47,9 +48,21 @@ class _GrowingContainerState extends State<GrowingContainer>
   late AnimationController animationController = AnimationController(
     vsync: this,
     duration: Duration(milliseconds: fullAnimationTime),
-  )
-    ..forward()
-    ..repeat();
+  );
+
+  void showMessage(String message) {
+    if (animationController.isAnimating) return;
+
+    _text = message;
+    animationController.forward();
+
+    // Remove the message after the animation is done
+    Future.delayed(Duration(milliseconds: fullAnimationTime)).then((value) {
+      _text = null;
+      animationController.reset();
+      return;
+    });
+  }
 
   @override
   void dispose() {
@@ -80,25 +93,31 @@ class _GrowingContainerState extends State<GrowingContainer>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animationController,
-      builder: (ctx, child) {
-        return Container(
-          decoration: BoxDecoration(
-              color:
-                  ThemeColor.main.withOpacity(max(_currentOpacity - 0.2, 0))),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Text(
-              style: TextStyle(
-                  fontSize: _currentSize,
-                  color: Colors.white.withOpacity(_currentOpacity)),
-              widget.title,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
-      },
-    );
+    // We have to copy because of race condition
+    final text = _text;
+
+    return text == null
+        ? Container()
+        : AnimatedBuilder(
+            animation: animationController,
+            builder: (ctx, child) {
+              return Container(
+                decoration: BoxDecoration(
+                    color: ThemeColor.main
+                        .withOpacity(max(_currentOpacity - 0.2, 0))),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0),
+                  child: Text(
+                    style: TextStyle(
+                        fontSize: _currentSize,
+                        color: Colors.white.withOpacity(_currentOpacity)),
+                    textAlign: TextAlign.center,
+                    text,
+                  ),
+                ),
+              );
+            },
+          );
   }
 }
