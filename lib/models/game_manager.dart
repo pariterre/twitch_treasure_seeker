@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:twitched_minesweeper/models/ennemy.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
+import 'package:twitched_minesweeper/models/game_tile.dart';
 
 import 'player.dart';
 
@@ -10,9 +12,9 @@ const List<Color> colorCycle = [
   Colors.purple,
   Colors.green,
   Colors.orange,
-  Colors.yellow,
+  Colors.pink,
+  Colors.indigo,
   Colors.blueGrey,
-  Colors.white,
   Colors.black,
   Colors.red,
   Colors.brown,
@@ -22,9 +24,11 @@ const List<Color> colorCycle = [
 ///
 /// Easy accessors translating index into row/col pair or row/col pair into
 /// index
-int gridIndex(int row, int col, int nbCols) => row * nbCols + col;
-int gridRow(int index, int nbCols) => index < 0 ? -1 : index ~/ nbCols;
-int gridCol(int index, int nbCols) => index < 0 ? -1 : index % nbCols;
+int gridIndex(GameTile tile, int nbCols) => tile.row * nbCols + tile.col;
+// int gridRow(int index, int nbCols) => index < 0 ? -1 : index ~/ nbCols;
+// int gridCol(int index, int nbCols) => index < 0 ? -1 : index % nbCols;
+GameTile gridTile(int index, int nbCols) =>
+    GameTile(index < 0 ? -1 : index ~/ nbCols, index < 0 ? -1 : index % nbCols);
 
 class GameManager {
   var _status = GameStatus.initial;
@@ -39,6 +43,7 @@ class GameManager {
   int _maxPlayers = 10;
   int get maxPlayers => _maxPlayers;
   final Map<String, Player> _players = {};
+  final List<Ennemy> _ennemies = [];
 
   // Size of the grid
   int _nbRows = 20;
@@ -75,9 +80,7 @@ class GameManager {
 
   ///
   /// Reset the players
-  void resetPlayers() {
-    _players.clear();
-  }
+  void resetPlayers() => _players.clear();
 
   ///
   /// Set the game parameters
@@ -137,7 +140,7 @@ class GameManager {
   ///
   /// Get the player that has the highest score
   String get playerWithHighestScore {
-    String out = "";
+    String out = '';
     var highestScore = -1;
     for (final player in players.keys) {
       if (players[player]!.score > highestScore) {
@@ -156,6 +159,14 @@ class GameManager {
       _players[player]!
           .reset(maxEnergy: _maxEnergy, minimumRestingTime: _restingTime);
     }
+
+    _ennemies.clear();
+    _ennemies.add(Ennemy(name: 'rabbit', color: Colors.white));
+
+    for (final ennemy in _ennemies) {
+      ennemy.addTarget(GameTile.none());
+    }
+
     _status = GameStatus.isRunning;
   }
 
@@ -191,10 +202,9 @@ class GameManager {
   List<Player> playersOnTile(int index) {
     List<Player> out = [];
 
-    final row = gridRow(index, nbCols);
-    final col = gridCol(index, nbCols);
+    final tile = gridTile(index, nbCols);
     for (final p in _players.keys) {
-      if (_players[p]!.row == row && _players[p]!.col == col) {
+      if (_players[p]!.tile == tile) {
         out.add(_players[p]!);
       }
     }
@@ -226,30 +236,29 @@ class GameManager {
 
   ///
   /// Adds a move to the moves list of [username] player.
-  void setPlayerMove(String username, {required int row, required int col}) {
+  void setPlayerMove(String username, {required GameTile newTile}) {
     // Safe guards
     // If game is over
     if (isGameOver) return;
     // If tile not in the grid
-    if (!_isInsideGrid(row, col)) return;
+    if (!_isInsideGrid(newTile)) return;
     // Player who played is actually a player
     if (!players.containsKey(username)) return;
 
     final player = _players[username]!;
-    player.addTarget(row, col);
+    player.addTarget(newTile);
   }
 
   ///
   /// Main interface for a user to reveal a tile from the grid
-  RevealResult _revealTile(String username,
-      {required int row, required int col}) {
+  RevealResult _revealTile(String username, {required GameTile tile}) {
     // Safe guards
     // If game is over
     if (isGameOver) return RevealResult.gameOver;
     // If tile not in the grid
-    if (!_isInsideGrid(row, col)) return RevealResult.outsideGrid;
+    if (!_isInsideGrid(tile)) return RevealResult.outsideGrid;
     // If tile was already revealed
-    final index = gridIndex(row, col, nbCols);
+    final index = gridIndex(tile, nbCols);
     if (_isRevealed[index]) return RevealResult.alreadyRevealed;
     // Player still has energy
     if (_players[username]!.energy < 0) return RevealResult.noEnergyLeft;
@@ -290,21 +299,19 @@ class GameManager {
     // tiles around
     if (_grid[idx] != 0) return;
 
-    int currentTileRow = gridRow(idx, nbCols);
-    int currentTileCol = gridCol(idx, nbCols);
+    final currentTile = gridTile(idx, nbCols);
     for (var j = -1; j < 2; j++) {
       for (var k = -1; k < 2; k++) {
         // Do not reveal itself
         if (j == 0 && k == 0) continue;
 
-        final newRow = currentTileRow + j;
-        final newCol = currentTileCol + k;
+        final newTile = GameTile(currentTile.row + j, currentTile.col + k);
 
         // Do not try to reveal tile outside of the grid
-        if (!_isInsideGrid(newRow, newCol)) continue;
+        if (!_isInsideGrid(newTile)) continue;
 
         // Reveal the tile if it was not already revealed
-        final newIndex = gridIndex(newRow, newCol, nbCols);
+        final newIndex = gridIndex(newTile, nbCols);
         if (!_isRevealed[newIndex]) {
           // If it was a zero reveal to tiles around
           await _revealTileRecursive(newIndex, isChecked: isChecked);
@@ -330,8 +337,7 @@ class GameManager {
       if (player.rest()) needRedraw.add(NeedRedraw.score);
       if (player.march()) needRedraw.add(NeedRedraw.grid);
 
-      if (_revealTile(p, row: player.row, col: player.col) ==
-          RevealResult.hit) {
+      if (_revealTile(p, tile: player.tile) == RevealResult.hit) {
         player.refillEnergy();
 
         // Notify game interface
@@ -345,9 +351,12 @@ class GameManager {
 
   ///
   /// Get if a specific row/col pair is inside or outside the current grid
-  bool _isInsideGrid(row, col) {
+  bool _isInsideGrid(GameTile tile) {
     // Do not check rows or column outside of the grid
-    return (row >= 0 && col >= 0 && row < nbRows && col < nbCols);
+    return (tile.row >= 0 &&
+        tile.col >= 0 &&
+        tile.row < nbRows &&
+        tile.col < nbCols);
   }
 
   ///
@@ -375,8 +384,7 @@ class GameManager {
 
       var nbTreasuresAroundTile = 0;
 
-      final currentTileRow = gridRow(i, nbCols);
-      final currentTileCol = gridCol(i, nbCols);
+      final currentTile = gridTile(i, nbCols);
       // Check the previous row to next row
       for (var j = -1; j < 2; j++) {
         // Check the previous col to next col
@@ -385,13 +393,12 @@ class GameManager {
           if (j == 0 && k == 0) continue;
 
           // Find the current checked tile
-          final checkedTileRow = currentTileRow + j;
-          final checkedTileCol = currentTileCol + k;
-
-          if (!_isInsideGrid(checkedTileRow, checkedTileCol)) continue;
+          final checkedTile =
+              GameTile(currentTile.row + j, currentTile.col + k);
+          if (!_isInsideGrid(checkedTile)) continue;
 
           // If there is a treasure, add it to the counter
-          if (_grid[gridIndex(checkedTileRow, checkedTileCol, nbCols)] < 0) {
+          if (_grid[gridIndex(checkedTile, nbCols)] < 0) {
             nbTreasuresAroundTile++;
           }
         }

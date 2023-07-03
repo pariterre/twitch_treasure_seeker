@@ -1,6 +1,7 @@
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
+import 'package:twitched_minesweeper/models/game_tile.dart';
 
 enum _Status {
   waitForRequestLaunchGame,
@@ -83,7 +84,7 @@ class GameInterface {
     // Reveal the map
     final row = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
     final col = int.parse(groups[1]!) - 1;
-    gameManager.setPlayerMove(username, row: row, col: col);
+    gameManager.setPlayerMove(username, newTile: GameTile(row, col));
 
     // If the game is over
     if (gameManager.isGameOver) {

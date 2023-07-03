@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:twitched_minesweeper/models/game_tile.dart';
 
 class Player {
   final String username;
@@ -11,9 +12,8 @@ class Player {
   int minimumRestingTime;
 
   // Current position of the player
-  int row = -1;
-  int col = -1;
-  final List<List<int>> _nextPosition = [];
+  GameTile tile = GameTile.none();
+  final List<GameTile> _nextPosition = [];
 
   // Constructor
   Player({
@@ -37,8 +37,7 @@ class Player {
     this.minimumRestingTime = minimumRestingTime;
     restingCmp = minimumRestingTime;
 
-    row = -1;
-    col = -1;
+    tile = GameTile.none();
   }
 
   ///
@@ -46,9 +45,7 @@ class Player {
   bool march() {
     if (_nextPosition.isEmpty || isExhausted) return false;
 
-    final newPosition = _nextPosition.removeAt(0);
-    row = newPosition[0];
-    col = newPosition[1];
+    tile = _nextPosition.removeAt(0);
 
     energy--;
     restingCmp = 0;
@@ -81,32 +78,23 @@ class Player {
 
   ///
   /// Add a target path to the position queue
-  void addTarget(int row, int col) {
-    _computePath(row, col);
-  }
+  void addTarget(GameTile tile) => _computePath(tile);
 
   ///
   /// Computes the path to get from current
   /// position to target and adds the re
-  void _computePath(int rowTarget, int colTarget) {
+  void _computePath(GameTile tileTarget) {
     // Initialize the new row and col to end of _nextPosition if exists.
     // Otherwise, set it a current position
-    int rowNew = row;
-    int colNew = col;
-    if (_nextPosition.isNotEmpty) {
-      rowNew = _nextPosition.last[0];
-      colNew = _nextPosition.last[1];
-    }
+    GameTile nextTile = tile.copy;
+    if (_nextPosition.isNotEmpty) nextTile = _nextPosition.last;
 
     // Perform a march toward the target row or col at a time
-    while (rowNew != rowTarget || colNew != colTarget) {
-      int rowError = rowTarget - rowNew;
-      int colError = colTarget - colNew;
-
+    while (nextTile != tileTarget) {
       // Advance for 1 step in the direction of error
-      rowNew += rowError.sign;
-      colNew += colError.sign;
-      _nextPosition.add([rowNew, colNew]);
+      nextTile = GameTile(nextTile.row + (tileTarget.row - nextTile.row).sign,
+          nextTile.col + (tileTarget.col - nextTile.col).sign);
+      _nextPosition.add(nextTile);
     }
   }
 }

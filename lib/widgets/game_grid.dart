@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
+import 'package:twitched_minesweeper/models/game_tile.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
 
@@ -35,11 +36,10 @@ class GameGridState extends State<GameGrid> {
           // We have to construct the grid alongside the header.
           // So every row and col being 0 is the name, otherwise
           // it is the grid (with its index offset by 1)
-          final row = gridRow(index, gm.nbCols + 1);
-          final col = gridCol(index, gm.nbCols + 1);
+          final tile = gridTile(index, gm.nbCols + 1);
 
           // Starting tile
-          if (row == 0 && col == 0) {
+          if (tile.row == 0 && tile.col == 0) {
             return SweeperTile(
               gameManager: gm,
               tileIndex: -1,
@@ -49,14 +49,14 @@ class GameGridState extends State<GameGrid> {
           }
 
           // Header of SweeperTile
-          if (row == 0 || col == 0) {
+          if (tile.row == 0 || tile.col == 0) {
             return Container(
               decoration: BoxDecoration(
                   color: ThemeColor.conceiledContrast,
                   border: Border.all(width: widget.tileSize * 0.02)),
               child: Center(
                   child: Text(
-                '${col == 0 ? String.fromCharCode('A'.codeUnits[0] + row - 1) : col}',
+                '${tile.col == 0 ? String.fromCharCode('A'.codeUnits[0] + tile.row - 1) : tile.col}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: textSize * 0.75, fontWeight: FontWeight.bold),
@@ -64,7 +64,8 @@ class GameGridState extends State<GameGrid> {
             );
           }
 
-          final tileIndex = gridIndex(row - 1, col - 1, gm.nbCols);
+          final tileIndex =
+              gridIndex(GameTile(tile.row - 1, tile.col - 1), gm.nbCols);
           return SweeperTile(
             gameManager: gm,
             tileIndex: tileIndex,
