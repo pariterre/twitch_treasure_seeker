@@ -55,11 +55,13 @@ class GrowingContainerState extends State<GrowingContainer>
 
     _text = message;
     animationController.forward();
+    setState(() {});
 
     // Remove the message after the animation is done
     Future.delayed(Duration(milliseconds: fullAnimationTime)).then((value) {
       _text = null;
       animationController.reset();
+      setState(() {});
       return;
     });
   }

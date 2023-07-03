@@ -61,12 +61,12 @@ class Player {
   bool get isExhausted => energy <= 0;
 
   ///
-  /// Rest the player, returns true if player has increased its stamina
+  /// Rest the player, returns true if anything changed
   bool rest() {
     // If not rested, then wait
     if (restingCmp < minimumRestingTime) {
       restingCmp++;
-      return false;
+      return true;
     }
 
     // If well rested and not at its maximum stamina

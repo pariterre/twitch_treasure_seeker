@@ -1,4 +1,5 @@
 import 'package:twitch_manager/twitch_manager.dart';
+import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 
 enum _Status {
@@ -9,8 +10,8 @@ enum _Status {
 }
 
 class GameInterface {
-  late final gameManager = GameManager(requestRedrawCallback: () {
-    if (_onStateChanged != null) _onStateChanged!();
+  late final gameManager = GameManager(needRedrawCallback: (needRedraw) {
+    if (_onStateChanged != null) _onStateChanged!(needRedraw);
   }, onTreasureFound: (player) {
     if (_onTreasureFound != null) _onTreasureFound!(player.username);
   });
@@ -40,8 +41,9 @@ class GameInterface {
   set onGameOver(Function()? value) => _onGameOver = value;
 
   // This is called at each interaction of a user to redraw the map if necessary
-  void Function()? _onStateChanged;
-  set onStateChanged(Function()? value) => _onStateChanged = value;
+  void Function(List<NeedRedraw>)? _onStateChanged;
+  set onStateChanged(Function(List<NeedRedraw>)? value) =>
+      _onStateChanged = value;
 
   // This is called whenever a treasure is found so it can be drawn on the screen
   void Function(String player)? _onTreasureFound;
@@ -96,7 +98,7 @@ class GameInterface {
   Future<void> _manageRegistering(String message, String username) async {
     if (message == '!joindre') {
       gameManager.addPlayer(username);
-      if (_onStateChanged != null) _onStateChanged!();
+      if (_onStateChanged != null) _onStateChanged!([NeedRedraw.playerList]);
       return;
     }
 
@@ -185,7 +187,7 @@ class GameInterface {
       gameSpeed: gameSpeed,
     );
     if (_onStateChanged != null) {
-      _onStateChanged!();
+      _onStateChanged!([NeedRedraw.grid, NeedRedraw.score]);
     }
   }
 

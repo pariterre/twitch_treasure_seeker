@@ -28,7 +28,7 @@ int gridCol(int index, int nbCols) => index < 0 ? -1 : index % nbCols;
 
 class GameManager {
   var _status = GameStatus.initial;
-  final Function() requestRedrawCallback;
+  final Function(List<NeedRedraw>) needRedrawCallback;
   final Function(Player) onTreasureFound;
 
   // speed a which each movements are triggered
@@ -68,7 +68,7 @@ class GameManager {
   void closeRegistration() => _canRegister = false;
 
   GameManager(
-      {required this.requestRedrawCallback, required this.onTreasureFound}) {
+      {required this.needRedrawCallback, required this.onTreasureFound}) {
     _generateGrid();
     _startTimer();
   }
@@ -323,10 +323,12 @@ class GameManager {
   void _gameLoop() {
     if (_status != GameStatus.isRunning) return;
 
+    List<NeedRedraw> needRedraw = [];
+
     for (final p in _players.keys) {
       final player = _players[p]!;
-      player.rest();
-      player.march();
+      if (player.rest()) needRedraw.add(NeedRedraw.score);
+      if (player.march()) needRedraw.add(NeedRedraw.grid);
 
       if (_revealTile(p, row: player.row, col: player.col) ==
           RevealResult.hit) {
@@ -338,7 +340,7 @@ class GameManager {
     }
 
     // Notify the game interface of the new state of the game
-    requestRedrawCallback();
+    needRedrawCallback(needRedraw);
   }
 
   ///

@@ -2,13 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 
-class GameScore extends StatelessWidget {
+class GameScore extends StatefulWidget {
   const GameScore({
     super.key,
     required this.gameInterface,
   });
 
   final GameInterface gameInterface;
+
+  @override
+  State<GameScore> createState() => GameScoreState();
+}
+
+class GameScoreState extends State<GameScore> {
+  void rebuild() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +29,7 @@ class GameScore extends StatelessWidget {
     final titleSize = ThemeSize.title(context);
     final textSize = ThemeSize.text(context);
 
-    final players = gameInterface.gameManager.players;
+    final players = widget.gameInterface.gameManager.players;
 
     return Container(
       decoration: BoxDecoration(
@@ -45,7 +54,8 @@ class GameScore extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: players.keys.map((name) {
-                    final player = gameInterface.gameManager.players[name]!;
+                    final player =
+                        widget.gameInterface.gameManager.players[name]!;
                     return Padding(
                       padding: EdgeInsets.only(bottom: interlinePadding),
                       child: Row(

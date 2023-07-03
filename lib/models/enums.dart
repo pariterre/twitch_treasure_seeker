@@ -10,6 +10,12 @@ enum AddPlayerStatus {
   noMoreSpaceLeft,
 }
 
+enum NeedRedraw {
+  grid,
+  score,
+  playerList,
+}
+
 enum RevealResult {
   hit,
   miss,

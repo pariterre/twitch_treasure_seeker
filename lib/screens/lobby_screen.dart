@@ -26,7 +26,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
     _mainInterface =
         ModalRoute.of(context)!.settings.arguments as GameInterface;
     _mainInterface.onRequestStartPlaying = startPlaying;
-    _mainInterface.onStateChanged = () => setState(() {});
+    _mainInterface.onStateChanged = (needRedraw) => setState(() {});
   }
 
   void startPlaying() {
