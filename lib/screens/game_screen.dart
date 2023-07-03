@@ -148,7 +148,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
             SizedBox(height: interlinePadding * 2),
             Padding(
-              padding: EdgeInsets.only(left: smallPadding, right: smallPadding),
+              padding: EdgeInsets.only(right: smallPadding),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: players.keys.map((name) {
@@ -158,10 +158,19 @@ class _GameScreenState extends State<GameScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            player.username,
-                            style: TextStyle(
-                                color: Colors.white, fontSize: textSize),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                  height: textSize,
+                                  child: CircleAvatar(
+                                      backgroundColor: player.color)),
+                              Text(
+                                player.username,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: textSize),
+                              ),
+                            ],
                           ),
                           Text(
                             '${player.score} bleuets (${player.energy} énergies)',

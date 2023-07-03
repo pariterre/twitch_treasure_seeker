@@ -13,7 +13,7 @@ class PlayerToken extends StatelessWidget {
       height: tileSize * 1 / 2,
       width: tileSize * 1 / 2,
       decoration: BoxDecoration(
-          color: Colors.red, borderRadius: BorderRadius.circular(25)),
+          color: player.color, borderRadius: BorderRadius.circular(25)),
     );
   }
 }

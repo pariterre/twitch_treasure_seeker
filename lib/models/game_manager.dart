@@ -1,9 +1,23 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
 
 import 'player.dart';
+
+const List<Color> colorCycle = [
+  Colors.purple,
+  Colors.green,
+  Colors.orange,
+  Colors.yellow,
+  Colors.blueGrey,
+  Colors.white,
+  Colors.black,
+  Colors.red,
+  Colors.brown,
+  Colors.blue,
+];
 
 ///
 /// Easy accessors translating index into row/col pair or row/col pair into
@@ -83,8 +97,8 @@ class GameManager {
     restingTime = restingTime ?? _restingTime;
     gameSpeed = gameSpeed ?? _gameSpeed;
 
-    if (maximumPlayers < 1) {
-      throw 'Maximum number of players must be greater or equal to 1';
+    if (maximumPlayers < 1 || maximumPlayers > colorCycle.length) {
+      throw 'Maximum number of players must be between 1 to ${colorCycle.length}';
     }
     if (nbRows < 1) {
       throw 'Number of rows must be greater or equal to 1';
@@ -153,6 +167,7 @@ class GameManager {
 
     _players[username] = Player(
         username: username,
+        color: colorCycle[_players.length],
         maxEnergy: _maxEnergy,
         minimumRestingTime: _restingTime);
 

@@ -1,5 +1,9 @@
+import 'package:flutter/material.dart';
+
 class Player {
   final String username;
+  final Color color;
+
   int score = 0;
   int energy = 0;
   int maxEnergy;
@@ -12,10 +16,12 @@ class Player {
   final List<List<int>> _nextPosition = [];
 
   // Constructor
-  Player(
-      {required this.username,
-      required this.maxEnergy,
-      required this.minimumRestingTime});
+  Player({
+    required this.username,
+    required this.color,
+    required this.maxEnergy,
+    required this.minimumRestingTime,
+  });
 
   void refillEnergy() {
     energy = maxEnergy;
