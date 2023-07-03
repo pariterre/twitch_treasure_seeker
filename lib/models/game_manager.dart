@@ -211,29 +211,35 @@ class GameManager {
   ///
   /// Adds a move to the moves list of [username] player.
   void setPlayerMove(String username, {required int row, required int col}) {
+    // Safe guards
+    // If game is over
+    if (isGameOver) return;
+    // If tile not in the grid
+    if (!_isInsideGrid(row, col)) return;
+    // Player who played is actually a player
+    if (!players.containsKey(username)) return;
+
     final player = _players[username]!;
     player.addTarget(row, col);
   }
 
   ///
   /// Main interface for a user to reveal a tile from the grid
-  RevealResult revealTile(String username,
+  RevealResult _revealTile(String username,
       {required int row, required int col}) {
     // Safe guards
     // If game is over
     if (isGameOver) return RevealResult.gameOver;
     // If tile not in the grid
-    final index = gridIndex(row, col, nbCols);
     if (!_isInsideGrid(row, col)) return RevealResult.outsideGrid;
     // If tile was already revealed
+    final index = gridIndex(row, col, nbCols);
     if (_isRevealed[index]) return RevealResult.alreadyRevealed;
-    // Player who played is actually a player
-    if (!players.containsKey(username)) return RevealResult.unrecognizedUser;
     // Player still has energy
     if (_players[username]!.energy < 0) return RevealResult.noEnergyLeft;
 
     // Start the recursive process of revealing all the required tiles
-    _revealTile(index);
+    _revealTileRecursive(index);
 
     // Give points if necessary
     if (_grid[index] == -1) {
@@ -247,7 +253,7 @@ class GameManager {
   ///
   /// Reveal a tile. If it is a zero, it is recursively called to all its
   /// neighbourhood so it automatically reveals all the surroundings
-  Future<void> _revealTile(int idx, {List<bool>? isChecked}) async {
+  Future<void> _revealTileRecursive(int idx, {List<bool>? isChecked}) async {
     // If it is already open, do nothing
     if (_isRevealed[idx] || (isChecked != null && isChecked[idx])) return;
 
@@ -257,7 +263,7 @@ class GameManager {
     if (isChecked == null) {
       // Prepare the isChecked structure and launch the recursive procedure
       isChecked = List.filled(nbRows * nbCols, false);
-      await _revealTile(idx, isChecked: isChecked);
+      await _revealTileRecursive(idx, isChecked: isChecked);
       return;
     }
 
@@ -285,7 +291,7 @@ class GameManager {
         final newIndex = gridIndex(newRow, newCol, nbCols);
         if (!_isRevealed[newIndex]) {
           // If it was a zero reveal to tiles around
-          await _revealTile(newIndex, isChecked: isChecked);
+          await _revealTileRecursive(newIndex, isChecked: isChecked);
         }
       }
     }
@@ -306,7 +312,8 @@ class GameManager {
       player.rest();
       player.march();
 
-      if (revealTile(p, row: player.row, col: player.col) == RevealResult.hit) {
+      if (_revealTile(p, row: player.row, col: player.col) ==
+          RevealResult.hit) {
         player.refillEnergy();
 
         // Notify game interface
