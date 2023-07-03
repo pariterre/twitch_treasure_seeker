@@ -17,9 +17,12 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   GameInterface? _mainInterface;
 
   final _nbMaxPlayersController = TextEditingController();
+  final _maxEnergyController = TextEditingController();
   final _nbRowsController = TextEditingController();
   final _nbColsController = TextEditingController();
   final _nbTreasuresController = TextEditingController();
+  final _restingTimeController = TextEditingController();
+  final _gameSpeedController = TextEditingController();
 
   @override
   void didChangeDependencies() {
@@ -32,19 +35,30 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
       // Set default parameters
       _nbMaxPlayersController.text =
           _mainInterface!.gameManager.maxPlayers.toString();
+      _maxEnergyController.text =
+          _mainInterface!.gameManager.maxEnergy.toString();
       _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
       _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
       _nbTreasuresController.text =
           _mainInterface!.gameManager.nbTreasures.toString();
+      _restingTimeController.text =
+          _mainInterface!.gameManager.restingTime.toString();
+      _gameSpeedController.text =
+          _mainInterface!.gameManager.gameSpeed.inMilliseconds.toString();
     }
   }
 
   void _goToIdleRoom() {
+    final gameSpeed = int.tryParse(_gameSpeedController.text);
+
     _mainInterface!.gameManager.setGameParameters(
       maximumPlayers: int.tryParse(_nbMaxPlayersController.text),
+      maxEnergy: int.tryParse(_maxEnergyController.text),
       nbRows: int.tryParse(_nbRowsController.text),
       nbCols: int.tryParse(_nbColsController.text),
       nbTreasures: int.tryParse(_nbTreasuresController.text),
+      restingTime: int.tryParse(_restingTimeController.text),
+      gameSpeed: gameSpeed == null ? null : Duration(milliseconds: gameSpeed),
     );
 
     Navigator.of(context)
@@ -65,7 +79,31 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             controller: _nbMaxPlayersController,
             onChanged: (value) => setState(() {
               if (int.tryParse(value) == null) {
-                _nbMaxPlayersController.text = "";
+                _nbMaxPlayersController.text = '';
+              }
+            }),
+            style: const TextStyle(color: Colors.black),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMaxEnergy() {
+    final textSize = ThemeSize.text(context);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Énergie maximale :',
+            style: TextStyle(color: Colors.white, fontSize: textSize)),
+        SizedBox(
+          width: 50,
+          child: TextField(
+            controller: _maxEnergyController,
+            onChanged: (value) => setState(() {
+              if (int.tryParse(value) == null) {
+                _maxEnergyController.text = '';
               }
             }),
             style: const TextStyle(color: Colors.black),
@@ -92,7 +130,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
                 controller: _nbRowsController,
                 onChanged: (value) => setState(() {
                   if (int.tryParse(value) == null) {
-                    _nbRowsController.text = "";
+                    _nbRowsController.text = '';
                   }
                 }),
                 style: const TextStyle(color: Colors.black),
@@ -105,7 +143,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
                 controller: _nbColsController,
                 onChanged: (value) => setState(() {
                   if (int.tryParse(value) == null) {
-                    _nbColsController.text = "";
+                    _nbColsController.text = '';
                   }
                 }),
                 style: const TextStyle(color: Colors.black),
@@ -123,7 +161,6 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // TODO add all the parameters
         Text('Nombre de bleuets :',
             style: TextStyle(color: Colors.white, fontSize: textSize)),
         SizedBox(
@@ -132,7 +169,55 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             controller: _nbTreasuresController,
             onChanged: (value) => setState(() {
               if (int.tryParse(value) == null) {
-                _nbTreasuresController.text = "";
+                _nbTreasuresController.text = '';
+              }
+            }),
+            style: const TextStyle(color: Colors.black),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRestingTimeForm() {
+    final textSize = ThemeSize.text(context);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Temps de repos minimum :',
+            style: TextStyle(color: Colors.white, fontSize: textSize)),
+        SizedBox(
+          width: 50,
+          child: TextField(
+            controller: _restingTimeController,
+            onChanged: (value) => setState(() {
+              if (int.tryParse(value) == null) {
+                _restingTimeController.text = '';
+              }
+            }),
+            style: const TextStyle(color: Colors.black),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGameSpeed() {
+    final textSize = ThemeSize.text(context);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Vitesse de jeu (ms) :',
+            style: TextStyle(color: Colors.white, fontSize: textSize)),
+        SizedBox(
+          width: 55,
+          child: TextField(
+            controller: _gameSpeedController,
+            onChanged: (value) => setState(() {
+              if (int.tryParse(value) == null) {
+                _gameSpeedController.text = '';
               }
             }),
             style: const TextStyle(color: Colors.black),
@@ -175,9 +260,15 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             children: [
               _buildMaxPlayersForm(),
               SizedBox(height: 4 * interlinePadding),
+              _buildMaxEnergy(),
+              SizedBox(height: 4 * interlinePadding),
               _buildDimensionsForm(),
               SizedBox(height: 4 * interlinePadding),
               _buildTreasuresForm(),
+              SizedBox(height: 4 * interlinePadding),
+              _buildRestingTimeForm(),
+              SizedBox(height: 4 * interlinePadding),
+              _buildGameSpeed(),
             ],
           ),
         ),

@@ -19,6 +19,7 @@ class GameManager {
 
   // speed a which each movements are triggered
   Duration _gameSpeed = const Duration(milliseconds: 500);
+  Duration get gameSpeed => _gameSpeed;
 
   // Maximum number of players allowed to play
   int _maxPlayers = 10;
