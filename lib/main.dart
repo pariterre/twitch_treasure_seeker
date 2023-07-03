@@ -13,8 +13,29 @@ void main() async {
       TwitchAuthenticationScreen.route: (ctx) => TwitchAuthenticationScreen(
             mockOptions: const TwitchMockOptions(
               isActive: true,
-              messagesModerators: ['!chercheursDeBleuets'],
-              messagesFollowers: ['!chercheursDeBleuets'],
+              moderators: ['modo1'],
+              messagesModerators: [
+                '!chercheursDeBleuets',
+                '!joindre',
+                '!start'
+              ],
+              followers: [
+                'follower1',
+                'follower2',
+                'follower3',
+                'follower4',
+                'follower5',
+                'follower6',
+                'follower7',
+                'follower8',
+                'follower9',
+                'follower10',
+              ],
+              messagesFollowers: [
+                '!joindre',
+                '!chercheursDeBleuets',
+                '!start',
+              ],
             ),
             appInfo: TwitchAppInfo(
               appName: 'Minesweeper',

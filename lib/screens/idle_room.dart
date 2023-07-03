@@ -37,6 +37,7 @@ class _IdleRoomState extends State<IdleRoom> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
+        alignment: Alignment.center,
         children: [
           Container(
             width: MediaQuery.of(context).size.width,

@@ -14,10 +14,11 @@ int gridCol(int index, int nbCols) => index % nbCols;
 
 class GameManager {
   var _status = GameStatus.initial;
-  Function()? updateState;
+  final Function() onStateChanged;
+  final Function(Player) onTreasureFound;
 
   // speed a which each movements are triggered
-  final _gameSpeed = const Duration(seconds: 1);
+  Duration _gameSpeed = const Duration(milliseconds: 500);
 
   // Maximum number of players allowed to play
   int _maxPlayers = 10;
@@ -31,9 +32,9 @@ class GameManager {
   int _nbCols = 10;
   int get nbCols => _nbCols;
 
-  // Number of bombs on the grid
-  int _nbBombs = 10;
-  int get nbBombs => _nbBombs;
+  // Number of treasures on the grid
+  int _nbTreasures = 40;
+  int get nbTreasures => _nbTreasures;
 
   // The actual grid
   List<int> _grid = [];
@@ -42,11 +43,16 @@ class GameManager {
   // The player stored by username
   Map<String, Player> get players => _players;
 
+  int _maxEnergy = 10;
+  int get maxEnergy => _maxEnergy;
+  int _restingTime = 2;
+  int get restingTime => _restingTime;
+
   // If the game is still open for registration
   bool _canRegister = true;
   void closeRegistration() => _canRegister = false;
 
-  GameManager() {
+  GameManager({required this.onStateChanged, required this.onTreasureFound}) {
     _generateGrid();
     _startTimer();
   }
@@ -59,12 +65,22 @@ class GameManager {
 
   ///
   /// Set the game parameters
-  void setGameParameters(
-      {int? maximumPlayers, int? nbRows, int? nbCols, int? nbBombs}) {
+  void setGameParameters({
+    int? maximumPlayers,
+    int? nbRows,
+    int? nbCols,
+    int? nbTreasures,
+    int? maxEnergy,
+    int? restingTime,
+    Duration? gameSpeed,
+  }) {
     maximumPlayers = maximumPlayers ?? _maxPlayers;
     nbRows = nbRows ?? _nbRows;
     nbCols = nbCols ?? _nbCols;
-    nbBombs = nbBombs ?? _nbBombs;
+    nbTreasures = nbTreasures ?? _nbTreasures;
+    maxEnergy = maxEnergy ?? _maxEnergy;
+    restingTime = restingTime ?? _restingTime;
+    gameSpeed = gameSpeed ?? _gameSpeed;
 
     if (maximumPlayers < 1) {
       throw 'Maximum number of players must be greater or equal to 1';
@@ -75,18 +91,31 @@ class GameManager {
     if (nbCols < 1) {
       throw 'Number of cols must be greater or equal to 1';
     }
-    if (nbBombs < 1) {
-      throw 'Number of bombs must be greater or equal to 1';
+    if (nbTreasures < 1) {
+      throw 'Number of treasures must be greater or equal to 1';
+    }
+    if (maxEnergy < 1) {
+      throw 'Number of energy must be greater or equal to 1';
+    }
+    if (restingTime < 1) {
+      throw 'Resting time must be greater or equal to 1';
     }
 
-    if (_nbBombs > _nbRows * _nbCols) {
-      throw 'Too many bombs for the number of tiles';
+    if (_nbTreasures > _nbRows * _nbCols) {
+      throw 'Too many treasures for the number of tiles';
+    }
+
+    if (gameSpeed.inSeconds < 0) {
+      throw 'gameSpeed must be a Duration longer than zero';
     }
 
     _maxPlayers = maximumPlayers;
     _nbRows = nbRows;
     _nbCols = nbCols;
-    _nbBombs = nbBombs;
+    _nbTreasures = nbTreasures;
+    _maxEnergy = maxEnergy;
+    _restingTime = restingTime;
+    _gameSpeed = gameSpeed;
   }
 
   ///
@@ -106,11 +135,12 @@ class GameManager {
   ///
   /// Reset the board to initial and call the refresh the draw
   void newGame() {
-    _status = GameStatus.initial;
     _generateGrid();
     for (final player in _players.keys) {
-      _players[player]!.reset(bombs: _nbBombs);
+      _players[player]!
+          .reset(maxEnergy: _maxEnergy, minimumRestingTime: _restingTime);
     }
+    _status = GameStatus.isRunning;
   }
 
   ///
@@ -120,33 +150,45 @@ class GameManager {
     if (!_canRegister) return AddPlayerStatus.registrationIsClosed;
     if (_players.length >= _maxPlayers) return AddPlayerStatus.noMoreSpaceLeft;
 
-    _players[username] = Player(username: username);
+    _players[username] = Player(
+        username: username,
+        maxEnergy: _maxEnergy,
+        minimumRestingTime: _restingTime);
 
     return AddPlayerStatus.success;
   }
 
   ///
   /// Get the value of a tile of a specific [index]. If the tile is not
-  /// revealed yet, this method returns -2; if the tile is a bomb, then it
-  /// returns -1, otherwise it returns the number of bomb around it.
+  /// revealed yet, this method returns -2; if the tile is a treasure, then it
+  /// returns -1, otherwise it returns the number of treasure around it.
   Tile tile(int index) => _isRevealed[index]
-      ? (_grid[index] < 0 ? Tile.bomb : Tile.values[_grid[index]])
+      ? (_grid[index] < 0 ? Tile.treasure : Tile.values[_grid[index]])
       : Tile.concealed;
 
   ///
-  /// Get the number of bombs that were found
-  int get bombsFound {
-    int cmp = 0;
-    for (var i = 0; i < _grid.length; i++) {
-      if (tile(i) == Tile.bomb) cmp++;
+  /// Get all the players on the tile [index].
+  List<Player> playersOnTile(int index) {
+    List<Player> out = [];
+
+    final row = gridRow(index, nbCols);
+    final col = gridCol(index, nbCols);
+    for (final p in _players.keys) {
+      if (_players[p]!.row == row && _players[p]!.col == col) {
+        out.add(_players[p]!);
+      }
     }
-    return cmp;
+    return out;
   }
 
-  void startGame() {
-    if (_status != GameStatus.initial) return;
-
-    _status = GameStatus.isRunning;
+  ///
+  /// Get the number of treasures that were found
+  int get treasuresFound {
+    int cmp = 0;
+    for (var i = 0; i < _grid.length; i++) {
+      if (tile(i) == Tile.treasure) cmp++;
+    }
+    return cmp;
   }
 
   ///
@@ -154,9 +196,8 @@ class GameManager {
   bool get isGameOver {
     if (_status == GameStatus.isOver) return true;
 
-    // If all the bombs are found or noone has any bomb left to throw
-    if (bombsFound == nbBombs ||
-        _players.keys.fold<int>(0, (prev, p) => _players[p]!.bombs) == 0) {
+    // If all the treasures are found
+    if (treasuresFound == nbTreasures) {
       _status = GameStatus.isOver;
     }
 
@@ -164,27 +205,31 @@ class GameManager {
   }
 
   ///
+  /// Adds a move to the moves list of [username] player.
+  void setPlayerMove(String username, {required int row, required int col}) {
+    final player = _players[username]!;
+    player.addTarget(row, col);
+  }
+
+  ///
   /// Main interface for a user to reveal a tile from the grid
   RevealResult revealTile(String username,
       {required int row, required int col}) {
     if (isGameOver) return RevealResult.gameOver;
+
+    // Do not reveal a previously revealed tile
+    final index = gridIndex(row, col, nbCols);
+    if (_isRevealed[index]) return RevealResult.alreadyRevealed;
+
     // Safe guards so the player who tries to reveal is actually a player
     if (!players.containsKey(username)) return RevealResult.unrecognizedUser;
     // and doesn't throw outside of the grid
     if (!_isInsideGrid(row, col)) return RevealResult.outsideGrid;
     // and is still allowed to throw
-    if (_players[username]!.bombs == 0) return RevealResult.noBombLeft;
-
-    final index = gridIndex(row, col, nbCols);
-
-    // Do not reveal a previously revealed tile
-    if (_isRevealed[index]) return RevealResult.alreadyRevealed;
+    if (_players[username]!.energy < 0) return RevealResult.noEnergyLeft;
 
     // Start the recursive process of revealing all the required tiles
     _revealTile(index);
-
-    // Remove a bomb from the user
-    _players[username]!.bombs--;
 
     // Give points if necessary
     if (_grid[index] == -1) {
@@ -244,10 +289,7 @@ class GameManager {
 
   ///
   /// Start the timer that calls the game loop
-  void _startTimer() {
-    // TODO allow to parametrize
-    Timer(_gameSpeed, _gameLoop);
-  }
+  void _startTimer() => Timer.periodic(_gameSpeed, (_) => _gameLoop());
 
   ///
   /// Internal loop that is called each time step. It advances the player
@@ -256,12 +298,20 @@ class GameManager {
     if (_status != GameStatus.isRunning) return;
 
     for (final p in _players.keys) {
-      _players[p]!.march();
-      revealTile(p, row: _players[p]!.x, col: _players[p]!.y);
+      final player = _players[p]!;
+      player.rest();
+      player.march();
+
+      if (revealTile(p, row: player.row, col: player.col) == RevealResult.hit) {
+        player.refillEnergy();
+
+        // Notify game interface
+        onTreasureFound(player);
+      }
     }
 
     // Notify the game interface of the new state of the game
-    if (updateState != null) updateState!();
+    onStateChanged();
   }
 
   ///
@@ -272,29 +322,29 @@ class GameManager {
   }
 
   ///
-  /// Generate a new grid with randomly positionned bomb
+  /// Generate a new grid with randomly positionned treasures
   void _generateGrid() {
     // Create an empty grid
     _grid = List.filled(nbRows * nbCols, 0);
     _isRevealed = List.filled(nbRows * nbCols, false);
 
-    // Populate it with bombs
+    // Populate it with treasures
     final rand = Random();
-    for (var i = 0; i < nbBombs; i++) {
-      var indexToBomb = -1;
+    for (var i = 0; i < nbTreasures; i++) {
+      var indexOfTreasure = -1;
       do {
-        indexToBomb = rand.nextInt(nbRows * nbCols);
-        // Make sure it was not already a bomb
-      } while (_grid[indexToBomb] == -1);
-      _grid[indexToBomb] = -1;
+        indexOfTreasure = rand.nextInt(nbRows * nbCols);
+        // Make sure it was not already a treasure
+      } while (_grid[indexOfTreasure] == -1);
+      _grid[indexOfTreasure] = -1;
     }
 
-    // Recalculae the value of each tile based on number of bombs around it
+    // Recalculae the value of each tile based on number of treasures around it
     for (var i = 0; i < nbRows * nbCols; i++) {
-      // Do not recompute tile with a bomb in it
+      // Do not recompute tile with a treasure in it
       if (_grid[i] < 0) continue;
 
-      var nbBombsAroundTile = 0;
+      var nbTreasuresAroundTile = 0;
 
       final currentTileRow = gridRow(i, nbCols);
       final currentTileCol = gridCol(i, nbCols);
@@ -311,15 +361,15 @@ class GameManager {
 
           if (!_isInsideGrid(checkedTileRow, checkedTileCol)) continue;
 
-          // If there is a bomb, add it to the counter
+          // If there is a treasure, add it to the counter
           if (_grid[gridIndex(checkedTileRow, checkedTileCol, nbCols)] < 0) {
-            nbBombsAroundTile++;
+            nbTreasuresAroundTile++;
           }
         }
       }
 
       // Store the number in the tile
-      _grid[i] = nbBombsAroundTile;
+      _grid[i] = nbTreasuresAroundTile;
     }
   }
 }

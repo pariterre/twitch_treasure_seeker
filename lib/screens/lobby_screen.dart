@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/models/player.dart';
@@ -110,7 +111,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
               ),
               SizedBox(height: interlinePadding),
               Text(
-                'Nombre d\'essais : ${_mainInterface.gameManager.nbBombs}',
+                'Nombre d\'essais : ${_mainInterface.gameManager.nbTreasures}',
                 style: TextStyle(color: Colors.white, fontSize: textSize),
               ),
             ],
@@ -138,29 +139,34 @@ class _LobbyScreenState extends State<LobbyScreen> {
       height: windowHeight,
       decoration: const BoxDecoration(color: ThemeColor.greenScreen),
       child: Stack(
-        alignment: Alignment.bottomCenter,
+        alignment: Alignment.center,
         children: [
-          Center(
-            child: Container(
-                width: windowHeight * 0.45,
-                height: windowHeight * 0.2 +
-                    max(players.length, 1) * (textSize + interlinePadding),
-                decoration: const BoxDecoration(color: ThemeColor.main),
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      left: smallPadding,
-                      top: smallPadding,
-                      bottom: smallPadding * 1.5),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildPlayerList(players),
-                      _buildParameters(),
-                    ],
-                  ),
-                )),
-          ),
+          Container(
+              width: windowHeight * 0.45,
+              height: windowHeight * 0.2 +
+                  max(players.length, 1) *
+                      (textSize + 2 * interlinePadding + 1),
+              decoration: const BoxDecoration(color: ThemeColor.main),
+              child: Padding(
+                padding: EdgeInsets.only(
+                    left: smallPadding,
+                    top: smallPadding,
+                    bottom: smallPadding * 1.5),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPlayerList(players),
+                    _buildParameters(),
+                  ],
+                ),
+              )),
+          Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 30),
+                child: TwitchDebugPanel(manager: _mainInterface.twitchManager),
+              )),
         ],
       ),
     ));

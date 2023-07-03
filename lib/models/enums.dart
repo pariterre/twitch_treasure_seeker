@@ -14,7 +14,7 @@ enum RevealResult {
   hit,
   miss,
   outsideGrid,
-  noBombLeft,
+  noEnergyLeft,
   alreadyRevealed,
   unrecognizedUser,
   gameOver,
@@ -30,6 +30,6 @@ enum Tile {
   six,
   seven,
   eight,
-  bomb,
+  treasure,
   concealed,
 }

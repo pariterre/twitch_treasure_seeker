@@ -19,7 +19,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   final _nbMaxPlayersController = TextEditingController();
   final _nbRowsController = TextEditingController();
   final _nbColsController = TextEditingController();
-  final _nbBombsController = TextEditingController();
+  final _nbTreasuresController = TextEditingController();
 
   @override
   void didChangeDependencies() {
@@ -34,7 +34,8 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
           _mainInterface!.gameManager.maxPlayers.toString();
       _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
       _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
-      _nbBombsController.text = _mainInterface!.gameManager.nbBombs.toString();
+      _nbTreasuresController.text =
+          _mainInterface!.gameManager.nbTreasures.toString();
     }
   }
 
@@ -43,7 +44,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
       maximumPlayers: int.tryParse(_nbMaxPlayersController.text),
       nbRows: int.tryParse(_nbRowsController.text),
       nbCols: int.tryParse(_nbColsController.text),
-      nbBombs: int.tryParse(_nbBombsController.text),
+      nbTreasures: int.tryParse(_nbTreasuresController.text),
     );
 
     Navigator.of(context)
@@ -116,21 +117,22 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     );
   }
 
-  Widget _buildBombsForm() {
+  Widget _buildTreasuresForm() {
     final textSize = ThemeSize.text(context);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Nombre de bombes :',
+        // TODO add all the parameters
+        Text('Nombre de bleuets :',
             style: TextStyle(color: Colors.white, fontSize: textSize)),
         SizedBox(
           width: 50,
           child: TextField(
-            controller: _nbBombsController,
+            controller: _nbTreasuresController,
             onChanged: (value) => setState(() {
               if (int.tryParse(value) == null) {
-                _nbBombsController.text = "";
+                _nbTreasuresController.text = "";
               }
             }),
             style: const TextStyle(color: Colors.black),
@@ -175,7 +177,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
               SizedBox(height: 4 * interlinePadding),
               _buildDimensionsForm(),
               SizedBox(height: 4 * interlinePadding),
-              _buildBombsForm(),
+              _buildTreasuresForm(),
             ],
           ),
         ),

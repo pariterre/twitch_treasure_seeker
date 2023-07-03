@@ -1,5 +1,4 @@
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 
 enum _Status {
@@ -10,13 +9,15 @@ enum _Status {
 }
 
 class GameInterface {
-  final gameManager = GameManager();
+  late final gameManager = GameManager(onStateChanged: () {
+    if (_onStateChanged != null) _onStateChanged!();
+  }, onTreasureFound: (player) {
+    if (_onTreasureFound != null) _onTreasureFound!(player.username);
+  });
   _Status _status = _Status.waitForRequestLaunchGame;
 
   TwitchManager twitchManager;
   List<String>? _moderators;
-
-  String foundBombMessage = 'Bleuet trouvé par\n{username}!';
 
   GameInterface({required this.twitchManager}) {
     twitchManager.irc.messageCallback = _messageReceived;
@@ -42,9 +43,10 @@ class GameInterface {
   void Function()? _onStateChanged;
   set onStateChanged(Function()? value) => _onStateChanged = value;
 
-  // This is called whenever a bomb is found so it can be drawn on the screen
-  void Function(String playerName)? _onBombFound;
-  set onBombFound(Function(String message)? value) => _onBombFound = value;
+  // This is called whenever a treasure is found so it can be drawn on the screen
+  void Function(String player)? _onTreasureFound;
+  set onTreasureFound(Function(String username)? value) =>
+      _onTreasureFound = value;
 
   ///
   /// This is called whenever a message is sent to the chat. Do something
@@ -79,14 +81,7 @@ class GameInterface {
     // Reveal the map
     final row = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
     final col = int.parse(groups[1]!) - 1;
-    final result = gameManager.revealTile(username, row: row, col: col);
-
-    if (result == RevealResult.hit && _onBombFound != null) {
-      final formattedMessage =
-          foundBombMessage.replaceAll('{username}', username);
-      _onBombFound!(formattedMessage);
-    }
-    if (_onStateChanged != null) _onStateChanged!();
+    gameManager.setPlayerMove(username, row: row, col: col);
 
     // If the game is over
     if (gameManager.isGameOver) {
@@ -130,38 +125,66 @@ class GameInterface {
   /// Check if a message contains anything related to setting up the game
   void _checkForSetParameters({required String message}) {
     RegExp re;
+    int? maximumPlayers;
+    int? nbRows;
+    int? nbCols;
+    int? maxEnergy;
+    int? nbTreasures;
+    int? restingTime;
+    Duration? gameSpeed;
 
     re = RegExp(r'^!setMaxPlayers ([0-9]{1,2})$');
     if (re.hasMatch(message)) {
       final groups = re.allMatches(message).toList()[0].groups([1]);
-      gameManager.setGameParameters(maximumPlayers: int.parse(groups[0]!));
-      if (_onStateChanged != null) _onStateChanged!();
-      return;
+      maximumPlayers = int.parse(groups[0]!);
     }
 
     re = RegExp(r'^!setRows ([0-9]{1,2})$');
     if (re.hasMatch(message)) {
       final groups = re.allMatches(message).toList()[0].groups([1]);
-      gameManager.setGameParameters(nbRows: int.parse(groups[0]!));
-      if (_onStateChanged != null) _onStateChanged!();
-      return;
+      nbRows = int.parse(groups[0]!);
     }
 
     re = RegExp(r'^!setCols ([0-9]{1,2})$');
     if (re.hasMatch(message)) {
       final groups = re.allMatches(message).toList()[0].groups([1]);
-      gameManager.setGameParameters(nbCols: int.parse(groups[0]!));
-      if (_onStateChanged != null) _onStateChanged!();
-      return;
+      nbCols = int.parse(groups[0]!);
     }
 
-    re = RegExp(r'^!setBombs ([0-9]{1,2})$');
+    re = RegExp(r'^!setMaxEnergy ([0-9]{1,2})$');
     if (re.hasMatch(message)) {
       final groups = re.allMatches(message).toList()[0].groups([1]);
-      gameManager.setGameParameters(nbBombs: int.parse(groups[0]!));
-      if (_onStateChanged != null) _onStateChanged!();
-      return;
+      maxEnergy = int.parse(groups[0]!);
     }
+
+    re = RegExp(r'^!setMaxEnergy ([0-9]{1,2})$');
+    if (re.hasMatch(message)) {
+      final groups = re.allMatches(message).toList()[0].groups([1]);
+      nbTreasures = int.parse(groups[0]!);
+    }
+
+    re = RegExp(r'^!setRestingTime ([0-9]{1,2})$');
+    if (re.hasMatch(message)) {
+      final groups = re.allMatches(message).toList()[0].groups([1]);
+      nbTreasures = int.parse(groups[0]!);
+    }
+
+    re = RegExp(r'^!setGameSpeed ([0-9]{1,4})$');
+    if (re.hasMatch(message)) {
+      final groups = re.allMatches(message).toList()[0].groups([1]);
+      gameSpeed = Duration(milliseconds: int.parse(groups[0]!));
+    }
+
+    gameManager.setGameParameters(
+      maximumPlayers: maximumPlayers,
+      nbRows: nbRows,
+      nbCols: nbCols,
+      maxEnergy: maxEnergy,
+      nbTreasures: nbTreasures,
+      restingTime: restingTime,
+      gameSpeed: gameSpeed,
+    );
+    if (_onStateChanged != null) _onStateChanged!();
   }
 
   ///

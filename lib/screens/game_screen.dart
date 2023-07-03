@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
@@ -31,13 +32,13 @@ class _GameScreenState extends State<GameScreen> {
     _mainInterface.onStateChanged = () => setState(() {});
     _mainInterface.gameManager.newGame();
     _mainInterface.onGameOver = _onGameOver;
-    _mainInterface.onBombFound = _onBombFound;
+    _mainInterface.onTreasureFound = _onTreasureFound;
   }
 
-  String? _currentBombMessage;
-  void _onBombFound(String message) {
+  String? _currentTreasureFoundMessage;
+  void _onTreasureFound(String username) {
     setState(() {
-      _currentBombMessage = message;
+      _currentTreasureFoundMessage = '$username a trouvé un bleuet';
     });
 
     Future.delayed(Duration(
@@ -46,7 +47,7 @@ class _GameScreenState extends State<GameScreen> {
         .then((value) {
       if (!mounted) return;
       setState(() {
-        _currentBombMessage = null;
+        _currentTreasureFoundMessage = null;
       });
     });
   }
@@ -54,7 +55,7 @@ class _GameScreenState extends State<GameScreen> {
   void _onGameOver() {
     _mainInterface.onStateChanged = null;
     _mainInterface.onGameOver = null;
-    _mainInterface.onBombFound = null;
+    _mainInterface.onTreasureFound = null;
 
     Future.delayed(Duration(
         milliseconds:
@@ -122,8 +123,8 @@ class _GameScreenState extends State<GameScreen> {
         color: ThemeColor.main,
         borderRadius: BorderRadius.circular(5),
       ),
-      height:
-          windowHeight * 0.08 + players.length * (textSize + interlinePadding),
+      height: windowHeight * 0.08 +
+          players.length * (textSize + 2 * interlinePadding + 1),
       width: windowHeight * 0.40,
       child: Padding(
         padding: EdgeInsets.only(left: smallPadding, top: smallPadding),
@@ -152,7 +153,7 @@ class _GameScreenState extends State<GameScreen> {
                                 color: Colors.white, fontSize: textSize),
                           ),
                           Text(
-                            '${player.score} bleuets (${player.bombs} essais)',
+                            '${player.score} bleuets (${player.energy} énergies)',
                             style: TextStyle(
                                 color: Colors.white, fontSize: textSize),
                           ),
@@ -197,7 +198,7 @@ class _GameScreenState extends State<GameScreen> {
                       offsetFromBorder * 2,
                   top: offsetFromBorder + tileSize,
                   child: _buildScore()),
-              if (_currentBombMessage != null)
+              if (_currentTreasureFoundMessage != null)
                 Positioned(
                   left: offsetFromBorder,
                   right: windowWidth -
@@ -209,11 +210,18 @@ class _GameScreenState extends State<GameScreen> {
                       child: GrowingContainer(
                     startingSize: windowHeight * 0.01,
                     finalSize: windowHeight * 0.04,
-                    title: _currentBombMessage!,
+                    title: _currentTreasureFoundMessage!,
                     growingTime: _growingTextTime,
                     fadingTime: _fadingTextTime,
                   )),
                 ),
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child:
+                        TwitchDebugPanel(manager: _mainInterface.twitchManager),
+                  )),
             ],
           ),
         ),

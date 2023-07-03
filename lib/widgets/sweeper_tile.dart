@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
+import 'package:twitched_minesweeper/widgets/player_token.dart';
 
 extension TileColor on Tile {
   Color get color {
@@ -22,7 +23,7 @@ extension TileColor on Tile {
         return const Color.fromARGB(255, 212, 85, 0);
       case Tile.eight:
         return Colors.deepPurple;
-      case Tile.bomb:
+      case Tile.treasure:
         return const Color.fromARGB(255, 10, 41, 66);
       default:
         throw 'Wrong color';
@@ -47,28 +48,46 @@ class SweeperTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tile = gameManager.tile(tileIndex);
-    // index is the number of bomb for the first eight indices
-    final nbBombAround = tile.index;
+    final player = gameManager.playersOnTile(tileIndex);
 
-    return Container(
-      decoration: BoxDecoration(
-        color:
-            tile == Tile.concealed ? ThemeColor.conceiled : ThemeColor.revealed,
-        border: Border.all(width: tileSize * 0.02),
-      ),
-      child: tile == Tile.concealed || tile == Tile.zero
-          ? null
-          : Center(
-              child: tile == Tile.bomb
-                  ? Text('\u2600',
-                      style: TextStyle(fontSize: textSize, color: tile.color))
-                  : Text(
-                      nbBombAround > 0 ? nbBombAround.toString() : '',
-                      style: TextStyle(
-                          fontSize: textSize,
-                          color: tile.color,
-                          fontWeight: FontWeight.bold),
-                    )),
+    // index is the number of treasure around the current tile
+    final nbTreasuresAround = tile.index;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: tile == Tile.concealed
+                ? ThemeColor.conceiled
+                : ThemeColor.revealed,
+            border: Border.all(width: tileSize * 0.02),
+          ),
+          child: tile == Tile.concealed || tile == Tile.zero
+              ? null
+              : Center(
+                  child: tile == Tile.treasure
+                      ? Text(
+                          '\u2600',
+                          style: TextStyle(
+                            fontSize: textSize,
+                            color: tile.color,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      : Text(
+                          nbTreasuresAround > 0
+                              ? nbTreasuresAround.toString()
+                              : '',
+                          style: TextStyle(
+                              fontSize: textSize,
+                              color: tile.color,
+                              fontWeight: FontWeight.bold),
+                        )),
+        ),
+        if (player.isNotEmpty)
+          ...player.map((p) => PlayerToken(tileSize: tileSize, player: p)),
+      ],
     );
   }
 }
