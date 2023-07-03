@@ -9,7 +9,7 @@ class Player {
   // Current position of the player
   int row = -1;
   int col = -1;
-  final List<List> _nextPosition = [];
+  final List<List<int>> _nextPosition = [];
 
   // Constructor
   Player(
@@ -77,14 +77,21 @@ class Player {
   /// Computes the path to get from current
   /// position to target and adds the re
   void _computePath(int rowTarget, int colTarget) {
-    // Initialize the new row and col to departure
+    // Initialize the new row and col to end of _nextPosition if exists.
+    // Otherwise, set it a current position
     int rowNew = row;
     int colNew = col;
+    if (_nextPosition.isNotEmpty) {
+      rowNew = _nextPosition.last[0];
+      colNew = _nextPosition.last[1];
+    }
 
     // Perform a march toward the target row or col at a time
     while (rowNew != rowTarget || colNew != colTarget) {
       int rowError = rowTarget - rowNew;
       int colError = colTarget - colNew;
+
+      // Advance for 1 step in the direction of error
       rowNew += rowError.sign;
       colNew += colError.sign;
       _nextPosition.add([rowNew, colNew]);
