@@ -79,7 +79,18 @@ class _GameScreenState extends State<GameScreen> {
           // it is the grid (with its index offset by 1)
           final row = gridRow(index, gm.nbCols + 1);
           final col = gridCol(index, gm.nbCols + 1);
-          if (row == 0 && col == 0) return Container();
+
+          // Starting tile
+          if (row == 0 && col == 0) {
+            return SweeperTile(
+              gameManager: gm,
+              tileIndex: -1,
+              tileSize: tileSize,
+              textSize: textSize,
+            );
+          }
+
+          // Header of SweeperTile
           if (row == 0 || col == 0) {
             return Container(
               decoration: BoxDecoration(

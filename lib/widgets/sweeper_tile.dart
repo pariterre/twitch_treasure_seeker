@@ -48,7 +48,7 @@ class SweeperTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tile = gameManager.tile(tileIndex);
-    final player = gameManager.playersOnTile(tileIndex);
+    final players = gameManager.playersOnTile(tileIndex);
 
     // index is the number of treasure around the current tile
     final nbTreasuresAround = tile.index;
@@ -57,13 +57,17 @@ class SweeperTile extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         Container(
-          decoration: BoxDecoration(
-            color: tile == Tile.concealed
-                ? ThemeColor.conceiled
-                : ThemeColor.revealed,
-            border: Border.all(width: tileSize * 0.02),
-          ),
-          child: tile == Tile.concealed || tile == Tile.zero
+          decoration: tile == Tile.starting
+              ? null
+              : BoxDecoration(
+                  color: tile == Tile.concealed
+                      ? ThemeColor.conceiled
+                      : ThemeColor.revealed,
+                  border: Border.all(width: tileSize * 0.02),
+                ),
+          child: tile == Tile.concealed ||
+                  tile == Tile.zero ||
+                  tile == Tile.starting
               ? null
               : Center(
                   child: tile == Tile.treasure
@@ -85,8 +89,8 @@ class SweeperTile extends StatelessWidget {
                               fontWeight: FontWeight.bold),
                         )),
         ),
-        if (player.isNotEmpty)
-          ...player.map((p) => PlayerToken(tileSize: tileSize, player: p)),
+        if (players.isNotEmpty)
+          ...players.map((p) => PlayerToken(tileSize: tileSize, player: p)),
       ],
     );
   }

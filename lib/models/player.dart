@@ -31,8 +31,8 @@ class Player {
     this.minimumRestingTime = minimumRestingTime;
     restingCmp = minimumRestingTime;
 
-    row = 0;
-    col = 0;
+    row = -1;
+    col = -1;
   }
 
   ///

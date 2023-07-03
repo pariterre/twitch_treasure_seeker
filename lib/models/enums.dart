@@ -32,4 +32,5 @@ enum Tile {
   eight,
   treasure,
   concealed,
+  starting,
 }

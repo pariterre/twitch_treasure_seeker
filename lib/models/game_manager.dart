@@ -9,8 +9,8 @@ import 'player.dart';
 /// Easy accessors translating index into row/col pair or row/col pair into
 /// index
 int gridIndex(int row, int col, int nbCols) => row * nbCols + col;
-int gridRow(int index, int nbCols) => index ~/ nbCols;
-int gridCol(int index, int nbCols) => index % nbCols;
+int gridRow(int index, int nbCols) => index < 0 ? -1 : index ~/ nbCols;
+int gridCol(int index, int nbCols) => index < 0 ? -1 : index % nbCols;
 
 class GameManager {
   var _status = GameStatus.initial;
@@ -161,11 +161,14 @@ class GameManager {
 
   ///
   /// Get the value of a tile of a specific [index]. If the tile is not
-  /// revealed yet, this method returns -2; if the tile is a treasure, then it
-  /// returns -1, otherwise it returns the number of treasure around it.
-  Tile tile(int index) => _isRevealed[index]
-      ? (_grid[index] < 0 ? Tile.treasure : Tile.values[_grid[index]])
-      : Tile.concealed;
+  /// revealed yet, this method returns concealed; if the tile is a treasure, then it
+  /// returns treasure, otherwise it returns the number of treasure around it.
+  /// If index < 0, then it returns starting
+  Tile tile(int index) => index < 0
+      ? Tile.starting
+      : (_isRevealed[index]
+          ? (_grid[index] < 0 ? Tile.treasure : Tile.values[_grid[index]])
+          : Tile.concealed);
 
   ///
   /// Get all the players on the tile [index].
@@ -216,17 +219,17 @@ class GameManager {
   /// Main interface for a user to reveal a tile from the grid
   RevealResult revealTile(String username,
       {required int row, required int col}) {
+    // Safe guards
+    // If game is over
     if (isGameOver) return RevealResult.gameOver;
-
-    // Do not reveal a previously revealed tile
+    // If tile not in the grid
     final index = gridIndex(row, col, nbCols);
-    if (_isRevealed[index]) return RevealResult.alreadyRevealed;
-
-    // Safe guards so the player who tries to reveal is actually a player
-    if (!players.containsKey(username)) return RevealResult.unrecognizedUser;
-    // and doesn't throw outside of the grid
     if (!_isInsideGrid(row, col)) return RevealResult.outsideGrid;
-    // and is still allowed to throw
+    // If tile was already revealed
+    if (_isRevealed[index]) return RevealResult.alreadyRevealed;
+    // Player who played is actually a player
+    if (!players.containsKey(username)) return RevealResult.unrecognizedUser;
+    // Player still has energy
     if (_players[username]!.energy < 0) return RevealResult.noEnergyLeft;
 
     // Start the recursive process of revealing all the required tiles
@@ -312,6 +315,7 @@ class GameManager {
     }
 
     // Notify the game interface of the new state of the game
+    // TODO Better energy consumption on onStateChanged?
     onStateChanged();
   }
 
