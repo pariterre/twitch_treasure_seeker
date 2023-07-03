@@ -1,7 +1,8 @@
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
-import 'package:twitched_minesweeper/models/game_manager.dart';
-import 'package:twitched_minesweeper/models/game_tile.dart';
+
+import 'enums.dart';
+import 'game_manager.dart';
+import 'game_tile.dart';
 
 enum _Status {
   waitForRequestLaunchGame,
@@ -14,7 +15,7 @@ class GameInterface {
   late final gameManager = GameManager(needRedrawCallback: (needRedraw) {
     if (_onStateChanged != null) _onStateChanged!(needRedraw);
   }, onTreasureFound: (player) {
-    if (_onTreasureFound != null) _onTreasureFound!(player.username);
+    if (_onTreasureFound != null) _onTreasureFound!(player.name);
   });
   _Status _status = _Status.waitForRequestLaunchGame;
 

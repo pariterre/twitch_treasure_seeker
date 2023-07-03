@@ -64,6 +64,7 @@ class GameGridState extends State<GameGrid> {
             );
           }
 
+          // Draw the actual grid
           final tileIndex =
               gridIndex(GameTile(tile.row - 1, tile.col - 1), gm.nbCols);
           return SweeperTile(

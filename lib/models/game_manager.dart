@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/ennemy.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
-import 'package:twitched_minesweeper/models/game_tile.dart';
 
+import 'ennemy.dart';
+import 'enums.dart';
+import 'game_tile.dart';
 import 'player.dart';
 
 const List<Color> colorCycle = [
@@ -67,6 +67,8 @@ class GameManager {
   int get maxEnergy => _maxEnergy;
   int _restingTime = 2;
   int get restingTime => _restingTime;
+
+  final int _rabbitRestingTime = 10;
 
   // If the game is still open for registration
   bool _canRegister = true;
@@ -161,7 +163,11 @@ class GameManager {
     }
 
     _ennemies.clear();
-    _ennemies.add(Ennemy(name: 'rabbit', color: Colors.white));
+    _ennemies.add(Ennemy(
+      name: 'rabbit',
+      color: Colors.white,
+      restingTime: _rabbitRestingTime,
+    ));
 
     for (final ennemy in _ennemies) {
       ennemy.addTarget(GameTile.none());
@@ -178,7 +184,7 @@ class GameManager {
     if (_players.length >= _maxPlayers) return AddPlayerStatus.noMoreSpaceLeft;
 
     _players[username] = Player(
-        username: username,
+        name: username,
         color: colorCycle[_players.length],
         maxEnergy: _maxEnergy,
         minimumRestingTime: _restingTime);
@@ -206,6 +212,20 @@ class GameManager {
     for (final p in _players.keys) {
       if (_players[p]!.tile == tile) {
         out.add(_players[p]!);
+      }
+    }
+    return out;
+  }
+
+  ///
+  /// Get all the players on the tile [index].
+  List<Ennemy> ennemiesOnTile(int index) {
+    List<Ennemy> out = [];
+
+    final tile = gridTile(index, nbCols);
+    for (final ennemy in _ennemies) {
+      if (ennemy.tile == tile) {
+        out.add(ennemy);
       }
     }
     return out;
@@ -343,6 +363,13 @@ class GameManager {
         // Notify game interface
         onTreasureFound(player);
       }
+    }
+
+    for (final ennemy in _ennemies) {
+      if (ennemy.shouldChangePosition) {
+        ennemy.addTarget(GameTile.random(_nbRows, _nbCols));
+      }
+      if (ennemy.march()) needRedraw.add(NeedRedraw.grid);
     }
 
     // Notify the game interface of the new state of the game

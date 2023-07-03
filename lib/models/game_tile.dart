@@ -1,3 +1,7 @@
+import 'dart:math';
+
+final _rand = Random();
+
 class GameTile {
   final int row;
   final int col;
@@ -10,6 +14,9 @@ class GameTile {
   GameTile.none()
       : row = -1,
         col = -1;
+  GameTile.random(int nbRows, int nbCols)
+      : row = _rand.nextInt(nbRows),
+        col = _rand.nextInt(nbCols);
 
   GameTile get copy => GameTile(row, col);
 

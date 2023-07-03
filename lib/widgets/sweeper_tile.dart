@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/widgets/player_token.dart';
+
+import 'actor_token.dart';
 
 extension TileColor on Tile {
   Color get color {
@@ -49,6 +50,7 @@ class SweeperTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tile = gameManager.tile(tileIndex);
     final players = gameManager.playersOnTile(tileIndex);
+    final ennemies = gameManager.ennemiesOnTile(tileIndex);
 
     // index is the number of treasure around the current tile
     final nbTreasuresAround = tile.index;
@@ -90,7 +92,9 @@ class SweeperTile extends StatelessWidget {
                         )),
         ),
         if (players.isNotEmpty)
-          ...players.map((p) => PlayerToken(tileSize: tileSize, player: p)),
+          ...players.map((p) => ActorToken(tileSize: tileSize, actor: p)),
+        if (ennemies.isNotEmpty)
+          ...ennemies.map((p) => ActorToken(tileSize: tileSize, actor: p)),
       ],
     );
   }

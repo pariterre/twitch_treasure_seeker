@@ -69,7 +69,7 @@ class GameScoreState extends State<GameScore> {
                                   child: CircleAvatar(
                                       backgroundColor: player.color)),
                               Text(
-                                player.username,
+                                player.name,
                                 style: TextStyle(
                                     color: Colors.white, fontSize: textSize),
                               ),
