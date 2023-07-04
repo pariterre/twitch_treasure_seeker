@@ -10,8 +10,8 @@ class GameTile {
   bool operator ==(other) =>
       other is GameTile && row == other.row && col == other.col;
 
-  GameTile(this.row, this.col);
-  GameTile.none()
+  const GameTile(this.row, this.col);
+  const GameTile.none()
       : row = -1,
         col = -1;
   GameTile.random(int nbRows, int nbCols)
@@ -22,4 +22,9 @@ class GameTile {
 
   @override
   int get hashCode => row.hashCode + col.hashCode;
+
+  @override
+  String toString() {
+    return '($row, $col)';
+  }
 }

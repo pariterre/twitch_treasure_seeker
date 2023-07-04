@@ -92,9 +92,18 @@ class SweeperTile extends StatelessWidget {
                         )),
         ),
         if (players.isNotEmpty)
-          ...players.map((p) => ActorToken(tileSize: tileSize, actor: p)),
+          ...players
+              .map((player) => ActorToken(tileSize: tileSize, actor: player)),
+        // Draw the ennemies and their influence
+        ...gameManager.ennemyInfluenceOnTile(tileIndex).map((ennemy) {
+          debugPrint(gridTile(tileIndex, gameManager.nbCols).toString());
+          return Container(
+            decoration: BoxDecoration(color: ennemy.color.withAlpha(50)),
+          );
+        }),
         if (ennemies.isNotEmpty)
-          ...ennemies.map((p) => ActorToken(tileSize: tileSize, actor: p)),
+          ...ennemies
+              .map((ennemy) => ActorToken(tileSize: tileSize, actor: ennemy)),
       ],
     );
   }

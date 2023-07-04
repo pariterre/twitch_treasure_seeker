@@ -1,4 +1,4 @@
-import 'actors.dart';
+import 'actor.dart';
 import 'game_tile.dart';
 
 class Player extends Actor {
@@ -30,7 +30,7 @@ class Player extends Actor {
     this.minimumRestingTime = minimumRestingTime;
     restingCmp = minimumRestingTime;
 
-    tile = GameTile.none();
+    tile = const GameTile.none();
   }
 
   ///

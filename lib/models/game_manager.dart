@@ -43,7 +43,7 @@ class GameManager {
   int _maxPlayers = 10;
   int get maxPlayers => _maxPlayers;
   final Map<String, Player> _players = {};
-  final List<Ennemy> _ennemies = [];
+  final Map<String, Ennemy> _ennemies = {};
 
   // Size of the grid
   int _nbRows = 20;
@@ -163,14 +163,14 @@ class GameManager {
     }
 
     _ennemies.clear();
-    _ennemies.add(Ennemy(
+    _ennemies['rabbit'] = Ennemy(
       name: 'rabbit',
       color: Colors.white,
       restingTime: _rabbitRestingTime,
-    ));
+    );
 
-    for (final ennemy in _ennemies) {
-      ennemy.addTarget(GameTile.none());
+    for (final ennemy in _ennemies.keys) {
+      _ennemies[ennemy]!.tile = GameTile.random(_nbRows, _nbCols);
     }
 
     _status = GameStatus.isRunning;
@@ -223,9 +223,24 @@ class GameManager {
     List<Ennemy> out = [];
 
     final tile = gridTile(index, nbCols);
-    for (final ennemy in _ennemies) {
-      if (ennemy.tile == tile) {
-        out.add(ennemy);
+    for (final ennemy in _ennemies.keys) {
+      if (_ennemies[ennemy]!.tile == tile) {
+        out.add(_ennemies[ennemy]!);
+      }
+    }
+    return out;
+  }
+
+  ///
+  /// Get all the players on the tile [index].
+  List<Ennemy> ennemyInfluenceOnTile(int index) {
+    List<Ennemy> out = [];
+
+    final tile = gridTile(index, nbCols);
+    for (final ennemy in _ennemies.keys) {
+      if (_ennemies[ennemy]!.influencedTiles.contains(tile)) {
+        out.add(_ennemies[ennemy]!);
+        continue;
       }
     }
     return out;
@@ -261,7 +276,7 @@ class GameManager {
     // If game is over
     if (isGameOver) return;
     // If tile not in the grid
-    if (!_isInsideGrid(newTile)) return;
+    if (!isInsideGrid(newTile)) return;
     // Player who played is actually a player
     if (!players.containsKey(username)) return;
 
@@ -276,7 +291,7 @@ class GameManager {
     // If game is over
     if (isGameOver) return RevealResult.gameOver;
     // If tile not in the grid
-    if (!_isInsideGrid(tile)) return RevealResult.outsideGrid;
+    if (!isInsideGrid(tile)) return RevealResult.outsideGrid;
     // If tile was already revealed
     final index = gridIndex(tile, nbCols);
     if (_isRevealed[index]) return RevealResult.alreadyRevealed;
@@ -328,7 +343,7 @@ class GameManager {
         final newTile = GameTile(currentTile.row + j, currentTile.col + k);
 
         // Do not try to reveal tile outside of the grid
-        if (!_isInsideGrid(newTile)) continue;
+        if (!isInsideGrid(newTile)) continue;
 
         // Reveal the tile if it was not already revealed
         final newIndex = gridIndex(newTile, nbCols);
@@ -365,11 +380,13 @@ class GameManager {
       }
     }
 
-    for (final ennemy in _ennemies) {
-      if (ennemy.shouldChangePosition) {
-        ennemy.addTarget(GameTile.random(_nbRows, _nbCols));
+    for (final ennemy in _ennemies.keys) {
+      if (_ennemies[ennemy]!.shouldChangePosition) {
+        _ennemies[ennemy]!.addTarget(GameTile.random(_nbRows, _nbCols));
       }
-      if (ennemy.march()) needRedraw.add(NeedRedraw.grid);
+      if (_ennemies[ennemy]!.march(gameManager: this)) {
+        needRedraw.add(NeedRedraw.grid);
+      }
     }
 
     // Notify the game interface of the new state of the game
@@ -377,8 +394,8 @@ class GameManager {
   }
 
   ///
-  /// Get if a specific row/col pair is inside or outside the current grid
-  bool _isInsideGrid(GameTile tile) {
+  /// Get if a tile is inside or outside the current grid
+  bool isInsideGrid(GameTile tile) {
     // Do not check rows or column outside of the grid
     return (tile.row >= 0 &&
         tile.col >= 0 &&
@@ -422,7 +439,7 @@ class GameManager {
           // Find the current checked tile
           final checkedTile =
               GameTile(currentTile.row + j, currentTile.col + k);
-          if (!_isInsideGrid(checkedTile)) continue;
+          if (!isInsideGrid(checkedTile)) continue;
 
           // If there is a treasure, add it to the counter
           if (_grid[gridIndex(checkedTile, nbCols)] < 0) {

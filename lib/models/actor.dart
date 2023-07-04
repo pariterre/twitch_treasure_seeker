@@ -11,7 +11,7 @@ abstract class Actor {
   Actor({required this.name, required this.color});
 
   // Current position of the player
-  GameTile tile = GameTile.none();
+  GameTile tile = const GameTile.none();
   final List<GameTile> nextPosition = [];
 
   ///
