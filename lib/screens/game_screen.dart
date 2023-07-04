@@ -23,7 +23,8 @@ class _GameScreenState extends State<GameScreen> {
   final _fadingTextTime = const Duration(milliseconds: 500);
 
   late final GameInterface _gameInterface;
-  final _messageKey = GlobalKey<GrowingContainerState>();
+  final _treasureFoundKey = GlobalKey<GrowingContainerState>();
+  final _attackedKey = GlobalKey<GrowingContainerState>();
   final _scoreKey = GlobalKey<GameScoreState>();
   final _gridKey = GlobalKey<GameGridState>();
 
@@ -43,14 +44,15 @@ class _GameScreenState extends State<GameScreen> {
     };
     _gameInterface.gameManager.newGame();
     _gameInterface.onGameOver = () => _onGameOver();
-    _gameInterface.onTreasureFound =
-        (username) => _onTreasureFound(username, _messageKey);
+    _gameInterface.onTreasureFound = (username) => _onTreasureFound(username);
+    _gameInterface.onAttacked = (player, ennemy) => _onAttacked(player, ennemy);
   }
 
-  void _onTreasureFound(
-      String username, GlobalKey<GrowingContainerState> growingKey) {
-    growingKey.currentState!.showMessage('$username a trouvé\nun bleuet');
-  }
+  void _onTreasureFound(String player) => _treasureFoundKey.currentState!
+      .showMessage('$player a trouvé\nun bleuet');
+
+  void _onAttacked(String player, String ennemy) => _attackedKey.currentState!
+      .showMessage('$ennemy a volé les\nbleuts de $player');
 
   void _onGameOver() {
     _gameInterface.onStateChanged = null;
@@ -107,11 +109,29 @@ class _GameScreenState extends State<GameScreen> {
                 bottom: windowHeight * 1 / 4,
                 child: Center(
                     child: GrowingContainer(
-                  key: _messageKey,
+                  key: _treasureFoundKey,
                   startingSize: windowHeight * 0.01,
                   finalSize: windowHeight * 0.04,
                   growingTime: _growingTextTime,
                   fadingTime: _fadingTextTime,
+                  backgroundColor: ThemeColor.main,
+                )),
+              ),
+              Positioned(
+                left: offsetFromBorder,
+                right: windowWidth -
+                    ((_gameInterface.gameManager.nbCols + 1.5) * tileSize +
+                        2 * offsetFromBorder),
+                top: 0,
+                bottom: windowHeight * 1 / 2,
+                child: Center(
+                    child: GrowingContainer(
+                  key: _attackedKey,
+                  startingSize: windowHeight * 0.01,
+                  finalSize: windowHeight * 0.04,
+                  growingTime: _growingTextTime,
+                  fadingTime: _fadingTextTime,
+                  backgroundColor: Colors.red,
                 )),
               ),
               Align(

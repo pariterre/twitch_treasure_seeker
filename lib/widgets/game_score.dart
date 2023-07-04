@@ -76,7 +76,7 @@ class GameScoreState extends State<GameScore> {
                             ],
                           ),
                           Text(
-                            '${player.score} bleuets (${player.energy} énergies)',
+                            '${player.treasures} bleuets (${player.energy} énergies)',
                             style: TextStyle(
                                 color: Colors.white, fontSize: textSize),
                           ),

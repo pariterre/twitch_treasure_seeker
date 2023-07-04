@@ -12,11 +12,15 @@ enum _Status {
 }
 
 class GameInterface {
-  late final gameManager = GameManager(needRedrawCallback: (needRedraw) {
-    if (_onStateChanged != null) _onStateChanged!(needRedraw);
-  }, onTreasureFound: (player) {
-    if (_onTreasureFound != null) _onTreasureFound!(player.name);
-  });
+  late final gameManager = GameManager(
+    needRedrawCallback: (needRedraw) {
+      if (_onStateChanged != null) _onStateChanged!(needRedraw);
+    },
+    onTreasureFound: (player) {
+      if (_onTreasureFound != null) _onTreasureFound!(player.name);
+    },
+    onAttacked: (player, ennemy) => _onAttacked!(player.name, ennemy.name),
+  );
   _Status _status = _Status.waitForRequestLaunchGame;
 
   TwitchManager twitchManager;
@@ -51,6 +55,10 @@ class GameInterface {
   void Function(String player)? _onTreasureFound;
   set onTreasureFound(Function(String username)? value) =>
       _onTreasureFound = value;
+
+// This is called whenever a treasure is found so it can be drawn on the screen
+  void Function(String player, String ennemy)? _onAttacked;
+  set onAttacked(Function(String, String)? value) => _onAttacked = value;
 
   ///
   /// This is called whenever a message is sent to the chat. Do something

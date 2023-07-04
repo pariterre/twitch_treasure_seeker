@@ -95,12 +95,11 @@ class SweeperTile extends StatelessWidget {
           ...players
               .map((player) => ActorToken(tileSize: tileSize, actor: player)),
         // Draw the ennemies and their influence
-        ...gameManager.ennemyInfluenceOnTile(tileIndex).map((ennemy) {
-          debugPrint(gridTile(tileIndex, gameManager.nbCols).toString());
-          return Container(
-            decoration: BoxDecoration(color: ennemy.color.withAlpha(50)),
-          );
-        }),
+        ...gameManager
+            .ennemiesThatCanAttack(tileIndex)
+            .map((ennemy) => Container(
+                  decoration: BoxDecoration(color: ennemy.color.withAlpha(50)),
+                )),
         if (ennemies.isNotEmpty)
           ...ennemies
               .map((ennemy) => ActorToken(tileSize: tileSize, actor: ennemy)),

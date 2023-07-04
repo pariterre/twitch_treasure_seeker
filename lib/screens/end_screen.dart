@@ -29,7 +29,7 @@ class EndScreen extends StatelessWidget {
           children: [
             Text(
               'Félication à $playerWithHighestScore qui remporte\n'
-              'la partie avec ${players[playerWithHighestScore]!.score} points',
+              'la partie avec ${players[playerWithHighestScore]!.treasures} points',
               style: TextStyle(color: Colors.white, fontSize: titleSize),
             ),
           ],

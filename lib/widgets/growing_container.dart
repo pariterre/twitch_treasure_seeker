@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 
 double easeOutElastic(double x) {
   const c4 = (2 * pi) / 3;
@@ -20,12 +19,14 @@ class GrowingContainer extends StatefulWidget {
     required this.finalSize,
     required this.growingTime,
     required this.fadingTime,
+    required this.backgroundColor,
   });
 
   final double startingSize;
   final double finalSize;
   final Duration growingTime;
   final Duration fadingTime;
+  final Color backgroundColor;
 
   @override
   State<GrowingContainer> createState() => GrowingContainerState();
@@ -105,7 +106,7 @@ class GrowingContainerState extends State<GrowingContainer>
             builder: (ctx, child) {
               return Container(
                 decoration: BoxDecoration(
-                    color: ThemeColor.main
+                    color: widget.backgroundColor
                         .withOpacity(max(_currentOpacity - 0.2, 0))),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

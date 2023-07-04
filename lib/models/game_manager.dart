@@ -34,6 +34,7 @@ class GameManager {
   var _status = GameStatus.initial;
   final Function(List<NeedRedraw>) needRedrawCallback;
   final Function(Player) onTreasureFound;
+  final Function(Player, Ennemy) onAttacked;
 
   // speed a which each movements are triggered
   Duration _gameSpeed = const Duration(milliseconds: 500);
@@ -74,8 +75,11 @@ class GameManager {
   bool _canRegister = true;
   void closeRegistration() => _canRegister = false;
 
-  GameManager(
-      {required this.needRedrawCallback, required this.onTreasureFound}) {
+  GameManager({
+    required this.needRedrawCallback,
+    required this.onTreasureFound,
+    required this.onAttacked,
+  }) {
     _generateGrid();
     _startTimer();
   }
@@ -145,9 +149,9 @@ class GameManager {
     String out = '';
     var highestScore = -1;
     for (final player in players.keys) {
-      if (players[player]!.score > highestScore) {
+      if (players[player]!.treasures > highestScore) {
         out = player;
-        highestScore = players[player]!.score;
+        highestScore = players[player]!.treasures;
       }
     }
     return out;
@@ -233,7 +237,7 @@ class GameManager {
 
   ///
   /// Get all the players on the tile [index].
-  List<Ennemy> ennemyInfluenceOnTile(int index) {
+  List<Ennemy> ennemiesThatCanAttack(int index) {
     List<Ennemy> out = [];
 
     final tile = gridTile(index, nbCols);
@@ -303,7 +307,7 @@ class GameManager {
 
     // Give points if necessary
     if (_grid[index] == -1) {
-      _players[username]!.score += 1;
+      _players[username]!.treasures += 1;
       return RevealResult.hit;
     } else {
       return RevealResult.miss;
@@ -371,6 +375,12 @@ class GameManager {
       final player = _players[p]!;
       if (player.rest()) needRedraw.add(NeedRedraw.score);
       if (player.march()) needRedraw.add(NeedRedraw.grid);
+
+      for (final ennemy in _ennemies.keys) {
+        if (_ennemies[ennemy]!.attack(player)) {
+          onAttacked(player, _ennemies[ennemy]!);
+        }
+      }
 
       if (_revealTile(p, tile: player.tile) == RevealResult.hit) {
         player.refillEnergy();

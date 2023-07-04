@@ -1,5 +1,6 @@
 import 'package:twitched_minesweeper/models/game_manager.dart';
 import 'package:twitched_minesweeper/models/game_tile.dart';
+import 'package:twitched_minesweeper/models/player.dart';
 
 import 'actor.dart';
 
@@ -10,12 +11,28 @@ class Ennemy extends Actor {
   int restingCmp = 0;
   int restingTime;
   List<GameTile> influencedTiles = [];
+  List<Player> hasAttacked = [];
 
   bool get shouldChangePosition => restingCmp >= restingTime;
+
+  bool attack(Player player) {
+    if (!influencedTiles.contains(player.tile) ||
+        hasAttacked.contains(player)) {
+      return false;
+    }
+
+    // Remove half of the treasures
+    player.treasures = player.treasures ~/ 2;
+
+    // Make sure to not attack twice
+    hasAttacked.add(player);
+    return true;
+  }
 
   @override
   void addTarget(GameTile tileTarget) {
     nextPosition.clear();
+    hasAttacked.clear();
     super.addTarget(tileTarget);
     restingCmp = 0;
   }

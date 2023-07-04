@@ -2,7 +2,7 @@ import 'actor.dart';
 import 'game_tile.dart';
 
 class Player extends Actor {
-  int score = 0;
+  int treasures = 0;
   int energy = 0;
   int maxEnergy;
   int restingCmp = 0;
@@ -22,7 +22,7 @@ class Player extends Actor {
 
   // Reset player (usually for a new game)
   void reset({required int maxEnergy, required int minimumRestingTime}) {
-    score = 0;
+    treasures = 0;
 
     this.maxEnergy = maxEnergy;
     energy = maxEnergy;
