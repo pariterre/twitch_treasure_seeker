@@ -385,6 +385,10 @@ class GameManager {
       if (_revealTile(p, tile: player.tile) == RevealResult.hit) {
         player.refillEnergy();
 
+        // Lower all the number surronding
+        debugPrint('coucou');
+        _lowerTreasureMarker(player.tile);
+
         // Notify game interface
         onTreasureFound(player);
       }
@@ -431,7 +435,7 @@ class GameManager {
       _grid[indexOfTreasure] = -1;
     }
 
-    // Recalculae the value of each tile based on number of treasures around it
+    // Recalculate the value of each tile based on number of treasures around it
     for (var i = 0; i < nbRows * nbCols; i++) {
       // Do not recompute tile with a treasure in it
       if (_grid[i] < 0) continue;
@@ -440,9 +444,9 @@ class GameManager {
 
       final currentTile = gridTile(i, nbCols);
       // Check the previous row to next row
-      for (var j = -1; j < 2; j++) {
+      for (var j = -1; j <= 1; j++) {
         // Check the previous col to next col
-        for (var k = -1; k < 2; k++) {
+        for (var k = -1; k <= 1; k++) {
           // Do not check itself
           if (j == 0 && k == 0) continue;
 
@@ -460,6 +464,27 @@ class GameManager {
 
       // Store the number in the tile
       _grid[i] = nbTreasuresAroundTile;
+    }
+  }
+
+  ///
+  /// When a treasure is found, lower all the surronding numbers
+  void _lowerTreasureMarker(GameTile treasure) {
+    for (var j = -1; j <= 1; j++) {
+      // Check the previous col to next col
+      for (var k = -1; k <= 1; k++) {
+        // Do not check itself
+        if (j == 0 && k == 0) continue;
+
+        final tile = GameTile(treasure.row + j, treasure.col + k);
+        if (!isInsideGrid(tile)) continue;
+        final index = gridIndex(tile, nbCols);
+
+        // If there is a treasure, add it to the counter
+        if (_grid[index] > 0) {
+          _grid[index]--;
+        }
+      }
     }
   }
 }
