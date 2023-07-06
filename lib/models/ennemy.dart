@@ -10,6 +10,11 @@ class Ennemy extends Actor {
 
   int restingCmp = 0;
   int restingTime;
+
+  int influenceRadius = 0;
+  int maxInfluenceRadius = 2;
+  int influenceRadiusDelay = 3;
+  int influenceRadiusDelayCmp = 0;
   List<GameTile> influencedTiles = [];
   List<Player> hasAttacked = [];
 
@@ -40,24 +45,36 @@ class Ennemy extends Actor {
   @override
   bool march({GameManager? gameManager}) {
     if (gameManager == null) throw 'gameManager is mandatory';
+    bool shouldUpdate = false;
 
     // If it has reached it has not reached its final position
     if (super.march()) {
+      influenceRadius = influenceRadius > 0 ? influenceRadius - 1 : 0;
+      influenceRadiusDelayCmp = 0;
       _updateInfluencedTiles(gameManager);
       return true;
+    } else {
+      influenceRadiusDelayCmp++;
+      if (influenceRadiusDelayCmp >= influenceRadiusDelay &&
+          influenceRadius < maxInfluenceRadius) {
+        influenceRadiusDelayCmp = 0;
+        influenceRadius++;
+        _updateInfluencedTiles(gameManager);
+        shouldUpdate = true;
+      }
     }
 
     // Take some rest
     restingCmp++;
-    return false;
+    return shouldUpdate;
   }
 
   /// Update the influenced tiles based on current position.
   void _updateInfluencedTiles(GameManager gameManager) {
     influencedTiles.clear();
 
-    for (final row in [-1, 0, 1]) {
-      for (final col in [-1, 0, 1]) {
+    for (int row = -influenceRadius; row <= influenceRadius; row++) {
+      for (int col = -influenceRadius; col <= influenceRadius; col++) {
         final newTile = GameTile(tile.row + row, tile.col + col);
         if (gameManager.isInsideGrid(newTile)) {
           influencedTiles.add(newTile);
