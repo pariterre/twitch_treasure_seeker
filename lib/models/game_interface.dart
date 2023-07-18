@@ -13,14 +13,17 @@ enum _Status {
 
 class GameInterface {
   late final gameManager = GameManager(
-    needRedrawCallback: (needRedraw) {
-      if (_onStateChanged != null) _onStateChanged!(needRedraw);
-    },
-    onTreasureFound: (player) {
-      if (_onTreasureFound != null) _onTreasureFound!(player.name);
-    },
-    onAttacked: (player, ennemy) => _onAttacked!(player.name, ennemy.name),
-  );
+      needRedrawCallback: (needRedraw) {
+        if (_onStateChanged != null) _onStateChanged!(needRedraw);
+      },
+      onTreasureFound: (player) {
+        if (_onTreasureFound != null) _onTreasureFound!(player.name);
+      },
+      onAttacked: (player, ennemy) => _onAttacked!(player.name, ennemy.name),
+      onGameOver: () {
+        _status = _Status.endGame;
+        if (_onGameOver != null) _onGameOver!();
+      });
   _Status _status = _Status.waitForRequestLaunchGame;
 
   TwitchManager twitchManager;
@@ -83,6 +86,12 @@ class GameInterface {
     // If not a player, do nothing
     if (!gameManager.players.keys.contains(username)) return;
 
+    // Force end of game if asked
+    if (await _isAModerator(username) && message == '!fin') {
+      gameManager.forceGameOver();
+      return;
+    }
+
     // Parse the input. It must be of the format : XY, where X is a letter
     // and Y is a number between 0 to 99 (0 beween outside of the grid
     // though).
@@ -94,12 +103,6 @@ class GameInterface {
     final row = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
     final col = int.parse(groups[1]!) - 1;
     gameManager.setPlayerMove(username, newTile: GameTile(row, col));
-
-    // If the game is over
-    if (gameManager.isGameOver) {
-      _status = _Status.endGame;
-      if (_onGameOver != null) _onGameOver!();
-    }
   }
 
   ///

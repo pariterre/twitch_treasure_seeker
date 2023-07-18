@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/screens/idle_room.dart';
+import 'package:twitched_minesweeper/widgets/game_score.dart';
 
 class EndScreen extends StatelessWidget {
   const EndScreen({super.key});
@@ -14,8 +15,17 @@ class EndScreen extends StatelessWidget {
     final titleSize = ThemeSize.title(context);
 
     final players = mainInterface.gameManager.players;
-    final playerWithHighestScore =
-        mainInterface.gameManager.playerWithHighestScore;
+    final playersWithHighestScore =
+        mainInterface.gameManager.playersWithHighestScore;
+
+    var winnerNames = playersWithHighestScore[0];
+    if (playersWithHighestScore.length > 1) {
+      for (var i = 1; i < playersWithHighestScore.length - 1; i++) {
+        winnerNames += ', ${playersWithHighestScore[i]}';
+      }
+      winnerNames += ' et ${playersWithHighestScore.last}';
+    }
+    final nbTreasures = players[playersWithHighestScore[0]]!.treasures;
 
     return Container(
       decoration: BoxDecoration(
@@ -28,9 +38,14 @@ class EndScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Félication à $playerWithHighestScore qui remporte\n'
-              'la partie avec ${players[playerWithHighestScore]!.treasures} points',
+              'Félicitation à $winnerNames qui remporte${playersWithHighestScore.length > 1 ? 'nt' : ''}\n'
+              'la partie avec $nbTreasures bleuet${nbTreasures < 2 ? '' : 's'}',
               style: TextStyle(color: Colors.white, fontSize: titleSize),
+            ),
+            GameScore(
+              gameInterface: mainInterface,
+              title: 'Score final',
+              showEnergy: false,
             ),
           ],
         ),

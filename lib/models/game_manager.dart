@@ -35,6 +35,7 @@ class GameManager {
   final Function(List<NeedRedraw>) needRedrawCallback;
   final Function(Player) onTreasureFound;
   final Function(Player, Ennemy) onAttacked;
+  final Function() onGameOver;
 
   // speed a which each movements are triggered
   Duration _gameSpeed = const Duration(milliseconds: 500);
@@ -79,6 +80,7 @@ class GameManager {
     required this.needRedrawCallback,
     required this.onTreasureFound,
     required this.onAttacked,
+    required this.onGameOver,
   }) {
     _generateGrid();
     _startTimer();
@@ -145,12 +147,15 @@ class GameManager {
 
   ///
   /// Get the player that has the highest score
-  String get playerWithHighestScore {
-    String out = '';
+  List<String> get playersWithHighestScore {
+    List<String> out = [];
     var highestScore = -1;
     for (final player in players.keys) {
-      if (players[player]!.treasures > highestScore) {
-        out = player;
+      if (players[player]!.treasures >= highestScore) {
+        if (players[player]!.treasures > highestScore) {
+          out.clear;
+        }
+        out.add(player);
         highestScore = players[player]!.treasures;
       }
     }
@@ -260,6 +265,11 @@ class GameManager {
     return cmp;
   }
 
+  void forceGameOver() {
+    _status = GameStatus.isOver;
+    onGameOver();
+  }
+
   ///
   /// Is the game over based
   bool get isGameOver {
@@ -267,7 +277,7 @@ class GameManager {
 
     // If all the treasures are found
     if (treasuresFound == nbTreasures) {
-      _status = GameStatus.isOver;
+      forceGameOver();
     }
 
     return _status == GameStatus.isOver;

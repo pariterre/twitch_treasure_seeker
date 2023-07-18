@@ -67,12 +67,6 @@ class GrowingContainerState extends State<GrowingContainer>
     });
   }
 
-  @override
-  void dispose() {
-    animationController.dispose();
-    super.dispose();
-  }
-
   double get _animationSizeValue =>
       min(animationController.value / endingGrowingNormalizedTime, 1);
 

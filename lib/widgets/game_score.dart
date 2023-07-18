@@ -7,9 +7,13 @@ class GameScore extends StatefulWidget {
   const GameScore({
     super.key,
     required this.gameInterface,
+    this.title = 'Score',
+    this.showEnergy = true,
   });
 
   final GameInterface gameInterface;
+  final String title;
+  final bool showEnergy;
 
   @override
   State<GameScore> createState() => GameScoreState();
@@ -48,7 +52,7 @@ class GameScoreState extends State<GameScore> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Score',
+              widget.title,
               style: TextStyle(color: Colors.white, fontSize: titleSize),
             ),
             SizedBox(height: interlinePadding * 2),
@@ -77,7 +81,7 @@ class GameScoreState extends State<GameScore> {
                             ],
                           ),
                           Text(
-                            '${player.treasures} ${player.treasures < 2 ? 'bleuet' : 'bleuets'} (${player.energy} énergies)',
+                            '${player.treasures} ${player.treasures < 2 ? 'bleuet' : 'bleuets'}${widget.showEnergy ? '(${player.energy} énergies)' : ''}',
                             style: TextStyle(
                                 color: Colors.white, fontSize: textSize),
                           ),

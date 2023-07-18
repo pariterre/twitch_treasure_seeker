@@ -18,7 +18,8 @@ void main() async {
               messagesModerators: [
                 '!chercheursDeBleuets',
                 '!joindre',
-                '!start'
+                '!start',
+                '!fin',
               ],
               followers: [
                 'follower1',
