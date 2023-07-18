@@ -31,6 +31,8 @@ class GameScoreState extends State<GameScore> {
     final textSize = ThemeSize.text(context);
 
     final players = widget.gameInterface.gameManager.players;
+    final sortedNames = players.keys.toList();
+    sortedNames.sort((a, b) => players[b]!.treasures - players[a]!.treasures);
 
     return Container(
       decoration: BoxDecoration(
@@ -38,7 +40,7 @@ class GameScoreState extends State<GameScore> {
         borderRadius: BorderRadius.circular(5),
       ),
       height: windowHeight * 0.08 +
-          players.length * (textSize + 2 * interlinePadding + 1),
+          sortedNames.length * (textSize + 2 * interlinePadding + 1),
       width: windowHeight * 0.40,
       child: Padding(
         padding: EdgeInsets.only(left: smallPadding, top: smallPadding),
@@ -54,7 +56,7 @@ class GameScoreState extends State<GameScore> {
               padding: EdgeInsets.only(right: smallPadding),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: players.keys.map((name) {
+                  children: sortedNames.map((name) {
                     final player =
                         widget.gameInterface.gameManager.players[name]!;
                     return Padding(
@@ -75,7 +77,7 @@ class GameScoreState extends State<GameScore> {
                             ],
                           ),
                           Text(
-                            '${player.treasures} bleuets (${player.energy} énergies)',
+                            '${player.treasures} ${player.treasures < 2 ? 'bleuet' : 'bleuets'} (${player.energy} énergies)',
                             style: TextStyle(
                                 color: Colors.white, fontSize: textSize),
                           ),
