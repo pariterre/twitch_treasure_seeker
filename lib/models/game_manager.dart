@@ -10,7 +10,7 @@ import 'player.dart';
 
 const List<Color> colorCycle = [
   Colors.purple,
-  Colors.green,
+  Colors.cyan,
   Colors.orange,
   Colors.pink,
   Colors.indigo,
@@ -64,12 +64,12 @@ class GameManager {
   // The player stored by username
   Map<String, Player> get players => _players;
 
-  int _maxEnergy = 10;
+  int _maxEnergy = 5;
   int get maxEnergy => _maxEnergy;
   int _restingTime = 2;
   int get restingTime => _restingTime;
 
-  final int _rabbitRestingTime = 10;
+  final int _rabbitRestingTime = 20;
 
   // If the game is still open for registration
   bool _canRegister = true;
@@ -386,8 +386,7 @@ class GameManager {
         player.refillEnergy();
 
         // Lower all the number surronding
-        debugPrint('coucou');
-        _lowerTreasureMarker(player.tile);
+        // _lowerTreasureMarker(player.tile);
 
         // Notify game interface
         onTreasureFound(player);
@@ -467,24 +466,24 @@ class GameManager {
     }
   }
 
-  ///
-  /// When a treasure is found, lower all the surronding numbers
-  void _lowerTreasureMarker(GameTile treasure) {
-    for (var j = -1; j <= 1; j++) {
-      // Check the previous col to next col
-      for (var k = -1; k <= 1; k++) {
-        // Do not check itself
-        if (j == 0 && k == 0) continue;
+  // ///
+  // /// When a treasure is found, lower all the surronding numbers
+  // void _lowerTreasureMarker(GameTile treasure) {
+  //   for (var j = -1; j <= 1; j++) {
+  //     // Check the previous col to next col
+  //     for (var k = -1; k <= 1; k++) {
+  //       // Do not check itself
+  //       if (j == 0 && k == 0) continue;
 
-        final tile = GameTile(treasure.row + j, treasure.col + k);
-        if (!isInsideGrid(tile)) continue;
-        final index = gridIndex(tile, nbCols);
+  //       final tile = GameTile(treasure.row + j, treasure.col + k);
+  //       if (!isInsideGrid(tile)) continue;
+  //       final index = gridIndex(tile, nbCols);
 
-        // If there is a treasure, add it to the counter
-        if (_grid[index] > 0) {
-          _grid[index]--;
-        }
-      }
-    }
-  }
+  //       // If there is a treasure, add it to the counter
+  //       if (_grid[index] > 0) {
+  //         _grid[index]--;
+  //       }
+  //     }
+  //   }
+  // }
 }

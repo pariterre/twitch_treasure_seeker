@@ -13,7 +13,9 @@ class ActorToken extends StatelessWidget {
       height: tileSize * 1 / 2,
       width: tileSize * 1 / 2,
       decoration: BoxDecoration(
-          color: actor.color, borderRadius: BorderRadius.circular(25)),
+          color: actor.color,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all()),
     );
   }
 }

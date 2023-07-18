@@ -6,6 +6,7 @@ import 'package:twitched_minesweeper/screens/game_screen.dart';
 import 'package:twitched_minesweeper/screens/idle_room.dart';
 import 'package:twitched_minesweeper/screens/lobby_screen.dart';
 
+// TODO add credit (images)
 void main() async {
   runApp(MaterialApp(
     initialRoute: TwitchAuthenticationScreen.route,

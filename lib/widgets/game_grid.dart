@@ -28,7 +28,8 @@ class GameGridState extends State<GameGrid> {
     final gm = widget.gameInterface.gameManager;
 
     return SizedBox(
-      width: (gm.nbCols + 1) * widget.tileSize,
+      width:
+          (gm.nbCols + 1) * widget.tileSize + 2, // +2 so the overlap a tiny bit
       child: GridView.count(
         crossAxisCount: gm.nbCols + 1,
         children: List.generate(

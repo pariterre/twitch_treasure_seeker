@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'actor.dart';
 import 'game_tile.dart';
 
@@ -17,7 +19,7 @@ class Player extends Actor {
   });
 
   void refillEnergy() {
-    energy = maxEnergy;
+    energy = min(energy + maxEnergy ~/ 2, maxEnergy);
   }
 
   // Reset player (usually for a new game)

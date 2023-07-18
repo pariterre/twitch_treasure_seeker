@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
+import 'package:twitched_minesweeper/widgets/actor_token.dart';
 
 class GameScore extends StatefulWidget {
   const GameScore({
@@ -64,10 +65,8 @@ class GameScoreState extends State<GameScore> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              SizedBox(
-                                  height: textSize,
-                                  child: CircleAvatar(
-                                      backgroundColor: player.color)),
+                              ActorToken(actor: player, tileSize: textSize * 2),
+                              const SizedBox(width: 4),
                               Text(
                                 player.name,
                                 style: TextStyle(

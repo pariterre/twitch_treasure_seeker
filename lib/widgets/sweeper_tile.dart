@@ -1,7 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
 import 'package:twitched_minesweeper/models/game_manager.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 
 import 'actor_token.dart';
 
@@ -9,11 +10,11 @@ extension TileColor on Tile {
   Color get color {
     switch (this) {
       case Tile.one:
-        return const Color.fromARGB(255, 9, 148, 183);
+        return const Color.fromARGB(255, 89, 171, 191);
       case Tile.two:
-        return const Color.fromARGB(255, 121, 30, 249);
+        return const Color.fromARGB(255, 30, 139, 249);
       case Tile.three:
-        return Colors.red;
+        return const Color.fromARGB(255, 171, 161, 235);
       case Tile.four:
         return const Color.fromARGB(255, 139, 105, 2);
       case Tile.five:
@@ -53,44 +54,21 @@ class SweeperTile extends StatelessWidget {
     final ennemies = gameManager.ennemiesOnTile(tileIndex);
 
     // index is the number of treasure around the current tile
-    final nbTreasuresAround = tile.index;
+    // final nbTreasuresAround = tile.index;
 
     return Stack(
       alignment: Alignment.center,
       children: [
-        Container(
-          decoration: tile == Tile.starting
-              ? null
-              : BoxDecoration(
-                  color: tile == Tile.concealed
-                      ? ThemeColor.conceiled
-                      : ThemeColor.revealed,
-                  border: Border.all(width: tileSize * 0.02),
+        if (tile != Tile.starting)
+          Container(
+            decoration: const BoxDecoration(
+                // border: Border.all(width: tileSize * 0.02),
                 ),
-          child: tile == Tile.concealed ||
-                  tile == Tile.zero ||
-                  tile == Tile.starting
-              ? null
-              : Center(
-                  child: tile == Tile.treasure
-                      ? Text(
-                          '\u2600',
-                          style: TextStyle(
-                            fontSize: textSize,
-                            color: tile.color,
-                          ),
-                          textAlign: TextAlign.center,
-                        )
-                      : Text(
-                          nbTreasuresAround > 0
-                              ? nbTreasuresAround.toString()
-                              : '',
-                          style: TextStyle(
-                              fontSize: textSize,
-                              color: tile.color,
-                              fontWeight: FontWeight.bold),
-                        )),
-        ),
+            child: Image.asset(tile == Tile.concealed
+                ? 'assets/grass.png'
+                : 'assets/open_grass.png'),
+          ),
+        tile == Tile.treasure ? const _TreasureTile() : Container(),
         if (players.isNotEmpty)
           ...players
               .map((player) => ActorToken(tileSize: tileSize, actor: player)),
@@ -105,5 +83,49 @@ class SweeperTile extends StatelessWidget {
               .map((ennemy) => ActorToken(tileSize: tileSize, actor: ennemy)),
       ],
     );
+  }
+}
+
+class _TreasureTile extends StatefulWidget {
+  const _TreasureTile();
+
+  @override
+  State<_TreasureTile> createState() => _TreasureTileState();
+}
+
+class _TreasureTileState extends State<_TreasureTile>
+    with SingleTickerProviderStateMixin {
+  late final _controller =
+      AnimationController(vsync: this, duration: const Duration(seconds: 6));
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  double _easeOutExponential(double x) {
+    return 1 - (x == 1 ? 1.0 : pow(2, -50 * x).toDouble());
+  }
+
+  double _pulsing(double x) {
+    return 0.05 * (sin(20 * x) + pi) + (1 - 0.3);
+  }
+
+  double _animation(double t) {
+    return _easeOutExponential(t) * _pulsing(t);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder(
+        duration: const Duration(seconds: 4),
+        tween: Tween<double>(begin: 1, end: 0),
+        builder: (context, value, child) {
+          return SizedBox(
+              height: _animation(value) * 30,
+              width: _animation(value) * 30,
+              child: Image.asset('assets/blueberries.png'));
+        });
   }
 }

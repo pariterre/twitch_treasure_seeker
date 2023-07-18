@@ -6,6 +6,7 @@ import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
 import 'package:twitched_minesweeper/models/player.dart';
 import 'package:twitched_minesweeper/screens/game_screen.dart';
+import 'package:twitched_minesweeper/widgets/actor_token.dart';
 
 class LobbyScreen extends StatefulWidget {
   const LobbyScreen({super.key});
@@ -72,10 +73,17 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 : players.keys.map<Widget>((name) {
                     return Padding(
                       padding: EdgeInsets.only(bottom: interlinePadding),
-                      child: Text(
-                        name,
-                        style:
-                            TextStyle(color: Colors.white, fontSize: textSize),
+                      child: Row(
+                        children: [
+                          ActorToken(
+                              actor: players[name]!, tileSize: textSize * 2),
+                          const SizedBox(width: 8),
+                          Text(
+                            name,
+                            style: TextStyle(
+                                color: Colors.white, fontSize: textSize),
+                          ),
+                        ],
                       ),
                     );
                   }).toList(),
@@ -96,7 +104,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Parameters',
+          'Paramètres',
           style: TextStyle(color: Colors.white, fontSize: titleSize),
         ),
         Padding(
