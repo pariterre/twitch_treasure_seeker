@@ -28,7 +28,7 @@ extension TileColor on Tile {
       case Tile.treasure:
         return const Color.fromARGB(255, 10, 41, 66);
       default:
-        throw 'Wrong color';
+        return const Color.fromARGB(0, 0, 0, 0);
     }
   }
 }
@@ -54,7 +54,7 @@ class SweeperTile extends StatelessWidget {
     final ennemies = gameManager.ennemiesOnTile(tileIndex);
 
     // index is the number of treasure around the current tile
-    // final nbTreasuresAround = tile.index;
+    final nbTreasuresAround = tile.index;
 
     return Stack(
       alignment: Alignment.center,
@@ -68,10 +68,18 @@ class SweeperTile extends StatelessWidget {
                 ? 'assets/grass.png'
                 : 'assets/open_grass.png'),
           ),
-        tile == Tile.treasure ? const _TreasureTile() : Container(),
+        tile == Tile.treasure
+            ? const _TreasureTile()
+            : Text(
+                nbTreasuresAround > 0 ? nbTreasuresAround.toString() : '',
+                style: TextStyle(
+                    fontSize: textSize * 0.65,
+                    color: tile.color,
+                    fontWeight: FontWeight.bold),
+              ),
         if (players.isNotEmpty)
-          ...players
-              .map((player) => ActorToken(tileSize: tileSize, actor: player)),
+          ...players.map(
+              (player) => ActorToken(tileSize: tileSize * 1.1, actor: player)),
         // Draw the ennemies and their influence
         ...gameManager
             .ennemiesThatCanAttack(tileIndex)
@@ -93,17 +101,7 @@ class _TreasureTile extends StatefulWidget {
   State<_TreasureTile> createState() => _TreasureTileState();
 }
 
-class _TreasureTileState extends State<_TreasureTile>
-    with SingleTickerProviderStateMixin {
-  late final _controller =
-      AnimationController(vsync: this, duration: const Duration(seconds: 6));
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
+class _TreasureTileState extends State<_TreasureTile> {
   double _easeOutExponential(double x) {
     return 1 - (x == 1 ? 1.0 : pow(2, -50 * x).toDouble());
   }
@@ -120,7 +118,7 @@ class _TreasureTileState extends State<_TreasureTile>
   Widget build(BuildContext context) {
     return TweenAnimationBuilder(
         duration: const Duration(seconds: 4),
-        tween: Tween<double>(begin: 1, end: 0),
+        tween: Tween<double>(begin: 1, end: 0.02),
         builder: (context, value, child) {
           return SizedBox(
               height: _animation(value) * 30,

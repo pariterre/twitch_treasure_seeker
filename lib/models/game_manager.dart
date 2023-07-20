@@ -213,6 +213,14 @@ class GameManager {
           : Tile.concealed);
 
   ///
+  /// Same as tile, but return the non-conceiled value
+  Tile forceGetTile(int index) => index < 0
+      ? Tile.starting
+      : _grid[index] < 0
+          ? Tile.treasure
+          : Tile.values[_grid[index]];
+
+  ///
   /// Get all the players on the tile [index].
   List<Player> playersOnTile(int index) {
     List<Player> out = [];
@@ -396,7 +404,7 @@ class GameManager {
         player.refillEnergy();
 
         // Lower all the number surronding
-        // _lowerTreasureMarker(player.tile);
+        _lowerTreasureMarker(player.tile);
 
         // Notify game interface
         onTreasureFound(player);
@@ -476,24 +484,22 @@ class GameManager {
     }
   }
 
-  // ///
-  // /// When a treasure is found, lower all the surronding numbers
-  // void _lowerTreasureMarker(GameTile treasure) {
-  //   for (var j = -1; j <= 1; j++) {
-  //     // Check the previous col to next col
-  //     for (var k = -1; k <= 1; k++) {
-  //       // Do not check itself
-  //       if (j == 0 && k == 0) continue;
+  ///
+  /// When a treasure is found, lower all the surronding numbers
+  void _lowerTreasureMarker(GameTile treasure) {
+    for (var j = -1; j <= 1; j++) {
+      // Check the previous col to next col
+      for (var k = -1; k <= 1; k++) {
+        // Do not check itself
+        if (j == 0 && k == 0) continue;
 
-  //       final tile = GameTile(treasure.row + j, treasure.col + k);
-  //       if (!isInsideGrid(tile)) continue;
-  //       final index = gridIndex(tile, nbCols);
+        final tile = GameTile(treasure.row + j, treasure.col + k);
+        if (!isInsideGrid(tile)) continue;
+        final index = gridIndex(tile, nbCols);
 
-  //       // If there is a treasure, add it to the counter
-  //       if (_grid[index] > 0) {
-  //         _grid[index]--;
-  //       }
-  //     }
-  //   }
-  // }
+        // If this is not a treasure, reduce that tile by one
+        if (_grid[index] > 0) _grid[index]--;
+      }
+    }
+  }
 }
