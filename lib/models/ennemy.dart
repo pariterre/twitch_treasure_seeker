@@ -43,12 +43,12 @@ class Ennemy extends Actor {
   }
 
   @override
-  bool march({GameManager? gameManager}) {
+  bool march(List<GameTile> forbiddenTiles, {GameManager? gameManager}) {
     if (gameManager == null) throw 'gameManager is mandatory';
     bool shouldUpdate = false;
 
     // If it has reached it has not reached its final position
-    if (super.march()) {
+    if (super.march([])) {
       influenceRadius = influenceRadius > 0 ? influenceRadius - 1 : 0;
       influenceRadiusDelayCmp = 0;
       _updateInfluencedTiles(gameManager);

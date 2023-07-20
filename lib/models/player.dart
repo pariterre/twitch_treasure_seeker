@@ -32,14 +32,14 @@ class Player extends Actor {
     this.minimumRestingTime = minimumRestingTime;
     restingCmp = minimumRestingTime;
 
-    tile = const GameTile.none();
+    tile = const GameTile.starting();
   }
 
   ///
   /// Advance the current position to next position in the queue
   @override
-  bool march() {
-    if (isExhausted || !super.march()) return false;
+  bool march(List<GameTile> otherPlayers) {
+    if (isExhausted || !super.march(otherPlayers)) return false;
 
     energy--;
     restingCmp = 0;

@@ -11,7 +11,7 @@ class GameTile {
       other is GameTile && row == other.row && col == other.col;
 
   const GameTile(this.row, this.col);
-  const GameTile.none()
+  const GameTile.starting()
       : row = -1,
         col = -1;
   GameTile.random(int nbRows, int nbCols)

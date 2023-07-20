@@ -392,7 +392,10 @@ class GameManager {
     for (final p in _players.keys) {
       final player = _players[p]!;
       if (player.rest()) needRedraw.add(NeedRedraw.score);
-      if (player.march()) needRedraw.add(NeedRedraw.grid);
+      if (player
+          .march(_players.keys.map((key) => players[key]!.tile).toList())) {
+        needRedraw.add(NeedRedraw.grid);
+      }
 
       for (final ennemy in _ennemies.keys) {
         if (_ennemies[ennemy]!.attack(player)) {
@@ -415,7 +418,7 @@ class GameManager {
       if (_ennemies[ennemy]!.shouldChangePosition) {
         _ennemies[ennemy]!.addTarget(GameTile.random(_nbRows, _nbCols));
       }
-      if (_ennemies[ennemy]!.march(gameManager: this)) {
+      if (_ennemies[ennemy]!.march([], gameManager: this)) {
         needRedraw.add(NeedRedraw.grid);
       }
     }

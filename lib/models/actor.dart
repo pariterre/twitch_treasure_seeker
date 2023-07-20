@@ -11,13 +11,19 @@ abstract class Actor {
   Actor({required this.name, required this.color});
 
   // Current position of the player
-  GameTile tile = const GameTile.none();
+  GameTile tile = const GameTile.starting();
   final List<GameTile> nextPosition = [];
 
   ///
   /// Advance the current position to next position in the queue
-  bool march() {
+  bool march(List<GameTile> forbiddenTiles) {
     if (nextPosition.isEmpty) return false;
+
+    if (tile != const GameTile.starting() &&
+        forbiddenTiles.contains(nextPosition.first)) {
+      nextPosition.clear();
+      return false;
+    }
 
     tile = nextPosition.removeAt(0);
     return true;

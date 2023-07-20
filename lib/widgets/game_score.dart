@@ -81,7 +81,7 @@ class GameScoreState extends State<GameScore> {
                             ],
                           ),
                           Text(
-                            '${player.treasures} ${player.treasures < 2 ? 'bleuet' : 'bleuets'}${widget.showEnergy ? '(${player.energy} énergies)' : ''}',
+                            '${player.treasures} bleuet${player.treasures < 2 ? ' ' : 's '}${widget.showEnergy ? '(${player.energy} énergies)' : ''}',
                             style: TextStyle(
                                 color: Colors.white, fontSize: textSize),
                           ),
