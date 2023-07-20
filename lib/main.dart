@@ -19,7 +19,8 @@ void main() async {
                 '!chercheursDeBleuets',
                 '!joindre',
                 '!start',
-                '!fin',
+                '!stop',
+                '!reset',
               ],
               followers: [
                 'follower1',

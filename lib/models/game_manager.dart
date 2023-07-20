@@ -151,12 +151,12 @@ class GameManager {
     List<String> out = [];
     var highestScore = -1;
     for (final player in players.keys) {
-      if (players[player]!.treasures >= highestScore) {
-        if (players[player]!.treasures > highestScore) {
-          out.clear;
-        }
+      final treasures = players[player]!.treasures;
+      if (treasures >= highestScore) {
+        if (treasures > highestScore) out.clear();
+
         out.add(player);
-        highestScore = players[player]!.treasures;
+        highestScore = treasures;
       }
     }
     return out;

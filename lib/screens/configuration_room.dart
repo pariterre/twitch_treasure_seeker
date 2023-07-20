@@ -78,7 +78,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
           child: TextField(
             controller: _nbMaxPlayersController,
             onChanged: (value) => setState(() {
-              if (int.tryParse(value) == null) {
+              if (value != '' && int.tryParse(value) == null) {
                 _nbMaxPlayersController.text = '';
               }
             }),
@@ -102,7 +102,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
           child: TextField(
             controller: _maxEnergyController,
             onChanged: (value) => setState(() {
-              if (int.tryParse(value) == null) {
+              if (value != '' && int.tryParse(value) == null) {
                 _maxEnergyController.text = '';
               }
             }),
@@ -129,7 +129,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
               child: TextField(
                 controller: _nbRowsController,
                 onChanged: (value) => setState(() {
-                  if (int.tryParse(value) == null) {
+                  if (value != '' && int.tryParse(value) == null) {
                     _nbRowsController.text = '';
                   }
                 }),
@@ -142,7 +142,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
               child: TextField(
                 controller: _nbColsController,
                 onChanged: (value) => setState(() {
-                  if (int.tryParse(value) == null) {
+                  if (value != '' && int.tryParse(value) == null) {
                     _nbColsController.text = '';
                   }
                 }),
@@ -168,7 +168,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
           child: TextField(
             controller: _nbTreasuresController,
             onChanged: (value) => setState(() {
-              if (int.tryParse(value) == null) {
+              if (value != '' && int.tryParse(value) == null) {
                 _nbTreasuresController.text = '';
               }
             }),
@@ -192,7 +192,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
           child: TextField(
             controller: _restingTimeController,
             onChanged: (value) => setState(() {
-              if (int.tryParse(value) == null) {
+              if (value != '' && int.tryParse(value) == null) {
                 _restingTimeController.text = '';
               }
             }),
@@ -216,7 +216,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
           child: TextField(
             controller: _gameSpeedController,
             onChanged: (value) => setState(() {
-              if (int.tryParse(value) == null) {
+              if (value != '' && int.tryParse(value) == null) {
                 _gameSpeedController.text = '';
               }
             }),

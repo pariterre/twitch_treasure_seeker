@@ -45,6 +45,9 @@ class GameInterface {
   set onRequestStartPlaying(Function()? value) =>
       _onRequestStartPlaying = value;
 
+  Function()? _onRequestReset;
+  set onRequestReset(Function()? value) => _onRequestReset = value;
+
   // This is called when the game is over
   Function()? _onGameOver;
   set onGameOver(Function()? value) => _onGameOver = value;
@@ -78,19 +81,23 @@ class GameInterface {
     if (_status == _Status.play) {
       return await _managePlay(message, username);
     }
+
+    if (_status == _Status.endGame) {
+      return await _manageEnd(message, username);
+    }
   }
 
   ///
   /// Manage inputs from users during the play time
   Future<void> _managePlay(String message, String username) async {
-    // If not a player, do nothing
-    if (!gameManager.players.keys.contains(username)) return;
-
     // Force end of game if asked
-    if (await _isAModerator(username) && message == '!fin') {
+    if (await _isAModerator(username) && message == '!stop') {
       gameManager.forceGameOver();
       return;
     }
+
+    // If not a player, do nothing
+    if (!gameManager.players.keys.contains(username)) return;
 
     // Parse the input. It must be of the format : XY, where X is a letter
     // and Y is a number between 0 to 99 (0 beween outside of the grid
@@ -103,6 +110,16 @@ class GameInterface {
     final row = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
     final col = int.parse(groups[1]!) - 1;
     gameManager.setPlayerMove(username, newTile: GameTile(row, col));
+  }
+
+  ///
+  /// Manage inputs from users during the play time
+  Future<void> _manageEnd(String message, String username) async {
+    // Reset game
+    if (await _isAModerator(username) && message == '!reset') {
+      if (_onRequestReset != null) _onRequestReset!();
+      return;
+    }
   }
 
   ///
