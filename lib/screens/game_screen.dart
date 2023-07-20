@@ -22,7 +22,7 @@ class _GameScreenState extends State<GameScreen> {
 
   final _fadingTextTime = const Duration(milliseconds: 500);
 
-  late final GameInterface _gameInterface;
+  GameInterface? _gameInterface;
   final _treasureFoundKey = GlobalKey<GrowingContainerState>();
   final _attackedKey = GlobalKey<GrowingContainerState>();
   final _scoreKey = GlobalKey<GameScoreState>();
@@ -32,20 +32,24 @@ class _GameScreenState extends State<GameScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _gameInterface =
-        ModalRoute.of(context)!.settings.arguments as GameInterface;
-    _gameInterface.onStateChanged = (needRedraw) {
-      if (needRedraw.contains(NeedRedraw.grid)) {
-        _gridKey.currentState!.rebuild();
-      }
-      if (needRedraw.contains(NeedRedraw.score)) {
-        _scoreKey.currentState!.rebuild();
-      }
-    };
-    _gameInterface.gameManager.newGame();
-    _gameInterface.onGameOver = () => _onGameOver();
-    _gameInterface.onTreasureFound = (username) => _onTreasureFound(username);
-    _gameInterface.onAttacked = (player, ennemy) => _onAttacked(player, ennemy);
+    if (_gameInterface == null) {
+      _gameInterface =
+          ModalRoute.of(context)!.settings.arguments as GameInterface;
+      _gameInterface!.onStateChanged = (needRedraw) {
+        if (needRedraw.contains(NeedRedraw.grid)) {
+          _gridKey.currentState!.rebuild();
+        }
+        if (needRedraw.contains(NeedRedraw.score)) {
+          _scoreKey.currentState!.rebuild();
+        }
+      };
+      _gameInterface!.gameManager.newGame();
+      _gameInterface!.onGameOver = () => _onGameOver();
+      _gameInterface!.onTreasureFound =
+          (username) => _onTreasureFound(username);
+      _gameInterface!.onAttacked =
+          (player, ennemy) => _onAttacked(player, ennemy);
+    }
   }
 
   void _onTreasureFound(String player) => _treasureFoundKey.currentState!
@@ -55,9 +59,9 @@ class _GameScreenState extends State<GameScreen> {
       .showMessage('$ennemy a volé les\nbleuts de $player');
 
   void _onGameOver() {
-    _gameInterface.onStateChanged = null;
-    _gameInterface.onGameOver = null;
-    _gameInterface.onTreasureFound = null;
+    _gameInterface!.onStateChanged = null;
+    _gameInterface!.onGameOver = null;
+    _gameInterface!.onTreasureFound = null;
 
     Future.delayed(Duration(
         milliseconds:
@@ -74,7 +78,7 @@ class _GameScreenState extends State<GameScreen> {
     final offsetFromBorder = windowHeight * 0.02;
     final gridHeight = windowHeight - 2 * offsetFromBorder;
 
-    final tileSize = gridHeight / (_gameInterface.gameManager.nbRows + 1);
+    final tileSize = gridHeight / (_gameInterface!.gameManager.nbRows + 1);
 
     return Scaffold(
       body: Container(
@@ -91,19 +95,19 @@ class _GameScreenState extends State<GameScreen> {
                     left: offsetFromBorder, top: offsetFromBorder),
                 child: GameGrid(
                     key: _gridKey,
-                    gameInterface: _gameInterface,
+                    gameInterface: _gameInterface!,
                     tileSize: tileSize),
               ),
               Positioned(
-                  left: (_gameInterface.gameManager.nbCols + 1) * tileSize +
+                  left: (_gameInterface!.gameManager.nbCols + 1) * tileSize +
                       offsetFromBorder * 2,
                   top: offsetFromBorder + tileSize,
-                  child:
-                      GameScore(key: _scoreKey, gameInterface: _gameInterface)),
+                  child: GameScore(
+                      key: _scoreKey, gameInterface: _gameInterface!)),
               Positioned(
                 left: offsetFromBorder,
                 right: windowWidth -
-                    ((_gameInterface.gameManager.nbCols + 1.5) * tileSize +
+                    ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
                         2 * offsetFromBorder),
                 top: 0,
                 bottom: windowHeight * 1 / 4,
@@ -120,7 +124,7 @@ class _GameScreenState extends State<GameScreen> {
               Positioned(
                 left: offsetFromBorder,
                 right: windowWidth -
-                    ((_gameInterface.gameManager.nbCols + 1.5) * tileSize +
+                    ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
                         2 * offsetFromBorder),
                 top: 0,
                 bottom: windowHeight * 1 / 2,
@@ -138,8 +142,8 @@ class _GameScreenState extends State<GameScreen> {
                   alignment: Alignment.centerRight,
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
-                    child:
-                        TwitchDebugPanel(manager: _gameInterface.twitchManager),
+                    child: TwitchDebugPanel(
+                        manager: _gameInterface!.twitchManager),
                   )),
             ],
           ),
