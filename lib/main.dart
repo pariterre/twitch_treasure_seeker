@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/screens/configuration_room.dart';
@@ -52,6 +53,7 @@ void main() async {
                 TwitchScope.readModerator,
               ],
               redirectAddress: 'http://localhost:3000',
+              useAuthenticationService: kIsWeb,
             ),
             onFinishedConnexion: (manager) => Navigator.of(ctx)
                 .pushReplacementNamed(ConfigurationRoom.route,
