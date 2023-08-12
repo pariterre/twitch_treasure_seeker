@@ -52,8 +52,13 @@ void main() async {
                 TwitchScope.readSubscribers,
                 TwitchScope.readModerator,
               ],
-              redirectAddress: 'http://localhost:3000',
+              redirectAddress: kIsWeb
+                  ? 'https://twitchauthentication.pariterre.net:3000'
+                  : 'http://localhost:3000',
               useAuthenticationService: kIsWeb,
+              authenticationServiceAddress: kIsWeb
+                  ? 'wss://twitchauthentication.pariterre.net:3002'
+                  : null,
             ),
             onFinishedConnexion: (manager) => Navigator.of(ctx)
                 .pushReplacementNamed(ConfigurationRoom.route,
