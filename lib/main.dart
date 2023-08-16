@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/screens/configuration_room.dart';
@@ -22,6 +21,7 @@ void main() async {
                 '!start',
                 '!stop',
                 '!reset',
+                '!setup',
               ],
               followers: [
                 'follower1',
@@ -52,13 +52,11 @@ void main() async {
                 TwitchScope.readSubscribers,
                 TwitchScope.readModerator,
               ],
-              redirectAddress: kIsWeb
-                  ? 'https://twitchauthentication.pariterre.net:3000'
-                  : 'http://localhost:3000',
-              useAuthenticationService: kIsWeb,
-              authenticationServiceAddress: kIsWeb
-                  ? 'wss://twitchauthentication.pariterre.net:3002'
-                  : null,
+              redirectAddress:
+                  'https://twitchauthentication.pariterre.net:3000',
+              useAuthenticationService: true,
+              authenticationServiceAddress:
+                  'wss://twitchauthentication.pariterre.net:3002',
             ),
             onFinishedConnexion: (manager) => Navigator.of(ctx)
                 .pushReplacementNamed(ConfigurationRoom.route,

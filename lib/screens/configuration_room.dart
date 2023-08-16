@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
@@ -25,13 +26,19 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   final _gameSpeedController = TextEditingController();
 
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() async {
     super.didChangeDependencies();
 
     if (_mainInterface == null) {
-      _mainInterface = GameInterface(
+      _mainInterface = await GameInterface.factory(
           twitchManager:
               ModalRoute.of(context)!.settings.arguments as TwitchManager);
+      if (mounted &&
+          !_mainInterface!.gameManager.isGameRunningForTheFirstTime) {
+        Navigator.of(context)
+            .pushReplacementNamed(IdleRoom.route, arguments: _mainInterface);
+      }
+
       // Set default parameters
       _nbMaxPlayersController.text =
           _mainInterface!.gameManager.maxPlayers.toString();
@@ -49,23 +56,41 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   void _goToIdleRoom() {
-    final gameSpeed = int.tryParse(_gameSpeedController.text);
-
-    _mainInterface!.gameManager.setGameParameters(
-      maximumPlayers: int.tryParse(_nbMaxPlayersController.text),
-      maxEnergy: int.tryParse(_maxEnergyController.text),
-      nbRows: int.tryParse(_nbRowsController.text),
-      nbCols: int.tryParse(_nbColsController.text),
-      nbTreasures: int.tryParse(_nbTreasuresController.text),
-      restingTime: int.tryParse(_restingTimeController.text),
-      gameSpeed: gameSpeed == null ? null : Duration(milliseconds: gameSpeed),
-    );
+    if (int.tryParse(_nbMaxPlayersController.text) == null ||
+        int.tryParse(_maxEnergyController.text) == null ||
+        int.tryParse(_nbRowsController.text) == null ||
+        int.tryParse(_nbColsController.text) == null ||
+        int.tryParse(_nbTreasuresController.text) == null ||
+        int.tryParse(_restingTimeController.text) == null ||
+        int.tryParse(_gameSpeedController.text) == null) return;
 
     Navigator.of(context)
         .pushReplacementNamed(IdleRoom.route, arguments: _mainInterface);
   }
 
+  void _resetGameParameters() {
+    _mainInterface!.gameManager.resetGameParameters();
+    _nbMaxPlayersController.text =
+        _mainInterface!.gameManager.maxPlayers.toString();
+    _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
+    _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
+    _nbTreasuresController.text =
+        _mainInterface!.gameManager.nbTreasures.toString();
+    _maxEnergyController.text =
+        _mainInterface!.gameManager.maxEnergy.toString();
+    _restingTimeController.text =
+        _mainInterface!.gameManager.restingTime.toString();
+    _gameSpeedController.text =
+        _mainInterface!.gameManager.gameSpeed.inMilliseconds.toString();
+  }
+
   Widget _buildMaxPlayersForm() {
+    void setMaxPlayers() {
+      final value = int.tryParse(_nbMaxPlayersController.text);
+      if (value == null) return;
+      _mainInterface!.gameManager.setGameParameters(maximumPlayers: value);
+    }
+
     final textSize = ThemeSize.text(context);
 
     return Row(
@@ -75,14 +100,17 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             style: TextStyle(color: Colors.white, fontSize: textSize)),
         SizedBox(
           width: 50,
-          child: TextField(
-            controller: _nbMaxPlayersController,
-            onChanged: (value) => setState(() {
-              if (value != '' && int.tryParse(value) == null) {
-                _nbMaxPlayersController.text = '';
-              }
-            }),
-            style: const TextStyle(color: Colors.black),
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              if (!hasFocus) setMaxPlayers();
+            },
+            child: TextField(
+              controller: _nbMaxPlayersController,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
+              style: const TextStyle(color: Colors.black),
+            ),
           ),
         ),
       ],
@@ -90,6 +118,12 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Widget _buildMaxEnergy() {
+    void setMaxEnergy() {
+      final value = int.tryParse(_maxEnergyController.text);
+      if (value == null) return;
+      _mainInterface!.gameManager.setGameParameters(maxEnergy: value);
+    }
+
     final textSize = ThemeSize.text(context);
 
     return Row(
@@ -99,14 +133,17 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             style: TextStyle(color: Colors.white, fontSize: textSize)),
         SizedBox(
           width: 50,
-          child: TextField(
-            controller: _maxEnergyController,
-            onChanged: (value) => setState(() {
-              if (value != '' && int.tryParse(value) == null) {
-                _maxEnergyController.text = '';
-              }
-            }),
-            style: const TextStyle(color: Colors.black),
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              if (!hasFocus) setMaxEnergy();
+            },
+            child: TextField(
+              controller: _maxEnergyController,
+              style: const TextStyle(color: Colors.black),
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
+            ),
           ),
         ),
       ],
@@ -114,6 +151,18 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Widget _buildDimensionsForm() {
+    void setNbRows() {
+      final value = int.tryParse(_nbRowsController.text);
+      if (value == null) return;
+      _mainInterface!.gameManager.setGameParameters(nbRows: value);
+    }
+
+    void setNbCols() {
+      final value = int.tryParse(_nbColsController.text);
+      if (value == null) return;
+      _mainInterface!.gameManager.setGameParameters(nbCols: value);
+    }
+
     final textSize = ThemeSize.text(context);
 
     return Row(
@@ -126,27 +175,33 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
           children: [
             SizedBox(
               width: 50,
-              child: TextField(
-                controller: _nbRowsController,
-                onChanged: (value) => setState(() {
-                  if (value != '' && int.tryParse(value) == null) {
-                    _nbRowsController.text = '';
-                  }
-                }),
-                style: const TextStyle(color: Colors.black),
+              child: Focus(
+                onFocusChange: (hasFocus) {
+                  if (!hasFocus) setNbRows();
+                },
+                child: TextField(
+                  controller: _nbRowsController,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  style: const TextStyle(color: Colors.black),
+                ),
               ),
             ),
             const SizedBox(width: 10),
             SizedBox(
               width: 50,
-              child: TextField(
-                controller: _nbColsController,
-                onChanged: (value) => setState(() {
-                  if (value != '' && int.tryParse(value) == null) {
-                    _nbColsController.text = '';
-                  }
-                }),
-                style: const TextStyle(color: Colors.black),
+              child: Focus(
+                onFocusChange: (hasFocus) {
+                  if (!hasFocus) setNbCols();
+                },
+                child: TextField(
+                  controller: _nbColsController,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  style: const TextStyle(color: Colors.black),
+                ),
               ),
             ),
           ],
@@ -156,6 +211,12 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Widget _buildTreasuresForm() {
+    void setTeasures() {
+      final value = int.tryParse(_nbTreasuresController.text);
+      if (value == null) return;
+      _mainInterface!.gameManager.setGameParameters(nbTreasures: value);
+    }
+
     final textSize = ThemeSize.text(context);
 
     return Row(
@@ -165,14 +226,17 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             style: TextStyle(color: Colors.white, fontSize: textSize)),
         SizedBox(
           width: 50,
-          child: TextField(
-            controller: _nbTreasuresController,
-            onChanged: (value) => setState(() {
-              if (value != '' && int.tryParse(value) == null) {
-                _nbTreasuresController.text = '';
-              }
-            }),
-            style: const TextStyle(color: Colors.black),
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              if (!hasFocus) setTeasures();
+            },
+            child: TextField(
+              controller: _nbTreasuresController,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
+              style: const TextStyle(color: Colors.black),
+            ),
           ),
         ),
       ],
@@ -180,6 +244,12 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Widget _buildRestingTimeForm() {
+    void setResting() {
+      final value = int.tryParse(_restingTimeController.text);
+      if (value == null) return;
+      _mainInterface!.gameManager.setGameParameters(restingTime: value);
+    }
+
     final textSize = ThemeSize.text(context);
 
     return Row(
@@ -189,14 +259,17 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             style: TextStyle(color: Colors.white, fontSize: textSize)),
         SizedBox(
           width: 50,
-          child: TextField(
-            controller: _restingTimeController,
-            onChanged: (value) => setState(() {
-              if (value != '' && int.tryParse(value) == null) {
-                _restingTimeController.text = '';
-              }
-            }),
-            style: const TextStyle(color: Colors.black),
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              if (!hasFocus) setResting();
+            },
+            child: TextField(
+              controller: _restingTimeController,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
+              style: const TextStyle(color: Colors.black),
+            ),
           ),
         ),
       ],
@@ -204,6 +277,13 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Widget _buildGameSpeed() {
+    void setGameSpeed() {
+      final value = int.tryParse(_gameSpeedController.text);
+      if (value == null) return;
+      _mainInterface!.gameManager
+          .setGameParameters(gameSpeed: Duration(milliseconds: value));
+    }
+
     final textSize = ThemeSize.text(context);
 
     return Row(
@@ -213,14 +293,17 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
             style: TextStyle(color: Colors.white, fontSize: textSize)),
         SizedBox(
           width: 55,
-          child: TextField(
-            controller: _gameSpeedController,
-            onChanged: (value) => setState(() {
-              if (value != '' && int.tryParse(value) == null) {
-                _gameSpeedController.text = '';
-              }
-            }),
-            style: const TextStyle(color: Colors.black),
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              if (!hasFocus) setGameSpeed();
+            },
+            child: TextField(
+              controller: _gameSpeedController,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
+              style: const TextStyle(color: Colors.black),
+            ),
           ),
         ),
       ],
@@ -302,14 +385,30 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _buildParameters(),
-                  ElevatedButton(
-                    onPressed: _goToIdleRoom,
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                    child: const Text(
-                      'Start',
-                      style: TextStyle(color: Colors.black),
-                    ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _resetGameParameters,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white),
+                        child: const Text(
+                          'Remise à zéro',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: _goToIdleRoom,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white),
+                        child: const Text(
+                          'Start',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                    ],
                   )
                 ],
               ),

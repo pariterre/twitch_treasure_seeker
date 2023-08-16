@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ennemy.dart';
 import 'enums.dart';
@@ -31,6 +32,15 @@ GameTile gridTile(int index, int nbCols) =>
     GameTile(index < 0 ? -1 : index ~/ nbCols, index < 0 ? -1 : index % nbCols);
 
 class GameManager {
+  bool _isFirstTime = true; // If it is the first time the game is run
+  Future<void> setIsGameRunningForTheFirstTime(bool value) async {
+    _isFirstTime = value;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isFirstTime', _isFirstTime);
+  }
+
+  bool get isGameRunningForTheFirstTime => _isFirstTime; // TODO
+
   var _status = GameStatus.initial;
   final Function(List<NeedRedraw>) needRedrawCallback;
   final Function(Player) onTreasureFound;
@@ -38,24 +48,29 @@ class GameManager {
   final Function() onGameOver;
 
   // speed a which each movements are triggered
-  Duration _gameSpeed = const Duration(milliseconds: 500);
+  final Duration _defaultGameSpeed = const Duration(milliseconds: 500);
+  late Duration _gameSpeed = _defaultGameSpeed;
   Duration get gameSpeed => _gameSpeed;
 
   // Maximum number of players allowed to play
-  int _maxPlayers = 10;
+  final int _defaultMaxPlayers = 10;
+  late int _maxPlayers = _defaultMaxPlayers;
   int get maxPlayers => _maxPlayers;
   final Map<String, Player> _players = {};
   final Map<String, Ennemy> _ennemies = {};
 
   // Size of the grid
-  int _nbRows = 20;
+  final int _defaultNbRows = 20;
+  late int _nbRows = _defaultNbRows;
   int get nbRows => _nbRows;
 
-  int _nbCols = 10;
+  final int _defaultNbCols = 10;
+  late int _nbCols = _defaultNbCols;
   int get nbCols => _nbCols;
 
   // Number of treasures on the grid
-  int _nbTreasures = 40;
+  final int _defaultNbTreasures = 40;
+  late int _nbTreasures = _defaultNbTreasures;
   int get nbTreasures => _nbTreasures;
 
   // The actual grid
@@ -65,9 +80,12 @@ class GameManager {
   // The player stored by username
   Map<String, Player> get players => _players;
 
-  int _maxEnergy = 5;
+  final int _defaultMaxEnergy = 8;
+  late int _maxEnergy = _defaultMaxEnergy;
   int get maxEnergy => _maxEnergy;
-  int _restingTime = 2;
+
+  final int _defaultRestingTime = 2;
+  late int _restingTime = _defaultRestingTime;
   int get restingTime => _restingTime;
 
   final int _rabbitRestingTime = 20;
@@ -76,14 +94,30 @@ class GameManager {
   bool _canRegister = true;
   void closeRegistration() => _canRegister = false;
 
-  GameManager({
+  static Future<GameManager> factory({
+    required Function(List<NeedRedraw>) needRedrawCallback,
+    required Function(Player) onTreasureFound,
+    required Function(Player, Ennemy) onAttacked,
+    required Function() onGameOver,
+  }) async {
+    final manager = GameManager._(
+        needRedrawCallback: needRedrawCallback,
+        onTreasureFound: onTreasureFound,
+        onAttacked: onAttacked,
+        onGameOver: onGameOver);
+
+    await manager._loadGameParameters();
+    return manager;
+  }
+
+  GameManager._({
     required this.needRedrawCallback,
     required this.onTreasureFound,
     required this.onAttacked,
     required this.onGameOver,
   }) {
     _generateGrid();
-    _startTimer();
+    _startGameLoopTimer();
   }
 
   ///
@@ -92,7 +126,7 @@ class GameManager {
 
   ///
   /// Set the game parameters
-  void setGameParameters({
+  Future<void> setGameParameters({
     int? maximumPlayers,
     int? nbRows,
     int? nbCols,
@@ -100,7 +134,7 @@ class GameManager {
     int? maxEnergy,
     int? restingTime,
     Duration? gameSpeed,
-  }) {
+  }) async {
     maximumPlayers = maximumPlayers ?? _maxPlayers;
     nbRows = nbRows ?? _nbRows;
     nbCols = nbCols ?? _nbCols;
@@ -143,6 +177,61 @@ class GameManager {
     _maxEnergy = maxEnergy;
     _restingTime = restingTime;
     _gameSpeed = gameSpeed;
+
+    await _saveGameParameters();
+  }
+
+  Future<void> resetGameParameters() async => await setGameParameters(
+      maximumPlayers: _defaultMaxPlayers,
+      nbRows: _defaultNbRows,
+      nbCols: _defaultNbCols,
+      nbTreasures: _defaultNbTreasures,
+      maxEnergy: _defaultMaxEnergy,
+      restingTime: _defaultRestingTime,
+      gameSpeed: _defaultGameSpeed);
+
+  ///
+  /// Load parameters from a previous session
+  Future<void> _loadGameParameters() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    _isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+    final maximumPlayers = prefs.getInt('maximumPlayers');
+    final nbRows = prefs.getInt('nbRows');
+    final nbCols = prefs.getInt('nbCols');
+    final nbTreasures = prefs.getInt('nbTreasures');
+    final maxEnergy = prefs.getInt('maxEnergy');
+    final restingTime = prefs.getInt('restingTime');
+    final gameSpeed = prefs.getInt('gameSpeed') == null
+        ? null
+        : Duration(milliseconds: prefs.getInt('gameSpeed')!);
+
+    setGameParameters(
+      maximumPlayers: maximumPlayers,
+      nbRows: nbRows,
+      nbCols: nbCols,
+      nbTreasures: nbTreasures,
+      maxEnergy: maxEnergy,
+      restingTime: restingTime,
+      gameSpeed: gameSpeed,
+    );
+  }
+
+  ///
+  /// Load parameters from a previous session
+  Future<void> _saveGameParameters() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setBool('isFirstTime', false);
+
+    prefs.setInt('maximumPlayers', _maxPlayers);
+    prefs.setInt('nbRows', _nbRows);
+    prefs.setInt('nbCols', _nbCols);
+    prefs.setInt('nbTreasures', _nbTreasures);
+    prefs.setInt('maxEnergy', _maxEnergy);
+    prefs.setInt('restingTime', _restingTime);
+    prefs.setInt('gameSpeed', _gameSpeed.inMilliseconds);
   }
 
   ///
@@ -379,7 +468,7 @@ class GameManager {
 
   ///
   /// Start the timer that calls the game loop
-  void _startTimer() => Timer.periodic(_gameSpeed, (_) => _gameLoop());
+  void _startGameLoopTimer() => Timer.periodic(_gameSpeed, (_) => _gameLoop());
 
   ///
   /// Internal loop that is called each time step. It advances the player

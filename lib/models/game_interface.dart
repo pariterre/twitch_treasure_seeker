@@ -12,24 +12,40 @@ enum _Status {
 }
 
 class GameInterface {
-  late final gameManager = GameManager(
-      needRedrawCallback: (needRedraw) {
-        if (_onStateChanged != null) _onStateChanged!(needRedraw);
-      },
-      onTreasureFound: (player) {
-        if (_onTreasureFound != null) _onTreasureFound!(player.name);
-      },
-      onAttacked: (player, ennemy) => _onAttacked!(player.name, ennemy.name),
-      onGameOver: () {
-        _status = _Status.endGame;
-        if (_onGameOver != null) _onGameOver!();
-      });
+  late final GameManager gameManager;
   _Status _status = _Status.waitForRequestLaunchGame;
 
   TwitchManager twitchManager;
   List<String>? _moderators;
 
-  GameInterface({required this.twitchManager}) {
+  static Future<GameInterface> factory(
+      {required TwitchManager twitchManager}) async {
+    final gameInterface = GameInterface._partial(twitchManager: twitchManager);
+    gameInterface.gameManager = await GameManager.factory(
+        needRedrawCallback: (needRedraw) {
+          if (gameInterface._onStateChanged != null) {
+            gameInterface._onStateChanged!(needRedraw);
+          }
+        },
+        onTreasureFound: (player) {
+          if (gameInterface._onTreasureFound != null) {
+            gameInterface._onTreasureFound!(player.name);
+          }
+        },
+        onAttacked: (player, ennemy) =>
+            gameInterface._onAttacked!(player.name, ennemy.name),
+        onGameOver: () {
+          gameInterface._status = _Status.endGame;
+          if (gameInterface._onGameOver != null) gameInterface._onGameOver!();
+        });
+    return gameInterface;
+  }
+
+  ///
+  /// This constructor prepares everything except for the game manager. It
+  /// should therefore not be used as is, but in conjonction with a proper
+  /// constructor that properly construct gameManager as well
+  GameInterface._partial({required this.twitchManager}) {
     twitchManager.irc.messageCallback = _messageReceived;
   }
 
@@ -39,6 +55,10 @@ class GameInterface {
     _onRequestLaunchGame = value;
     if (value != null) _status = _Status.waitForRequestLaunchGame;
   }
+
+  // This is called when a moderator requested setup screen
+  Function()? _onRequestSetupScreen;
+  set onRequestSetupScreen(Function()? value) => _onRequestSetupScreen = value;
 
   // This is called when the moderator requested to start the game
   Function()? _onRequestStartPlaying;
@@ -147,9 +167,15 @@ class GameInterface {
   /// Manage inputs during idle
   Future<void> _checkForLaunchingGameMessage(
       String username, String message) async {
-    if (await _isAModerator(username) && message == '!chercheursDeBleuets') {
-      _status = _Status.waitForPlayerToJoin;
-      if (_onRequestLaunchGame != null) _onRequestLaunchGame!();
+    if (await _isAModerator(username)) {
+      if (message == '!chercheursDeBleuets') {
+        _status = _Status.waitForPlayerToJoin;
+        if (_onRequestLaunchGame != null) _onRequestLaunchGame!();
+      }
+
+      if (message == '!setup') {
+        if (_onRequestSetupScreen != null) _onRequestSetupScreen!();
+      }
     }
   }
 

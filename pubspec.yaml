@@ -9,6 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
+  shared_preferences: ^2.2.0
   twitch_manager:
     path: ./plugins/twitch_manager
 

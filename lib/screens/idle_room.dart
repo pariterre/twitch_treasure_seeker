@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
+import 'package:twitched_minesweeper/screens/configuration_room.dart';
 import 'package:twitched_minesweeper/screens/lobby_screen.dart';
 
 class IdleRoom extends StatefulWidget {
@@ -23,12 +24,25 @@ class _IdleRoomState extends State<IdleRoom> {
     _mainInterface =
         ModalRoute.of(context)!.settings.arguments as GameInterface;
     _mainInterface.gameManager.resetPlayers();
-    _mainInterface.onRequestLaunchGame = onRequestLaunchGame;
+    _mainInterface.onRequestSetupScreen = _onRequestSetupScreen;
+    _mainInterface.onRequestLaunchGame = _onRequestLaunchGame;
   }
 
-  void onRequestLaunchGame() {
+  void _unregisterCallbacks() {
+    _mainInterface.onRequestSetupScreen = null;
     _mainInterface.onRequestLaunchGame = null;
+  }
 
+  void _onRequestSetupScreen() async {
+    _unregisterCallbacks();
+    await _mainInterface.gameManager.setIsGameRunningForTheFirstTime(true);
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed(ConfigurationRoom.route,
+        arguments: _mainInterface.twitchManager);
+  }
+
+  void _onRequestLaunchGame() {
+    _unregisterCallbacks();
     Navigator.of(context)
         .pushReplacementNamed(LobbyScreen.route, arguments: _mainInterface);
   }
