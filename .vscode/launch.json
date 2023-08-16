@@ -5,22 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "twitch_multi_minesweeper",
+            "name": "Treasure seeker (Web security disabled)",
             "request": "launch",
             "type": "dart",
             "args": ["--web-browser-flag=--disable-web-security"]
         },
         {
-            "name": "twitch_multi_minesweeper (profile mode)",
+            "name": "Treasure seeker",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "twitch_multi_minesweeper (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
+        }
     ]
 }
