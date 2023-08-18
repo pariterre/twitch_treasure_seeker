@@ -13,7 +13,7 @@ void main() async {
     routes: {
       TwitchAuthenticationScreen.route: (ctx) => TwitchAuthenticationScreen(
             mockOptions: const TwitchMockOptions(
-              isActive: true,
+              isActive: false,
               moderators: ['modo1'],
               messagesModerators: [
                 '!chercheursDeBleuets',

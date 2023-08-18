@@ -39,7 +39,7 @@ class GameManager {
     prefs.setBool('isFirstTime', _isFirstTime);
   }
 
-  bool get isGameRunningForTheFirstTime => _isFirstTime; // TODO
+  bool get isGameRunningForTheFirstTime => _isFirstTime;
 
   var _status = GameStatus.initial;
   final Function(List<NeedRedraw>) needRedrawCallback;
