@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/enums.dart';
@@ -27,6 +28,15 @@ class _GameScreenState extends State<GameScreen> {
   final _attackedKey = GlobalKey<GrowingContainerState>();
   final _scoreKey = GlobalKey<GameScoreState>();
   final _gridKey = GlobalKey<GameGridState>();
+
+  final _audioPlayer = AudioPlayer()
+    ..play(AssetSource('music_sugar_plum.mp3'), volume: 0.25);
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
