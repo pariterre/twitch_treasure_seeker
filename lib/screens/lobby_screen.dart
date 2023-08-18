@@ -169,12 +169,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
                   ],
                 ),
               )),
-          Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 30),
-                child: TwitchDebugPanel(manager: _mainInterface.twitchManager),
-              )),
+          TwitchDebugPanel(
+              manager: _mainInterface.twitchManager,
+              startingPosition: Offset(MediaQuery.of(context).size.width - 300,
+                  MediaQuery.of(context).size.height / 2 - 100)),
         ],
       ),
     ));

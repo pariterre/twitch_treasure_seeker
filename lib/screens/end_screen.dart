@@ -85,13 +85,11 @@ class EndScreen extends StatelessWidget {
                   left: offsetFromBorder,
                   top: offsetFromBorder,
                   child: _buildCongratulation(context, gameInterface)),
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child:
-                        TwitchDebugPanel(manager: gameInterface.twitchManager),
-                  )),
+              TwitchDebugPanel(
+                  manager: gameInterface.twitchManager,
+                  startingPosition: Offset(
+                      MediaQuery.of(context).size.width - 300,
+                      MediaQuery.of(context).size.height / 2 - 100)),
             ],
           ),
         ),

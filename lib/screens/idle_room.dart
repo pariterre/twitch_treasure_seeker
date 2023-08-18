@@ -58,7 +58,10 @@ class _IdleRoomState extends State<IdleRoom> {
             height: MediaQuery.of(context).size.height,
             decoration: const BoxDecoration(color: ThemeColor.greenScreen),
           ),
-          TwitchDebugPanel(manager: _mainInterface.twitchManager),
+          TwitchDebugPanel(
+              manager: _mainInterface.twitchManager,
+              startingPosition: Offset(MediaQuery.of(context).size.width - 300,
+                  MediaQuery.of(context).size.height / 2 - 100)),
         ],
       ),
     );

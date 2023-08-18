@@ -138,13 +138,11 @@ class _GameScreenState extends State<GameScreen> {
                   backgroundColor: Colors.red,
                 )),
               ),
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: TwitchDebugPanel(
-                        manager: _gameInterface!.twitchManager),
-                  )),
+              TwitchDebugPanel(
+                  manager: _gameInterface!.twitchManager,
+                  startingPosition: Offset(
+                      MediaQuery.of(context).size.width - 300,
+                      MediaQuery.of(context).size.height / 2 - 100)),
             ],
           ),
         ),
