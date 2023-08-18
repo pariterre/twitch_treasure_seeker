@@ -15,7 +15,14 @@ class GameInterface {
   late final GameManager gameManager;
   _Status _status = _Status.waitForRequestLaunchGame;
 
-  TwitchManager twitchManager;
+  TwitchManager _twitchManager;
+  void updateTwitchManager(TwitchManager manager) {
+    _twitchManager = manager;
+    _twitchManager.irc.messageCallback = _messageReceived;
+  }
+
+  TwitchManager get twitchManager => _twitchManager;
+
   List<String>? _moderators;
 
   static Future<GameInterface> factory(
@@ -45,8 +52,9 @@ class GameInterface {
   /// This constructor prepares everything except for the game manager. It
   /// should therefore not be used as is, but in conjonction with a proper
   /// constructor that properly construct gameManager as well
-  GameInterface._partial({required this.twitchManager}) {
-    twitchManager.irc.messageCallback = _messageReceived;
+  GameInterface._partial({required TwitchManager twitchManager})
+      : _twitchManager = twitchManager {
+    updateTwitchManager(twitchManager);
   }
 
   // This is called when a moderator requested launching the game

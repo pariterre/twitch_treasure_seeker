@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:twitch_manager/twitch_manager.dart';
 import 'package:twitched_minesweeper/models/game_interface.dart';
 import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
+import 'package:twitched_minesweeper/models/twitch_config.dart';
 import 'package:twitched_minesweeper/screens/idle_room.dart';
+import 'package:twitched_minesweeper/widgets/are_you_sure_dialog.dart';
 
 class ConfigurationRoom extends StatefulWidget {
   const ConfigurationRoom({super.key});
@@ -30,29 +32,59 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     super.didChangeDependencies();
 
     if (_mainInterface == null) {
-      _mainInterface = await GameInterface.factory(
-          twitchManager:
-              ModalRoute.of(context)!.settings.arguments as TwitchManager);
-      if (mounted &&
-          !_mainInterface!.gameManager.isGameRunningForTheFirstTime) {
-        Navigator.of(context)
-            .pushReplacementNamed(IdleRoom.route, arguments: _mainInterface);
-      }
-
-      // Set default parameters
-      _nbMaxPlayersController.text =
-          _mainInterface!.gameManager.maxPlayers.toString();
-      _maxEnergyController.text =
-          _mainInterface!.gameManager.maxEnergy.toString();
-      _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
-      _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
-      _nbTreasuresController.text =
-          _mainInterface!.gameManager.nbTreasures.toString();
-      _restingTimeController.text =
-          _mainInterface!.gameManager.restingTime.toString();
-      _gameSpeedController.text =
-          _mainInterface!.gameManager.gameSpeed.inMilliseconds.toString();
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _initializeMainInterface();
+      });
     }
+  }
+
+  Future<void> _initializeMainInterface() async {
+    if (!mounted) return;
+
+    final twitchManager = ModalRoute.of(context)!.settings.arguments == null
+        ? await _getConnectedTwitchManager(loadPreviousSession: true)
+        : ModalRoute.of(context)!.settings.arguments as TwitchManager;
+
+    _mainInterface = await GameInterface.factory(twitchManager: twitchManager);
+    if (mounted && !_mainInterface!.gameManager.isGameRunningForTheFirstTime) {
+      Navigator.of(context)
+          .pushReplacementNamed(IdleRoom.route, arguments: _mainInterface);
+    }
+
+    // Set default parameters
+    _nbMaxPlayersController.text =
+        _mainInterface!.gameManager.maxPlayers.toString();
+    _maxEnergyController.text =
+        _mainInterface!.gameManager.maxEnergy.toString();
+    _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
+    _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
+    _nbTreasuresController.text =
+        _mainInterface!.gameManager.nbTreasures.toString();
+    _restingTimeController.text =
+        _mainInterface!.gameManager.restingTime.toString();
+    _gameSpeedController.text =
+        _mainInterface!.gameManager.gameSpeed.inMilliseconds.toString();
+    setState(() {});
+  }
+
+  Future<void> _reinitializeTwitchConnection() async {
+    final manager =
+        await _getConnectedTwitchManager(loadPreviousSession: false);
+    _mainInterface!.updateTwitchManager(manager);
+  }
+
+  Future<TwitchManager> _getConnectedTwitchManager(
+      {required bool loadPreviousSession}) async {
+    return (await showDialog<TwitchManager>(
+      context: context,
+      builder: (context) => Dialog(
+          child: TwitchAuthenticationScreen(
+        mockOptions: twitchMocker,
+        onFinishedConnexion: (manager) => Navigator.pop(context, manager),
+        appInfo: twitchAppInfo,
+        loadPreviousSession: loadPreviousSession,
+      )),
+    ))!;
   }
 
   void _goToIdleRoom() {
@@ -365,57 +397,82 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
 
     final smallPadding = ThemePadding.small(context);
 
-    return Scaffold(
-      body: Container(
-        height: windowHeight,
-        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-        child: Center(
-          child: Container(
-            width: windowHeight * 0.5,
-            decoration: const BoxDecoration(color: ThemeColor.main),
-            child: Padding(
-              padding: EdgeInsets.only(
-                  left: smallPadding,
-                  top: smallPadding,
-                  bottom: smallPadding * 1.5,
-                  right: smallPadding),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildParameters(),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ElevatedButton(
-                        onPressed: _resetGameParameters,
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white),
-                        child: const Text(
-                          'Remise à zéro',
-                          style: TextStyle(color: Colors.black),
+    return _mainInterface == null
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : Scaffold(
+            body: Container(
+              height: windowHeight,
+              decoration: const BoxDecoration(color: ThemeColor.greenScreen),
+              child: Center(
+                child: Container(
+                  width: windowHeight * 0.5,
+                  decoration: const BoxDecoration(color: ThemeColor.main),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        left: smallPadding,
+                        top: smallPadding,
+                        bottom: smallPadding * 1.5,
+                        right: smallPadding),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildParameters(),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ElevatedButton(
+                              onPressed: _resetGameParameters,
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white),
+                              child: const Text(
+                                'Remise à zéro',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: _goToIdleRoom,
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white),
+                              child: const Text(
+                                'Start',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton(
-                        onPressed: _goToIdleRoom,
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white),
-                        child: const Text(
-                          'Start',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final answer = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => const AreYouSureDialog(
+                                      title: 'Reconnexion à Twitch',
+                                      content:
+                                          'Êtes-vous certain de vouloir reconnecter à Twitch?',
+                                    ));
+                            if (answer == null || !answer) return;
+
+                            _reinitializeTwitchConnection();
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white),
+                          child: Text('Reconnecter Twitch',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: ThemeSize.text(context))),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
+          );
   }
 }
