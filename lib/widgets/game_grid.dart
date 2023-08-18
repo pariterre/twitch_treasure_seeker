@@ -57,7 +57,7 @@ class GameGridState extends State<GameGrid> {
                   border: Border.all(width: widget.tileSize * 0.02)),
               child: Center(
                   child: Text(
-                '${tile.col == 0 ? String.fromCharCode('A'.codeUnits[0] + tile.row - 1) : tile.col}',
+                '${tile.row == 0 ? String.fromCharCode('A'.codeUnits[0] + tile.col - 1) : tile.row}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: textSize * 0.75, fontWeight: FontWeight.bold),

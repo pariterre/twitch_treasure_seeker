@@ -135,8 +135,8 @@ class GameInterface {
     final groups = re.allMatches(message).toList()[0].groups([1, 2]);
 
     // Reveal the map
-    final row = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
-    final col = int.parse(groups[1]!) - 1;
+    final row = int.parse(groups[1]!) - 1;
+    final col = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
     gameManager.setPlayerMove(username, newTile: GameTile(row, col));
   }
 
