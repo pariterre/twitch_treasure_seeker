@@ -260,11 +260,8 @@ class GameInterface {
   Future<bool> _isAModerator(String username) async {
     // In order to reduce time, we assume moderators don't change during a game
     // so only fetch them once.
-    if (_moderators == null) {
-      _moderators = await twitchManager.api.fetchModerators();
-      _moderators!
-          .add((await twitchManager.api.login(twitchManager.api.streamerId))!);
-    }
+    _moderators ??=
+        await twitchManager.api.fetchModerators(includeStreamer: true);
     return _moderators!.contains(username);
   }
 }
