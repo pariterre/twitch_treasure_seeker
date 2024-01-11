@@ -39,11 +39,12 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Future<void> _initializeMainInterface() async {
+    final route = ModalRoute.of(context)!;
     if (!mounted) return;
 
-    final twitchManager = ModalRoute.of(context)!.settings.arguments == null
+    final twitchManager = route.settings.arguments == null
         ? await _getConnectedTwitchManager(loadPreviousSession: true)
-        : ModalRoute.of(context)!.settings.arguments as TwitchManager;
+        : route.settings.arguments as TwitchManager;
 
     _mainInterface = await GameInterface.factory(twitchManager: twitchManager);
     if (mounted && !_mainInterface!.gameManager.isGameRunningForTheFirstTime) {
@@ -79,10 +80,11 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
       context: context,
       builder: (context) => Dialog(
           child: TwitchAuthenticationScreen(
-        mockOptions: twitchMocker,
+        isMockActive: false,
+        debugPanelOptions: twitchMocker,
         onFinishedConnexion: (manager) => Navigator.pop(context, manager),
         appInfo: twitchAppInfo,
-        loadPreviousSession: loadPreviousSession,
+        reload: loadPreviousSession,
       )),
     ))!;
   }

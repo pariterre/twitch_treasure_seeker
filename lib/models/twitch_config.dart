@@ -1,9 +1,20 @@
 import 'package:twitch_manager/twitch_manager.dart';
 
-const twitchMocker = TwitchMockOptions(
-  isActive: false,
-  moderators: ['modo1'],
-  messagesModerators: [
+final twitchMocker = TwitchDebugPanelOptions(
+  chatters: [
+    TwitchChatterMock(displayName: 'modo1', isModerator: true),
+    TwitchChatterMock(displayName: 'follower1'),
+    TwitchChatterMock(displayName: 'follower2'),
+    TwitchChatterMock(displayName: 'follower3'),
+    TwitchChatterMock(displayName: 'follower4'),
+    TwitchChatterMock(displayName: 'follower5'),
+    TwitchChatterMock(displayName: 'follower6'),
+    TwitchChatterMock(displayName: 'follower7'),
+    TwitchChatterMock(displayName: 'follower8'),
+    TwitchChatterMock(displayName: 'follower9'),
+    TwitchChatterMock(displayName: 'follower10'),
+  ],
+  chatMessages: [
     '!chercheursDeBleuets',
     '!joindre',
     '!start',
@@ -11,37 +22,18 @@ const twitchMocker = TwitchMockOptions(
     '!reset',
     '!setup',
   ],
-  followers: [
-    'follower1',
-    'follower2',
-    'follower3',
-    'follower4',
-    'follower5',
-    'follower6',
-    'follower7',
-    'follower8',
-    'follower9',
-    'follower10',
-  ],
-  messagesFollowers: [
-    '!joindre',
-    '!chercheursDeBleuets',
-    '!start',
-  ],
 );
 
 final twitchAppInfo = TwitchAppInfo(
   appName: 'Minesweeper',
-  twitchAppId: 'eqt0u8wre5boab7thsjb6b8sh57qy3',
+  twitchAppId: 's88tkbc2bsddutwte7bbnj616mhgqx',
   scope: [
     TwitchScope.chatRead,
     TwitchScope.chatEdit,
     TwitchScope.chatters,
     TwitchScope.readFollowers,
-    TwitchScope.readSubscribers,
+    TwitchScope.readModerator,
     TwitchScope.readModerator,
   ],
-  redirectAddress: 'https://twitchauthentication.pariterre.net:3000',
-  useAuthenticationService: true,
-  authenticationServiceAddress: 'wss://twitchauthentication.pariterre.net:3002',
+  redirectDomain: 'twitchauthentication.pariterre.net',
 );

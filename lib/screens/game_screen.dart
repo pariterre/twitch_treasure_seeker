@@ -94,66 +94,66 @@ class _GameScreenState extends State<GameScreen> {
       body: Container(
         decoration: const BoxDecoration(color: ThemeColor.greenScreen),
         child: Center(
-          child: Stack(
-            children: [
-              SizedBox(
-                width: windowWidth,
-                height: windowHeight,
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                    left: offsetFromBorder, top: offsetFromBorder),
-                child: GameGrid(
-                    key: _gridKey,
-                    gameInterface: _gameInterface!,
-                    tileSize: tileSize),
-              ),
-              Positioned(
-                  left: (_gameInterface!.gameManager.nbCols + 1) * tileSize +
-                      offsetFromBorder * 2,
-                  top: offsetFromBorder + tileSize,
-                  child: GameScore(
-                      key: _scoreKey, gameInterface: _gameInterface!)),
-              Positioned(
-                left: offsetFromBorder,
-                right: windowWidth -
-                    ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
-                        2 * offsetFromBorder),
-                top: 0,
-                bottom: windowHeight * 1 / 4,
-                child: Center(
-                    child: GrowingContainer(
-                  key: _treasureFoundKey,
-                  startingSize: windowHeight * 0.01,
-                  finalSize: windowHeight * 0.04,
-                  growingTime: _growingTextTime,
-                  fadingTime: _fadingTextTime,
-                  backgroundColor: ThemeColor.main,
-                )),
-              ),
-              Positioned(
-                left: offsetFromBorder,
-                right: windowWidth -
-                    ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
-                        2 * offsetFromBorder),
-                top: 0,
-                bottom: windowHeight * 1 / 2,
-                child: Center(
-                    child: GrowingContainer(
-                  key: _attackedKey,
-                  startingSize: windowHeight * 0.01,
-                  finalSize: windowHeight * 0.04,
-                  growingTime: _growingTextTime,
-                  fadingTime: _fadingTextTime,
-                  backgroundColor: Colors.red,
-                )),
-              ),
-              TwitchDebugPanel(
-                  manager: _gameInterface!.twitchManager,
-                  startingPosition: Offset(
-                      MediaQuery.of(context).size.width - 300,
-                      MediaQuery.of(context).size.height / 2 - 100)),
-            ],
+          child: TwitchDebugOverlay(
+            manager: _gameInterface!.twitchManager,
+            startingPosition: Offset(MediaQuery.of(context).size.width - 300,
+                MediaQuery.of(context).size.height / 2 - 100),
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: windowWidth,
+                  height: windowHeight,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                      left: offsetFromBorder, top: offsetFromBorder),
+                  child: GameGrid(
+                      key: _gridKey,
+                      gameInterface: _gameInterface!,
+                      tileSize: tileSize),
+                ),
+                Positioned(
+                    left: (_gameInterface!.gameManager.nbCols + 1) * tileSize +
+                        offsetFromBorder * 2,
+                    top: offsetFromBorder + tileSize,
+                    child: GameScore(
+                        key: _scoreKey, gameInterface: _gameInterface!)),
+                Positioned(
+                  left: offsetFromBorder,
+                  right: windowWidth -
+                      ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
+                          2 * offsetFromBorder),
+                  top: 0,
+                  bottom: windowHeight * 1 / 4,
+                  child: Center(
+                      child: GrowingContainer(
+                    key: _treasureFoundKey,
+                    startingSize: windowHeight * 0.01,
+                    finalSize: windowHeight * 0.04,
+                    growingTime: _growingTextTime,
+                    fadingTime: _fadingTextTime,
+                    backgroundColor: ThemeColor.main,
+                  )),
+                ),
+                Positioned(
+                  left: offsetFromBorder,
+                  right: windowWidth -
+                      ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
+                          2 * offsetFromBorder),
+                  top: 0,
+                  bottom: windowHeight * 1 / 2,
+                  child: Center(
+                      child: GrowingContainer(
+                    key: _attackedKey,
+                    startingSize: windowHeight * 0.01,
+                    finalSize: windowHeight * 0.04,
+                    growingTime: _growingTextTime,
+                    fadingTime: _fadingTextTime,
+                    backgroundColor: Colors.red,
+                  )),
+                ),
+              ],
+            ),
           ),
         ),
       ),

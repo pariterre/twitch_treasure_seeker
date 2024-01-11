@@ -18,7 +18,7 @@ class GameInterface {
   TwitchManager _twitchManager;
   void updateTwitchManager(TwitchManager manager) {
     _twitchManager = manager;
-    _twitchManager.irc.messageCallback = _messageReceived;
+    _twitchManager.chat.onMessageReceived(_messageReceived);
   }
 
   TwitchManager get twitchManager => _twitchManager;

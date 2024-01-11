@@ -74,7 +74,10 @@ class EndScreen extends StatelessWidget {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-        child: Center(
+        child: TwitchDebugOverlay(
+          manager: gameInterface.twitchManager,
+          startingPosition: Offset(MediaQuery.of(context).size.width - 300,
+              MediaQuery.of(context).size.height / 2 - 100),
           child: Stack(
             children: [
               SizedBox(
@@ -85,11 +88,6 @@ class EndScreen extends StatelessWidget {
                   left: offsetFromBorder,
                   top: offsetFromBorder,
                   child: _buildCongratulation(context, gameInterface)),
-              TwitchDebugPanel(
-                  manager: gameInterface.twitchManager,
-                  startingPosition: Offset(
-                      MediaQuery.of(context).size.width - 300,
-                      MediaQuery.of(context).size.height / 2 - 100)),
             ],
           ),
         ),

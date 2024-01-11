@@ -5,15 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Treasure seeker (Web security disabled)",
-            "request": "launch",
-            "type": "dart",
-            "args": ["--web-browser-flag=--disable-web-security"]
-        },
-        {
             "name": "Treasure seeker",
             "request": "launch",
             "type": "dart",
+            "args": ["--web-browser-flag=--disable-web-security"]
         }
     ]
 }

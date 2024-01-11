@@ -44,7 +44,7 @@ class GameScoreState extends State<GameScore> {
         borderRadius: BorderRadius.circular(5),
       ),
       height: windowHeight * 0.08 +
-          sortedNames.length * (textSize + 2 * interlinePadding + 1),
+          sortedNames.length * (textSize + 2 * interlinePadding + 6),
       width: windowHeight * 0.40,
       child: Padding(
         padding: EdgeInsets.only(left: smallPadding, top: smallPadding),

@@ -142,39 +142,37 @@ class _LobbyScreenState extends State<LobbyScreen> {
     final players = _mainInterface.gameManager.players;
 
     return Scaffold(
-        body: Container(
-      width: windowWidth,
-      height: windowHeight,
-      decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-              width: windowHeight * 0.45,
-              height: windowHeight * 0.2 +
-                  max(players.length, 1) *
-                      (textSize + 2 * interlinePadding + 1),
-              decoration: const BoxDecoration(color: ThemeColor.main),
-              child: Padding(
-                padding: EdgeInsets.only(
-                    left: smallPadding,
-                    top: smallPadding,
-                    bottom: smallPadding * 1.5),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPlayerList(players),
-                    _buildParameters(),
-                  ],
-                ),
-              )),
-          TwitchDebugPanel(
-              manager: _mainInterface.twitchManager,
-              startingPosition: Offset(MediaQuery.of(context).size.width - 300,
-                  MediaQuery.of(context).size.height / 2 - 100)),
-        ],
-      ),
-    ));
+      body: Container(
+          width: windowWidth,
+          height: windowHeight,
+          decoration: const BoxDecoration(color: ThemeColor.greenScreen),
+          child: TwitchDebugOverlay(
+            manager: _mainInterface.twitchManager,
+            startingPosition: Offset(MediaQuery.of(context).size.width - 300,
+                MediaQuery.of(context).size.height / 2 - 100),
+            child: Center(
+              child: Container(
+                  width: windowHeight * 0.45,
+                  height: windowHeight * 0.22 +
+                      max(players.length, 1) *
+                          (textSize + 2 * interlinePadding + 6),
+                  decoration: const BoxDecoration(color: ThemeColor.main),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        left: smallPadding,
+                        top: smallPadding,
+                        bottom: smallPadding * 1.5),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildPlayerList(players),
+                        _buildParameters(),
+                      ],
+                    ),
+                  )),
+            ),
+          )),
+    );
   }
 }
