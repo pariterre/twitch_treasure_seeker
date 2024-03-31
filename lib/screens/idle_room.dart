@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/game_interface.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/screens/configuration_room.dart';
-import 'package:twitched_minesweeper/screens/lobby_screen.dart';
+import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
+import 'package:twitch_treasure_seeker/screens/configuration_room.dart';
+import 'package:twitch_treasure_seeker/screens/lobby_screen.dart';
 
 class IdleRoom extends StatefulWidget {
   const IdleRoom({super.key});

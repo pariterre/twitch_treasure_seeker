@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/game_interface.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/widgets/actor_token.dart';
+import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
+import 'package:twitch_treasure_seeker/widgets/actor_token.dart';
 
 class GameScore extends StatefulWidget {
   const GameScore({

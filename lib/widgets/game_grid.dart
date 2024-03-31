@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/game_interface.dart';
-import 'package:twitched_minesweeper/models/game_manager.dart';
-import 'package:twitched_minesweeper/models/game_tile.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/widgets/sweeper_tile.dart';
+import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/models/game_manager.dart';
+import 'package:twitch_treasure_seeker/models/game_tile.dart';
+import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
+import 'package:twitch_treasure_seeker/widgets/sweeper_tile.dart';
 
 class GameGrid extends StatefulWidget {
   const GameGrid({

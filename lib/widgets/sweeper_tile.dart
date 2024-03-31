@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
-import 'package:twitched_minesweeper/models/game_manager.dart';
+import 'package:twitch_treasure_seeker/models/enums.dart';
+import 'package:twitch_treasure_seeker/models/game_manager.dart';
 
 import 'actor_token.dart';
 

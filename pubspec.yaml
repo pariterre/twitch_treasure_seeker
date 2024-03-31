@@ -1,4 +1,4 @@
-name: twitched_minesweeper
+name: twitch_treasure_seeker
 description: A collective game of the infamous Mine Sweeper for Twitch.
 publish_to: 'none'
 version: 1.0.0+1

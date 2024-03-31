@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/game_interface.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/models/twitch_config.dart';
-import 'package:twitched_minesweeper/screens/idle_room.dart';
-import 'package:twitched_minesweeper/widgets/are_you_sure_dialog.dart';
+import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
+import 'package:twitch_treasure_seeker/models/twitch_config.dart';
+import 'package:twitch_treasure_seeker/screens/idle_room.dart';
+import 'package:twitch_treasure_seeker/widgets/are_you_sure_dialog.dart';
 
 class ConfigurationRoom extends StatefulWidget {
   const ConfigurationRoom({super.key});

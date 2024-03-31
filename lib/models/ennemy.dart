@@ -1,6 +1,6 @@
-import 'package:twitched_minesweeper/models/game_manager.dart';
-import 'package:twitched_minesweeper/models/game_tile.dart';
-import 'package:twitched_minesweeper/models/player.dart';
+import 'package:twitch_treasure_seeker/models/game_manager.dart';
+import 'package:twitch_treasure_seeker/models/game_tile.dart';
+import 'package:twitch_treasure_seeker/models/player.dart';
 
 import 'actor.dart';
 

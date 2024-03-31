@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/screens/configuration_room.dart';
-import 'package:twitched_minesweeper/screens/end_screen.dart';
-import 'package:twitched_minesweeper/screens/game_screen.dart';
-import 'package:twitched_minesweeper/screens/idle_room.dart';
-import 'package:twitched_minesweeper/screens/lobby_screen.dart';
+import 'package:twitch_treasure_seeker/screens/configuration_room.dart';
+import 'package:twitch_treasure_seeker/screens/end_screen.dart';
+import 'package:twitch_treasure_seeker/screens/game_screen.dart';
+import 'package:twitch_treasure_seeker/screens/idle_room.dart';
+import 'package:twitch_treasure_seeker/screens/lobby_screen.dart';
 
 // TODO add credit (images)
 void main() async {

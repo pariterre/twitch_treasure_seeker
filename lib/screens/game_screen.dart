@@ -1,13 +1,13 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/enums.dart';
-import 'package:twitched_minesweeper/models/game_interface.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/screens/end_screen.dart';
-import 'package:twitched_minesweeper/widgets/game_grid.dart';
-import 'package:twitched_minesweeper/widgets/game_score.dart';
-import 'package:twitched_minesweeper/widgets/growing_container.dart';
+import 'package:twitch_treasure_seeker/models/enums.dart';
+import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
+import 'package:twitch_treasure_seeker/screens/end_screen.dart';
+import 'package:twitch_treasure_seeker/widgets/game_grid.dart';
+import 'package:twitch_treasure_seeker/widgets/game_score.dart';
+import 'package:twitch_treasure_seeker/widgets/growing_container.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});

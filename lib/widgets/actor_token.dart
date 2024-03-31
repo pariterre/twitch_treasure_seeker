@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:twitched_minesweeper/models/actor.dart';
+import 'package:twitch_treasure_seeker/models/actor.dart';
 
 class ActorToken extends StatelessWidget {
   const ActorToken({super.key, required this.tileSize, required this.actor});

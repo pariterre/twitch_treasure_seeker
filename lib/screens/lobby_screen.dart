@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitched_minesweeper/models/game_interface.dart';
-import 'package:twitched_minesweeper/models/minesweeper_theme.dart';
-import 'package:twitched_minesweeper/models/player.dart';
-import 'package:twitched_minesweeper/screens/game_screen.dart';
-import 'package:twitched_minesweeper/widgets/actor_token.dart';
+import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
+import 'package:twitch_treasure_seeker/models/player.dart';
+import 'package:twitch_treasure_seeker/screens/game_screen.dart';
+import 'package:twitch_treasure_seeker/widgets/actor_token.dart';
 
 class LobbyScreen extends StatefulWidget {
   const LobbyScreen({super.key});
