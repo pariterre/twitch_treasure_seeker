@@ -78,14 +78,13 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
       {required bool loadPreviousSession}) async {
     return (await showDialog<TwitchManager>(
       context: context,
-      builder: (context) => Dialog(
-          child: TwitchAuthenticationScreen(
+      builder: (context) => TwitchAuthenticationDialog(
         isMockActive: false,
         debugPanelOptions: twitchMocker,
-        onFinishedConnexion: (manager) => Navigator.pop(context, manager),
+        onConnexionEstablished: (manager) => Navigator.pop(context, manager),
         appInfo: twitchAppInfo,
         reload: loadPreviousSession,
-      )),
+      ),
     ))!;
   }
 

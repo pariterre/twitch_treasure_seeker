@@ -35,5 +35,5 @@ final twitchAppInfo = TwitchAppInfo(
     TwitchScope.readModerator,
     TwitchScope.readModerator,
   ],
-  redirectDomain: 'twitchauthentication.pariterre.net',
+  redirectUri: 'twitchauthentication.pariterre.net',
 );
