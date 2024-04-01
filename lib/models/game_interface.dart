@@ -18,7 +18,7 @@ class GameInterface {
   TwitchManager _twitchManager;
   void updateTwitchManager(TwitchManager manager) {
     _twitchManager = manager;
-    _twitchManager.chat.onMessageReceived(_messageReceived);
+    _twitchManager.chat.onMessageReceived.startListening(_messageReceived);
   }
 
   TwitchManager get twitchManager => _twitchManager;
