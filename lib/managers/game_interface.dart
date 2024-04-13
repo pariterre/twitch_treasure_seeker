@@ -1,8 +1,7 @@
-import 'package:twitch_manager/twitch_manager.dart';
-
-import 'enums.dart';
-import 'game_manager.dart';
-import 'game_tile.dart';
+import 'package:twitch_treasure_seeker/models/game_logic.dart';
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
+import 'package:twitch_treasure_seeker/models/enums.dart';
+import 'package:twitch_treasure_seeker/models/game_tile.dart';
 
 enum _Status {
   waitForRequestLaunchGame,
@@ -11,51 +10,43 @@ enum _Status {
   endGame,
 }
 
-class GameInterface {
-  late final GameManager gameManager;
+class GameManager {
+  GameLogic? _gameLogic;
+  GameLogic get gameLogic => _gameLogic!;
   _Status _status = _Status.waitForRequestLaunchGame;
 
-  TwitchManager _twitchManager;
-  void updateTwitchManager(TwitchManager manager) {
-    _twitchManager = manager;
-    _twitchManager.chat.onMessageReceived.startListening(_messageReceived);
+  void updateTwitchManager() {
+    TwitchManager.instance.manager?.chat.onMessageReceived
+        .startListening(_messageReceived);
   }
-
-  TwitchManager get twitchManager => _twitchManager;
 
   List<String>? _moderators;
 
-  static Future<GameInterface> factory(
-      {required TwitchManager twitchManager}) async {
-    final gameInterface = GameInterface._partial(twitchManager: twitchManager);
-    gameInterface.gameManager = await GameManager.factory(
+  bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
+  Future<void> initialize() async {
+    updateTwitchManager();
+
+    _gameLogic = await GameLogic.factory(
         needRedrawCallback: (needRedraw) {
-          if (gameInterface._onStateChanged != null) {
-            gameInterface._onStateChanged!(needRedraw);
-          }
+          if (_onStateChanged != null) _onStateChanged!(needRedraw);
         },
         onTreasureFound: (player) {
-          if (gameInterface._onTreasureFound != null) {
-            gameInterface._onTreasureFound!(player.name);
-          }
+          if (_onTreasureFound != null) _onTreasureFound!(player.name);
         },
-        onAttacked: (player, ennemy) =>
-            gameInterface._onAttacked!(player.name, ennemy.name),
+        onAttacked: (player, ennemy) => _onAttacked!(player.name, ennemy.name),
         onGameOver: () {
-          gameInterface._status = _Status.endGame;
-          if (gameInterface._onGameOver != null) gameInterface._onGameOver!();
+          _status = _Status.endGame;
+          if (_onGameOver != null) _onGameOver!();
         });
-    return gameInterface;
+
+    _isInitialized = true;
   }
 
-  ///
-  /// This constructor prepares everything except for the game manager. It
-  /// should therefore not be used as is, but in conjonction with a proper
-  /// constructor that properly construct gameManager as well
-  GameInterface._partial({required TwitchManager twitchManager})
-      : _twitchManager = twitchManager {
-    updateTwitchManager(twitchManager);
-  }
+  // Prepare the singleton
+  static final GameManager _singleton = GameManager._();
+  static GameManager get instance => _singleton;
+  GameManager._();
 
   // This is called when a moderator requested launching the game
   Function()? _onRequestLaunchGame;
@@ -120,12 +111,12 @@ class GameInterface {
   Future<void> _managePlay(String message, String username) async {
     // Force end of game if asked
     if (await _isAModerator(username) && message == '!stop') {
-      gameManager.forceGameOver();
+      gameLogic.forceGameOver();
       return;
     }
 
     // If not a player, do nothing
-    if (!gameManager.players.keys.contains(username)) return;
+    if (!gameLogic.players.keys.contains(username)) return;
 
     // Parse the input. It must be of the format : XY, where X is a letter
     // and Y is a number between 0 to 99 (0 beween outside of the grid
@@ -137,7 +128,7 @@ class GameInterface {
     // Reveal the map
     final row = int.parse(groups[1]!) - 1;
     final col = groups[0]!.toLowerCase().codeUnits[0] - 'a'.codeUnits[0];
-    gameManager.setPlayerMove(username, newTile: GameTile(row, col));
+    gameLogic.setPlayerMove(username, newTile: GameTile(row, col));
   }
 
   ///
@@ -155,7 +146,7 @@ class GameInterface {
   /// start the game)
   Future<void> _manageRegistering(String message, String username) async {
     if (message == '!joindre') {
-      gameManager.addPlayer(username);
+      gameLogic.addPlayer(username);
       if (_onStateChanged != null) _onStateChanged!([NeedRedraw.playerList]);
       return;
     }
@@ -241,7 +232,7 @@ class GameInterface {
       gameSpeed = Duration(milliseconds: int.parse(groups[0]!));
     }
 
-    gameManager.setGameParameters(
+    gameLogic.setGameParameters(
       maximumPlayers: maximumPlayers,
       nbRows: nbRows,
       nbCols: nbCols,
@@ -260,8 +251,8 @@ class GameInterface {
   Future<bool> _isAModerator(String username) async {
     // In order to reduce time, we assume moderators don't change during a game
     // so only fetch them once.
-    _moderators ??=
-        await twitchManager.api.fetchModerators(includeStreamer: true);
+    _moderators ??= await TwitchManager.instance.manager?.api
+        .fetchModerators(includeStreamer: true);
     return _moderators!.contains(username);
   }
 }

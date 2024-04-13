@@ -1,4 +1,4 @@
-import 'package:twitch_treasure_seeker/models/game_manager.dart';
+import 'package:twitch_treasure_seeker/models/game_logic.dart';
 import 'package:twitch_treasure_seeker/models/game_tile.dart';
 import 'package:twitch_treasure_seeker/models/player.dart';
 
@@ -43,15 +43,16 @@ class Ennemy extends Actor {
   }
 
   @override
-  bool march(List<GameTile> forbiddenTiles, {GameManager? gameManager}) {
-    if (gameManager == null) throw 'gameManager is mandatory';
+  bool march(List<GameTile> forbiddenTiles, {GameLogic? gameLogic}) {
+    if (gameLogic == null) throw 'gameLogic is mandatory';
+
     bool shouldUpdate = false;
 
     // If it has reached it has not reached its final position
     if (super.march([])) {
       influenceRadius = influenceRadius > 0 ? influenceRadius - 1 : 0;
       influenceRadiusDelayCmp = 0;
-      _updateInfluencedTiles(gameManager);
+      _updateInfluencedTiles(gameLogic);
       return true;
     } else {
       influenceRadiusDelayCmp++;
@@ -59,7 +60,7 @@ class Ennemy extends Actor {
           influenceRadius < maxInfluenceRadius) {
         influenceRadiusDelayCmp = 0;
         influenceRadius++;
-        _updateInfluencedTiles(gameManager);
+        _updateInfluencedTiles(gameLogic);
         shouldUpdate = true;
       }
     }
@@ -70,13 +71,13 @@ class Ennemy extends Actor {
   }
 
   /// Update the influenced tiles based on current position.
-  void _updateInfluencedTiles(GameManager gameManager) {
+  void _updateInfluencedTiles(GameLogic gameLogic) {
     influencedTiles.clear();
 
     for (int row = -influenceRadius; row <= influenceRadius; row++) {
       for (int col = -influenceRadius; col <= influenceRadius; col++) {
         final newTile = GameTile(tile.row + row, tile.col + col);
-        if (gameManager.isInsideGrid(newTile)) {
+        if (gameLogic.isInsideGrid(newTile)) {
           influencedTiles.add(newTile);
         }
       }

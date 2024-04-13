@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:twitch_treasure_seeker/models/game_interface.dart';
-import 'package:twitch_treasure_seeker/models/game_manager.dart';
+import 'package:twitch_treasure_seeker/managers/game_interface.dart';
+import 'package:twitch_treasure_seeker/models/game_logic.dart';
 import 'package:twitch_treasure_seeker/models/game_tile.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/widgets/sweeper_tile.dart';
 
 class GameGrid extends StatefulWidget {
-  const GameGrid({
-    super.key,
-    required this.gameInterface,
-    required this.tileSize,
-  });
+  const GameGrid({super.key, required this.tileSize});
 
-  final GameInterface gameInterface;
   final double tileSize;
 
   @override
@@ -25,24 +20,24 @@ class GameGridState extends State<GameGrid> {
   @override
   Widget build(BuildContext context) {
     final textSize = widget.tileSize * 3 / 4;
-    final gm = widget.gameInterface.gameManager;
+    final gl = GameManager.instance.gameLogic;
 
     return SizedBox(
       width:
-          (gm.nbCols + 1) * widget.tileSize + 2, // +2 so the overlap a tiny bit
+          (gl.nbCols + 1) * widget.tileSize + 2, // +2 so the overlap a tiny bit
       child: GridView.count(
-        crossAxisCount: gm.nbCols + 1,
+        crossAxisCount: gl.nbCols + 1,
         children: List.generate(
-            gm.nbRows * gm.nbCols + gm.nbRows + gm.nbCols + 1, (index) {
+            gl.nbRows * gl.nbCols + gl.nbRows + gl.nbCols + 1, (index) {
           // We have to construct the grid alongside the header.
           // So every row and col being 0 is the name, otherwise
           // it is the grid (with its index offset by 1)
-          final tile = gridTile(index, gm.nbCols + 1);
+          final tile = gridTile(index, gl.nbCols + 1);
 
           // Starting tile
           if (tile.row == 0 && tile.col == 0) {
             return SweeperTile(
-              gameManager: gm,
+              gameLogic: gl,
               tileIndex: -1,
               tileSize: widget.tileSize,
               textSize: textSize,
@@ -67,9 +62,9 @@ class GameGridState extends State<GameGrid> {
 
           // Draw the actual grid
           final tileIndex =
-              gridIndex(GameTile(tile.row - 1, tile.col - 1), gm.nbCols);
+              gridIndex(GameTile(tile.row - 1, tile.col - 1), gl.nbCols);
           return SweeperTile(
-            gameManager: gm,
+            gameLogic: gl,
             tileIndex: tileIndex,
             tileSize: widget.tileSize,
             textSize: textSize,

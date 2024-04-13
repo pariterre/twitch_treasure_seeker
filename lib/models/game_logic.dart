@@ -31,7 +31,7 @@ int gridIndex(GameTile tile, int nbCols) => tile.row * nbCols + tile.col;
 GameTile gridTile(int index, int nbCols) =>
     GameTile(index < 0 ? -1 : index ~/ nbCols, index < 0 ? -1 : index % nbCols);
 
-class GameManager {
+class GameLogic {
   bool _isFirstTime = true; // If it is the first time the game is run
   Future<void> setIsGameRunningForTheFirstTime(bool value) async {
     _isFirstTime = value;
@@ -94,13 +94,13 @@ class GameManager {
   bool _canRegister = true;
   void closeRegistration() => _canRegister = false;
 
-  static Future<GameManager> factory({
+  static Future<GameLogic> factory({
     required Function(List<NeedRedraw>) needRedrawCallback,
     required Function(Player) onTreasureFound,
     required Function(Player, Ennemy) onAttacked,
     required Function() onGameOver,
   }) async {
-    final manager = GameManager._(
+    final manager = GameLogic._(
         needRedrawCallback: needRedrawCallback,
         onTreasureFound: onTreasureFound,
         onAttacked: onAttacked,
@@ -110,7 +110,7 @@ class GameManager {
     return manager;
   }
 
-  GameManager._({
+  GameLogic._({
     required this.needRedrawCallback,
     required this.onTreasureFound,
     required this.onAttacked,
@@ -507,7 +507,7 @@ class GameManager {
       if (_ennemies[ennemy]!.shouldChangePosition) {
         _ennemies[ennemy]!.addTarget(GameTile.random(_nbRows, _nbCols));
       }
-      if (_ennemies[ennemy]!.march([], gameManager: this)) {
+      if (_ennemies[ennemy]!.march([], gameLogic: this)) {
         needRedraw.add(NeedRedraw.grid);
       }
     }

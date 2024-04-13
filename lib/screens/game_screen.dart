@@ -1,8 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:twitch_manager/twitch_manager.dart';
+import 'package:twitch_manager/twitch_manager.dart' as tm;
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/enums.dart';
-import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/managers/game_interface.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/screens/end_screen.dart';
 import 'package:twitch_treasure_seeker/widgets/game_grid.dart';
@@ -23,7 +24,6 @@ class _GameScreenState extends State<GameScreen> {
 
   final _fadingTextTime = const Duration(milliseconds: 500);
 
-  GameInterface? _gameInterface;
   final _treasureFoundKey = GlobalKey<GrowingContainerState>();
   final _attackedKey = GlobalKey<GrowingContainerState>();
   final _scoreKey = GlobalKey<GameScoreState>();
@@ -39,27 +39,23 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    if (_gameInterface == null) {
-      _gameInterface =
-          ModalRoute.of(context)!.settings.arguments as GameInterface;
-      _gameInterface!.onStateChanged = (needRedraw) {
-        if (needRedraw.contains(NeedRedraw.grid)) {
-          _gridKey.currentState!.rebuild();
-        }
-        if (needRedraw.contains(NeedRedraw.score)) {
-          _scoreKey.currentState!.rebuild();
-        }
-      };
-      _gameInterface!.gameManager.newGame();
-      _gameInterface!.onGameOver = () => _onGameOver();
-      _gameInterface!.onTreasureFound =
-          (username) => _onTreasureFound(username);
-      _gameInterface!.onAttacked =
-          (player, ennemy) => _onAttacked(player, ennemy);
-    }
+    final gm = GameManager.instance;
+    gm.onStateChanged = (needRedraw) {
+      if (needRedraw.contains(NeedRedraw.grid)) {
+        _gridKey.currentState!.rebuild();
+      }
+
+      if (needRedraw.contains(NeedRedraw.score)) {
+        _scoreKey.currentState!.rebuild();
+      }
+    };
+    gm.gameLogic.newGame();
+    gm.onGameOver = () => _onGameOver();
+    gm.onTreasureFound = (username) => _onTreasureFound(username);
+    gm.onAttacked = (player, ennemy) => _onAttacked(player, ennemy);
   }
 
   void _onTreasureFound(String player) => _treasureFoundKey.currentState!
@@ -69,33 +65,35 @@ class _GameScreenState extends State<GameScreen> {
       .showMessage('$ennemy a volé les\nbleuts de $player');
 
   void _onGameOver() {
-    _gameInterface!.onStateChanged = null;
-    _gameInterface!.onGameOver = null;
-    _gameInterface!.onTreasureFound = null;
+    final gm = GameManager.instance;
+    gm.onStateChanged = null;
+    gm.onGameOver = null;
+    gm.onTreasureFound = null;
 
     Future.delayed(Duration(
         milliseconds:
             _growingTextTime.inMilliseconds + _fadingTextTime.inMilliseconds));
-    Navigator.of(context)
-        .pushReplacementNamed(EndScreen.route, arguments: _gameInterface);
+    Navigator.of(context).pushReplacementNamed(EndScreen.route);
   }
 
   @override
   Widget build(BuildContext context) {
+    final gl = GameManager.instance.gameLogic;
+
     final windowWidth = MediaQuery.of(context).size.width;
     final windowHeight = MediaQuery.of(context).size.height;
 
     final offsetFromBorder = windowHeight * 0.02;
     final gridHeight = windowHeight - 2 * offsetFromBorder;
 
-    final tileSize = gridHeight / (_gameInterface!.gameManager.nbRows + 1);
+    final tileSize = gridHeight / (gl.nbRows + 1);
 
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(color: ThemeColor.greenScreen),
         child: Center(
-          child: TwitchDebugOverlay(
-            manager: _gameInterface!.twitchManager,
+          child: tm.TwitchDebugOverlay(
+            manager: TwitchManager.instance.manager,
             startingPosition: Offset(MediaQuery.of(context).size.width - 300,
                 MediaQuery.of(context).size.height / 2 - 100),
             child: Stack(
@@ -107,22 +105,16 @@ class _GameScreenState extends State<GameScreen> {
                 Padding(
                   padding: EdgeInsets.only(
                       left: offsetFromBorder, top: offsetFromBorder),
-                  child: GameGrid(
-                      key: _gridKey,
-                      gameInterface: _gameInterface!,
-                      tileSize: tileSize),
+                  child: GameGrid(key: _gridKey, tileSize: tileSize),
                 ),
                 Positioned(
-                    left: (_gameInterface!.gameManager.nbCols + 1) * tileSize +
-                        offsetFromBorder * 2,
+                    left: (gl.nbCols + 1) * tileSize + offsetFromBorder * 2,
                     top: offsetFromBorder + tileSize,
-                    child: GameScore(
-                        key: _scoreKey, gameInterface: _gameInterface!)),
+                    child: GameScore(key: _scoreKey)),
                 Positioned(
                   left: offsetFromBorder,
                   right: windowWidth -
-                      ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
-                          2 * offsetFromBorder),
+                      ((gl.nbCols + 1.5) * tileSize + 2 * offsetFromBorder),
                   top: 0,
                   bottom: windowHeight * 1 / 4,
                   child: Center(
@@ -138,8 +130,7 @@ class _GameScreenState extends State<GameScreen> {
                 Positioned(
                   left: offsetFromBorder,
                   right: windowWidth -
-                      ((_gameInterface!.gameManager.nbCols + 1.5) * tileSize +
-                          2 * offsetFromBorder),
+                      ((gl.nbCols + 1.5) * tileSize + 2 * offsetFromBorder),
                   top: 0,
                   bottom: windowHeight * 1 / 2,
                   child: Center(

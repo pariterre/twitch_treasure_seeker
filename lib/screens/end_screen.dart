@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_manager/twitch_manager.dart' as tm;
+import 'package:twitch_treasure_seeker/managers/game_interface.dart';
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/screens/idle_room.dart';
 import 'package:twitch_treasure_seeker/widgets/game_score.dart';
@@ -10,14 +11,14 @@ class EndScreen extends StatelessWidget {
 
   static const route = '/end-screen';
 
-  Widget _buildCongratulation(context, GameInterface gameInterface) {
+  Widget _buildCongratulation(context, {required GameManager gameManager}) {
     final smallPadding = ThemePadding.small(context);
 
     final titleSize = ThemeSize.title(context);
 
-    final players = gameInterface.gameManager.players;
+    final players = gameManager.gameLogic.players;
     final playersWithHighestScore =
-        gameInterface.gameManager.playersWithHighestScore;
+        gameManager.gameLogic.playersWithHighestScore;
     final nbTreasures = players[playersWithHighestScore[0]]!.treasures;
 
     var winnerNames = playersWithHighestScore[0];
@@ -43,28 +44,22 @@ class EndScreen extends StatelessWidget {
               'la partie avec $nbTreasures bleuet${nbTreasures < 2 ? '' : 's'}',
               style: TextStyle(color: Colors.white, fontSize: titleSize),
             ),
-            GameScore(
-              gameInterface: gameInterface,
-              title: 'Score final',
-              showEnergy: false,
-            ),
+            const GameScore(title: 'Score final', showEnergy: false),
           ],
         ),
       ),
     );
   }
 
-  void _resetGame(BuildContext context, GameInterface gameInterface) {
-    gameInterface.onRequestReset = null;
-    Navigator.of(context)
-        .pushReplacementNamed(IdleRoom.route, arguments: gameInterface);
+  void _resetGame(BuildContext context, {required GameManager gameManager}) {
+    gameManager.onRequestReset = null;
+    Navigator.of(context).pushReplacementNamed(IdleRoom.route);
   }
 
   @override
   Widget build(BuildContext context) {
-    final gameInterface =
-        ModalRoute.of(context)!.settings.arguments as GameInterface;
-    gameInterface.onRequestReset = () => _resetGame(context, gameInterface);
+    final gm = GameManager.instance;
+    gm.onRequestReset = () => _resetGame(context, gameManager: gm);
 
     final windowWidth = MediaQuery.of(context).size.width;
     final windowHeight = MediaQuery.of(context).size.height;
@@ -74,8 +69,8 @@ class EndScreen extends StatelessWidget {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-        child: TwitchDebugOverlay(
-          manager: gameInterface.twitchManager,
+        child: tm.TwitchDebugOverlay(
+          manager: TwitchManager.instance.manager,
           startingPosition: Offset(MediaQuery.of(context).size.width - 300,
               MediaQuery.of(context).size.height / 2 - 100),
           child: Stack(
@@ -87,7 +82,7 @@ class EndScreen extends StatelessWidget {
               Positioned(
                   left: offsetFromBorder,
                   top: offsetFromBorder,
-                  child: _buildCongratulation(context, gameInterface)),
+                  child: _buildCongratulation(context, gameManager: gm)),
             ],
           ),
         ),

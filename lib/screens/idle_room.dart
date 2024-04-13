@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_manager/twitch_manager.dart' as tm;
+import 'package:twitch_treasure_seeker/managers/game_interface.dart';
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/screens/configuration_room.dart';
 import 'package:twitch_treasure_seeker/screens/lobby_screen.dart';
@@ -15,43 +16,39 @@ class IdleRoom extends StatefulWidget {
 }
 
 class _IdleRoomState extends State<IdleRoom> {
-  late final GameInterface _mainInterface;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    _mainInterface =
-        ModalRoute.of(context)!.settings.arguments as GameInterface;
-    _mainInterface.gameManager.resetPlayers();
-    _mainInterface.onRequestSetupScreen = _onRequestSetupScreen;
-    _mainInterface.onRequestLaunchGame = _onRequestLaunchGame;
+    final gm = GameManager.instance;
+    gm.gameLogic.resetPlayers();
+    gm.onRequestSetupScreen = _onRequestSetupScreen;
+    gm.onRequestLaunchGame = _onRequestLaunchGame;
   }
 
   void _unregisterCallbacks() {
-    _mainInterface.onRequestSetupScreen = null;
-    _mainInterface.onRequestLaunchGame = null;
+    final gm = GameManager.instance;
+    gm.onRequestSetupScreen = null;
+    gm.onRequestLaunchGame = null;
   }
 
   void _onRequestSetupScreen() async {
     _unregisterCallbacks();
-    await _mainInterface.gameManager.setIsGameRunningForTheFirstTime(true);
+    await GameManager.instance.gameLogic.setIsGameRunningForTheFirstTime(true);
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(ConfigurationRoom.route,
-        arguments: _mainInterface.twitchManager);
+    Navigator.of(context).pushReplacementNamed(ConfigurationRoom.route);
   }
 
   void _onRequestLaunchGame() {
     _unregisterCallbacks();
-    Navigator.of(context)
-        .pushReplacementNamed(LobbyScreen.route, arguments: _mainInterface);
+    Navigator.of(context).pushReplacementNamed(LobbyScreen.route);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: TwitchDebugOverlay(
-        manager: _mainInterface.twitchManager,
+      body: tm.TwitchDebugOverlay(
+        manager: TwitchManager.instance.manager,
         startingPosition: Offset(MediaQuery.of(context).size.width - 300,
             MediaQuery.of(context).size.height / 2 - 100),
         child: Container(

@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/managers/game_interface.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/widgets/actor_token.dart';
 
 class GameScore extends StatefulWidget {
   const GameScore({
     super.key,
-    required this.gameInterface,
     this.title = 'Score',
     this.showEnergy = true,
   });
 
-  final GameInterface gameInterface;
   final String title;
   final bool showEnergy;
 
@@ -34,7 +32,7 @@ class GameScoreState extends State<GameScore> {
     final titleSize = ThemeSize.title(context);
     final textSize = ThemeSize.text(context);
 
-    final players = widget.gameInterface.gameManager.players;
+    final players = GameManager.instance.gameLogic.players;
     final sortedNames = players.keys.toList();
     sortedNames.sort((a, b) => players[b]!.treasures - players[a]!.treasures);
 
@@ -62,7 +60,7 @@ class GameScoreState extends State<GameScore> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: sortedNames.map((name) {
                     final player =
-                        widget.gameInterface.gameManager.players[name]!;
+                        GameManager.instance.gameLogic.players[name]!;
                     return Padding(
                       padding: EdgeInsets.only(bottom: interlinePadding),
                       child: Row(

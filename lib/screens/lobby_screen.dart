@@ -1,8 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_manager/twitch_manager.dart' as tm;
+import 'package:twitch_treasure_seeker/managers/game_interface.dart';
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/models/player.dart';
 import 'package:twitch_treasure_seeker/screens/game_screen.dart';
@@ -18,23 +19,20 @@ class LobbyScreen extends StatefulWidget {
 }
 
 class _LobbyScreenState extends State<LobbyScreen> {
-  late GameInterface _mainInterface;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    _mainInterface =
-        ModalRoute.of(context)!.settings.arguments as GameInterface;
-    _mainInterface.onRequestStartPlaying = startPlaying;
-    _mainInterface.onStateChanged = (needRedraw) => setState(() {});
+    final gm = GameManager.instance;
+    gm.onRequestStartPlaying = startPlaying;
+    gm.onStateChanged = (needRedraw) => setState(() {});
   }
 
   void startPlaying() {
-    _mainInterface.onStateChanged = null;
+    final gm = GameManager.instance;
+    gm.onStateChanged = null;
 
-    Navigator.of(context)
-        .pushReplacementNamed(GameScreen.route, arguments: _mainInterface);
+    Navigator.of(context).pushReplacementNamed(GameScreen.route);
   }
 
   Column _buildPlayerList(
@@ -51,7 +49,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Les chercheurs de bleuets (${players.length}/${_mainInterface.gameManager.maxPlayers})',
+          'Les chercheurs de bleuets (${players.length}/${GameManager.instance.gameLogic.maxPlayers})',
           style: TextStyle(color: Colors.white, fontSize: titleSize),
         ),
         Padding(
@@ -94,6 +92,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
   }
 
   Widget _buildParameters() {
+    final gl = GameManager.instance.gameLogic;
+
     final smallPadding = ThemePadding.small(context);
     final interlinePadding = ThemePadding.interline(context);
 
@@ -114,12 +114,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Dimension du terrain : ${_mainInterface.gameManager.nbRows}x${_mainInterface.gameManager.nbCols}',
+                'Dimension du terrain : ${gl.nbRows}x${gl.nbCols}',
                 style: TextStyle(color: Colors.white, fontSize: textSize),
               ),
               SizedBox(height: interlinePadding),
               Text(
-                'Nombre d\'essais : ${_mainInterface.gameManager.nbTreasures}',
+                'Nombre d\'essais : ${gl.nbTreasures}',
                 style: TextStyle(color: Colors.white, fontSize: textSize),
               ),
             ],
@@ -139,15 +139,15 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
     final textSize = ThemeSize.text(context);
 
-    final players = _mainInterface.gameManager.players;
+    final players = GameManager.instance.gameLogic.players;
 
     return Scaffold(
       body: Container(
           width: windowWidth,
           height: windowHeight,
           decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-          child: TwitchDebugOverlay(
-            manager: _mainInterface.twitchManager,
+          child: tm.TwitchDebugOverlay(
+            manager: TwitchManager.instance.manager,
             startingPosition: Offset(MediaQuery.of(context).size.width - 300,
                 MediaQuery.of(context).size.height / 2 - 100),
             child: Center(

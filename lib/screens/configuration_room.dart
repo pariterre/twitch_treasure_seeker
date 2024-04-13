@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:twitch_manager/twitch_manager.dart';
-import 'package:twitch_treasure_seeker/models/game_interface.dart';
+import 'package:twitch_treasure_seeker/managers/game_interface.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
-import 'package:twitch_treasure_seeker/models/twitch_config.dart';
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/screens/idle_room.dart';
 import 'package:twitch_treasure_seeker/widgets/are_you_sure_dialog.dart';
 
@@ -17,8 +16,6 @@ class ConfigurationRoom extends StatefulWidget {
 }
 
 class _ConfigurationRoomState extends State<ConfigurationRoom> {
-  GameInterface? _mainInterface;
-
   final _nbMaxPlayersController = TextEditingController();
   final _maxEnergyController = TextEditingController();
   final _nbRowsController = TextEditingController();
@@ -28,64 +25,43 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   final _gameSpeedController = TextEditingController();
 
   @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    if (_mainInterface == null) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        _initializeMainInterface();
-      });
+    if (!GameManager.instance.isInitialized) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((timeStamp) => _initializeMainInterface());
     }
   }
 
   Future<void> _initializeMainInterface() async {
-    final route = ModalRoute.of(context)!;
     if (!mounted) return;
 
-    final twitchManager = route.settings.arguments == null
-        ? await _getConnectedTwitchManager(loadPreviousSession: true)
-        : route.settings.arguments as TwitchManager;
+    if (TwitchManager.instance.manager == null) {
+      await TwitchManager.instance.init(context, loadPreviousSession: true);
+    }
 
-    _mainInterface = await GameInterface.factory(twitchManager: twitchManager);
-    if (mounted && !_mainInterface!.gameManager.isGameRunningForTheFirstTime) {
-      Navigator.of(context)
-          .pushReplacementNamed(IdleRoom.route, arguments: _mainInterface);
+    final gm = GameManager.instance;
+    await gm.initialize();
+    if (mounted && !gm.gameLogic.isGameRunningForTheFirstTime) {
+      Navigator.of(context).pushReplacementNamed(IdleRoom.route);
     }
 
     // Set default parameters
-    _nbMaxPlayersController.text =
-        _mainInterface!.gameManager.maxPlayers.toString();
-    _maxEnergyController.text =
-        _mainInterface!.gameManager.maxEnergy.toString();
-    _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
-    _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
-    _nbTreasuresController.text =
-        _mainInterface!.gameManager.nbTreasures.toString();
-    _restingTimeController.text =
-        _mainInterface!.gameManager.restingTime.toString();
+    _nbMaxPlayersController.text = gm.gameLogic.maxPlayers.toString();
+    _maxEnergyController.text = gm.gameLogic.maxEnergy.toString();
+    _nbRowsController.text = gm.gameLogic.nbRows.toString();
+    _nbColsController.text = gm.gameLogic.nbCols.toString();
+    _nbTreasuresController.text = gm.gameLogic.nbTreasures.toString();
+    _restingTimeController.text = gm.gameLogic.restingTime.toString();
     _gameSpeedController.text =
-        _mainInterface!.gameManager.gameSpeed.inMilliseconds.toString();
+        gm.gameLogic.gameSpeed.inMilliseconds.toString();
     setState(() {});
   }
 
   Future<void> _reinitializeTwitchConnection() async {
-    final manager =
-        await _getConnectedTwitchManager(loadPreviousSession: false);
-    _mainInterface!.updateTwitchManager(manager);
-  }
-
-  Future<TwitchManager> _getConnectedTwitchManager(
-      {required bool loadPreviousSession}) async {
-    return (await showDialog<TwitchManager>(
-      context: context,
-      builder: (context) => TwitchAuthenticationDialog(
-        isMockActive: false,
-        debugPanelOptions: twitchMocker,
-        onConnexionEstablished: (manager) => Navigator.pop(context, manager),
-        appInfo: twitchAppInfo,
-        reload: loadPreviousSession,
-      ),
-    ))!;
+    await TwitchManager.instance.init(context, loadPreviousSession: true);
+    GameManager.instance.updateTwitchManager();
   }
 
   void _goToIdleRoom() {
@@ -97,31 +73,30 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
         int.tryParse(_restingTimeController.text) == null ||
         int.tryParse(_gameSpeedController.text) == null) return;
 
-    Navigator.of(context)
-        .pushReplacementNamed(IdleRoom.route, arguments: _mainInterface);
+    if (TwitchManager.instance.manager == null) return;
+
+    Navigator.of(context).pushReplacementNamed(IdleRoom.route);
   }
 
   void _resetGameParameters() {
-    _mainInterface!.gameManager.resetGameParameters();
-    _nbMaxPlayersController.text =
-        _mainInterface!.gameManager.maxPlayers.toString();
-    _nbRowsController.text = _mainInterface!.gameManager.nbRows.toString();
-    _nbColsController.text = _mainInterface!.gameManager.nbCols.toString();
-    _nbTreasuresController.text =
-        _mainInterface!.gameManager.nbTreasures.toString();
-    _maxEnergyController.text =
-        _mainInterface!.gameManager.maxEnergy.toString();
-    _restingTimeController.text =
-        _mainInterface!.gameManager.restingTime.toString();
+    final gm = GameManager.instance;
+
+    gm.gameLogic.resetGameParameters();
+    _nbMaxPlayersController.text = gm.gameLogic.maxPlayers.toString();
+    _nbRowsController.text = gm.gameLogic.nbRows.toString();
+    _nbColsController.text = gm.gameLogic.nbCols.toString();
+    _nbTreasuresController.text = gm.gameLogic.nbTreasures.toString();
+    _maxEnergyController.text = gm.gameLogic.maxEnergy.toString();
+    _restingTimeController.text = gm.gameLogic.restingTime.toString();
     _gameSpeedController.text =
-        _mainInterface!.gameManager.gameSpeed.inMilliseconds.toString();
+        gm.gameLogic.gameSpeed.inMilliseconds.toString();
   }
 
   Widget _buildMaxPlayersForm() {
     void setMaxPlayers() {
       final value = int.tryParse(_nbMaxPlayersController.text);
       if (value == null) return;
-      _mainInterface!.gameManager.setGameParameters(maximumPlayers: value);
+      GameManager.instance.gameLogic.setGameParameters(maximumPlayers: value);
     }
 
     final textSize = ThemeSize.text(context);
@@ -154,7 +129,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     void setMaxEnergy() {
       final value = int.tryParse(_maxEnergyController.text);
       if (value == null) return;
-      _mainInterface!.gameManager.setGameParameters(maxEnergy: value);
+      GameManager.instance.gameLogic.setGameParameters(maxEnergy: value);
     }
 
     final textSize = ThemeSize.text(context);
@@ -187,13 +162,13 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     void setNbRows() {
       final value = int.tryParse(_nbRowsController.text);
       if (value == null) return;
-      _mainInterface!.gameManager.setGameParameters(nbRows: value);
+      GameManager.instance.gameLogic.setGameParameters(nbRows: value);
     }
 
     void setNbCols() {
       final value = int.tryParse(_nbColsController.text);
       if (value == null) return;
-      _mainInterface!.gameManager.setGameParameters(nbCols: value);
+      GameManager.instance.gameLogic.setGameParameters(nbCols: value);
     }
 
     final textSize = ThemeSize.text(context);
@@ -247,7 +222,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     void setTeasures() {
       final value = int.tryParse(_nbTreasuresController.text);
       if (value == null) return;
-      _mainInterface!.gameManager.setGameParameters(nbTreasures: value);
+      GameManager.instance.gameLogic.setGameParameters(nbTreasures: value);
     }
 
     final textSize = ThemeSize.text(context);
@@ -280,7 +255,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     void setResting() {
       final value = int.tryParse(_restingTimeController.text);
       if (value == null) return;
-      _mainInterface!.gameManager.setGameParameters(restingTime: value);
+      GameManager.instance.gameLogic.setGameParameters(restingTime: value);
     }
 
     final textSize = ThemeSize.text(context);
@@ -313,7 +288,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     void setGameSpeed() {
       final value = int.tryParse(_gameSpeedController.text);
       if (value == null) return;
-      _mainInterface!.gameManager
+      GameManager.instance.gameLogic
           .setGameParameters(gameSpeed: Duration(milliseconds: value));
     }
 
@@ -398,7 +373,7 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
 
     final smallPadding = ThemePadding.small(context);
 
-    return _mainInterface == null
+    return !GameManager.instance.isInitialized
         ? const Center(
             child: CircularProgressIndicator(),
           )
@@ -437,7 +412,9 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
                             ),
                             const SizedBox(width: 12),
                             ElevatedButton(
-                              onPressed: _goToIdleRoom,
+                              onPressed: TwitchManager.instance.manager == null
+                                  ? null
+                                  : _goToIdleRoom,
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white),
                               child: const Text(

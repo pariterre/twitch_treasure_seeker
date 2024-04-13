@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/models/enums.dart';
-import 'package:twitch_treasure_seeker/models/game_manager.dart';
+import 'package:twitch_treasure_seeker/models/game_logic.dart';
 
 import 'actor_token.dart';
 
@@ -36,22 +36,22 @@ extension TileColor on Tile {
 class SweeperTile extends StatelessWidget {
   const SweeperTile({
     super.key,
-    required this.gameManager,
+    required this.gameLogic,
     required this.tileIndex,
     required this.tileSize,
     required this.textSize,
   });
 
-  final GameManager gameManager;
+  final GameLogic gameLogic;
   final int tileIndex;
   final double tileSize;
   final double textSize;
 
   @override
   Widget build(BuildContext context) {
-    final tile = gameManager.tile(tileIndex);
-    final players = gameManager.playersOnTile(tileIndex);
-    final ennemies = gameManager.ennemiesOnTile(tileIndex);
+    final tile = gameLogic.tile(tileIndex);
+    final players = gameLogic.playersOnTile(tileIndex);
+    final ennemies = gameLogic.ennemiesOnTile(tileIndex);
 
     // index is the number of treasure around the current tile
     final nbTreasuresAround = tile.index;
@@ -81,11 +81,9 @@ class SweeperTile extends StatelessWidget {
           ...players.map(
               (player) => ActorToken(tileSize: tileSize * 1.1, actor: player)),
         // Draw the ennemies and their influence
-        ...gameManager
-            .ennemiesThatCanAttack(tileIndex)
-            .map((ennemy) => Container(
-                  decoration: BoxDecoration(color: ennemy.color.withAlpha(50)),
-                )),
+        ...gameLogic.ennemiesThatCanAttack(tileIndex).map((ennemy) => Container(
+              decoration: BoxDecoration(color: ennemy.color.withAlpha(50)),
+            )),
         if (ennemies.isNotEmpty)
           ...ennemies
               .map((ennemy) => ActorToken(tileSize: tileSize, actor: ennemy)),
