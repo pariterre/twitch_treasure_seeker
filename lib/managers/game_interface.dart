@@ -17,7 +17,7 @@ class GameManager {
 
   void updateTwitchManager() {
     TwitchManager.instance.manager?.chat.onMessageReceived
-        .startListening(_messageReceived);
+        .listen(_messageReceived);
   }
 
   List<String>? _moderators;

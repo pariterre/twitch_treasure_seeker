@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitch_manager/twitch_manager.dart' as tm;
+import 'package:twitch_manager/twitch_app.dart';
 import 'package:twitch_treasure_seeker/managers/game_interface.dart';
 import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
@@ -146,7 +146,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
           width: windowWidth,
           height: windowHeight,
           decoration: const BoxDecoration(color: ThemeColor.greenScreen),
-          child: tm.TwitchDebugOverlay(
+          child: TwitchAppDebugOverlay(
             manager: TwitchManager.instance.manager,
             startingPosition: Offset(MediaQuery.of(context).size.width - 300,
                 MediaQuery.of(context).size.height / 2 - 100),

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:twitch_manager/twitch_manager.dart' as tm;
+import 'package:twitch_manager/twitch_app.dart';
 
-final _twitchMockerOptions = tm.TwitchDebugPanelOptions(
+final _twitchMockerOptions = TwitchDebugPanelOptions(
   chatters: [
-    tm.TwitchChatterMock(displayName: 'modo1', isModerator: true),
-    tm.TwitchChatterMock(displayName: 'follower1'),
-    tm.TwitchChatterMock(displayName: 'follower2'),
-    tm.TwitchChatterMock(displayName: 'follower3'),
-    tm.TwitchChatterMock(displayName: 'follower4'),
-    tm.TwitchChatterMock(displayName: 'follower5'),
-    tm.TwitchChatterMock(displayName: 'follower6'),
-    tm.TwitchChatterMock(displayName: 'follower7'),
-    tm.TwitchChatterMock(displayName: 'follower8'),
-    tm.TwitchChatterMock(displayName: 'follower9'),
-    tm.TwitchChatterMock(displayName: 'follower10'),
+    TwitchChatterMock(displayName: 'modo1', isModerator: true),
+    TwitchChatterMock(displayName: 'follower1'),
+    TwitchChatterMock(displayName: 'follower2'),
+    TwitchChatterMock(displayName: 'follower3'),
+    TwitchChatterMock(displayName: 'follower4'),
+    TwitchChatterMock(displayName: 'follower5'),
+    TwitchChatterMock(displayName: 'follower6'),
+    TwitchChatterMock(displayName: 'follower7'),
+    TwitchChatterMock(displayName: 'follower8'),
+    TwitchChatterMock(displayName: 'follower9'),
+    TwitchChatterMock(displayName: 'follower10'),
   ],
   chatMessages: [
     '!chercheursDeBleuets',
@@ -25,23 +25,26 @@ final _twitchMockerOptions = tm.TwitchDebugPanelOptions(
   ],
 );
 
-final _twitchAppInfo = tm.TwitchAppInfo(
+final _twitchAppInfo = TwitchAppInfo(
   appName: 'Minesweeper',
-  twitchAppId: 's88tkbc2bsddutwte7bbnj616mhgqx',
+  twitchClientId: 's88tkbc2bsddutwte7bbnj616mhgqx',
+  twitchRedirectUri:
+      Uri.https('twitchauthentication.pariterre.net', 'twitch_redirect.html'),
+  authenticationServerUri:
+      Uri.https('twitchserver.pariterre.net:3000', 'token'),
   scope: [
-    tm.TwitchScope.chatRead,
-    tm.TwitchScope.chatEdit,
-    tm.TwitchScope.chatters,
-    tm.TwitchScope.readFollowers,
-    tm.TwitchScope.readModerator,
-    tm.TwitchScope.readModerator,
+    TwitchAppScope.chatRead,
+    TwitchAppScope.chatEdit,
+    TwitchAppScope.chatters,
+    TwitchAppScope.readFollowers,
+    TwitchAppScope.readModerator,
+    TwitchAppScope.readModerator,
   ],
-  redirectUri: 'twitchauthentication.pariterre.net',
 );
 
 class TwitchManager {
-  tm.TwitchManager? _manager;
-  tm.TwitchManager? get manager => _manager;
+  TwitchAppManager? _manager;
+  TwitchAppManager? get manager => _manager;
 
   // Prepare the singleton
   static final TwitchManager _singleton = TwitchManager._internal();
@@ -51,9 +54,9 @@ class TwitchManager {
   // Initialize
   Future<void> init(BuildContext context,
       {required bool loadPreviousSession}) async {
-    _manager = (await showDialog<tm.TwitchManager>(
+    _manager = (await showDialog<TwitchAppManager>(
       context: context,
-      builder: (context) => tm.TwitchAuthenticationDialog(
+      builder: (context) => TwitchAppAuthenticationDialog(
         isMockActive: false,
         debugPanelOptions: _twitchMockerOptions,
         onConnexionEstablished: (manager) {
