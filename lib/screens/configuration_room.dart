@@ -24,6 +24,8 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   final _restingTimeController = TextEditingController();
   final _gameSpeedController = TextEditingController();
 
+  final bool _useMock = true;
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +40,8 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
     if (!mounted) return;
 
     if (TwitchManager.instance.manager == null) {
-      await TwitchManager.instance.init(context, loadPreviousSession: true);
+      await TwitchManager.instance
+          .init(context, loadPreviousSession: true, useMock: _useMock);
     }
 
     final gm = GameManager.instance;
@@ -60,7 +63,8 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
   }
 
   Future<void> _reinitializeTwitchConnection() async {
-    await TwitchManager.instance.init(context, loadPreviousSession: true);
+    await TwitchManager.instance
+        .init(context, loadPreviousSession: true, useMock: _useMock);
     GameManager.instance.updateTwitchManager();
   }
 
@@ -71,7 +75,9 @@ class _ConfigurationRoomState extends State<ConfigurationRoom> {
         int.tryParse(_nbColsController.text) == null ||
         int.tryParse(_nbTreasuresController.text) == null ||
         int.tryParse(_restingTimeController.text) == null ||
-        int.tryParse(_gameSpeedController.text) == null) return;
+        int.tryParse(_gameSpeedController.text) == null) {
+      return;
+    }
 
     if (TwitchManager.instance.manager == null) return;
 

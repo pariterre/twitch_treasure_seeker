@@ -53,11 +53,11 @@ class TwitchManager {
 
   // Initialize
   Future<void> init(BuildContext context,
-      {required bool loadPreviousSession}) async {
+      {required bool loadPreviousSession, required bool useMock}) async {
     _manager = (await showDialog<TwitchAppManager>(
       context: context,
       builder: (context) => TwitchAppAuthenticationDialog(
-        isMockActive: false,
+        isMockActive: useMock,
         debugPanelOptions: _twitchMockerOptions,
         onConnexionEstablished: (manager) {
           Navigator.pop(context, manager);

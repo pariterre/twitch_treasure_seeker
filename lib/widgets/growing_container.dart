@@ -101,14 +101,14 @@ class GrowingContainerState extends State<GrowingContainer>
               return Container(
                 decoration: BoxDecoration(
                     color: widget.backgroundColor
-                        .withOpacity(max(_currentOpacity - 0.2, 0))),
+                        .withValues(alpha: max(_currentOpacity - 0.2, 0))),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8.0, vertical: 4.0),
                   child: Text(
                     style: TextStyle(
                         fontSize: _currentSize,
-                        color: Colors.white.withOpacity(_currentOpacity)),
+                        color: Colors.white.withValues(alpha: _currentOpacity)),
                     textAlign: TextAlign.center,
                     text,
                   ),
