@@ -2,9 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/models/enums.dart';
-import 'package:twitch_treasure_seeker/models/game_logic.dart';
-
-import 'actor_token.dart';
+import 'package:twitch_treasure_seeker/managers/game_manager.dart';
 
 extension TileColor on Tile {
   Color get color {
@@ -36,58 +34,52 @@ extension TileColor on Tile {
 class SweeperTile extends StatelessWidget {
   const SweeperTile({
     super.key,
-    required this.gameLogic,
     required this.tileIndex,
     required this.tileSize,
     required this.textSize,
   });
 
-  final GameLogic gameLogic;
   final int tileIndex;
   final double tileSize;
   final double textSize;
 
   @override
   Widget build(BuildContext context) {
-    final tile = gameLogic.tile(tileIndex);
-    final players = gameLogic.playersOnTile(tileIndex);
-    final ennemies = gameLogic.ennemiesOnTile(tileIndex);
+    final gm = GameManager.instance;
+    final tile = gm.getTile(tileIndex);
 
     // index is the number of treasure around the current tile
     final nbTreasuresAround = tile.index;
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        if (tile != Tile.starting)
-          Container(
-            decoration: const BoxDecoration(
-                // border: Border.all(width: tileSize * 0.02),
-                ),
-            child: Image.asset(tile == Tile.concealed
-                ? 'assets/grass.png'
-                : 'assets/open_grass.png'),
-          ),
-        tile == Tile.treasure
-            ? const _TreasureTile()
-            : Text(
-                nbTreasuresAround > 0 ? nbTreasuresAround.toString() : '',
-                style: TextStyle(
-                    fontSize: textSize * 0.65,
-                    color: tile.color,
-                    fontWeight: FontWeight.bold),
-              ),
-        if (players.isNotEmpty)
-          ...players.map(
-              (player) => ActorToken(tileSize: tileSize * 1.1, actor: player)),
-        // Draw the ennemies and their influence
-        ...gameLogic.ennemiesThatCanAttack(tileIndex).map((ennemy) => Container(
-              decoration: BoxDecoration(color: ennemy.color.withAlpha(50)),
-            )),
-        if (ennemies.isNotEmpty)
-          ...ennemies
-              .map((ennemy) => ActorToken(tileSize: tileSize, actor: ennemy)),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(width: tileSize * 0.02),
+      ),
+      child: GestureDetector(
+        onTap: () => gm.revealTile(tileIndex: tileIndex),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                  // border: Border.all(width: tileSize * 0.02),
+                  ),
+              child: Image.asset(tile == Tile.concealed
+                  ? 'assets/grass.png'
+                  : 'assets/open_grass.png'),
+            ),
+            tile == Tile.treasure
+                ? const _TreasureTile()
+                : Text(
+                    nbTreasuresAround > 0 ? nbTreasuresAround.toString() : '',
+                    style: TextStyle(
+                        fontSize: textSize * 0.65,
+                        color: tile.color,
+                        fontWeight: FontWeight.bold),
+                  ),
+          ],
+        ),
+      ),
     );
   }
 }

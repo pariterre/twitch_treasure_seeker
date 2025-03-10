@@ -1,13 +1,6 @@
 enum GameStatus {
-  initial,
   isRunning,
   isOver,
-}
-
-enum AddPlayerStatus {
-  success,
-  registrationIsClosed,
-  noMoreSpaceLeft,
 }
 
 enum NeedRedraw {
@@ -20,7 +13,6 @@ enum RevealResult {
   hit,
   miss,
   outsideGrid,
-  noEnergyLeft,
   alreadyRevealed,
   unrecognizedUser,
   gameOver,
@@ -38,5 +30,4 @@ enum Tile {
   eight,
   treasure,
   concealed,
-  starting,
 }
