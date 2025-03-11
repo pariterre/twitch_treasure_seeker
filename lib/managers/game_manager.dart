@@ -18,18 +18,20 @@ class GameManager {
   static final GameManager _instance = GameManager._();
   static GameManager get instance => _instance;
   GameManager._() {
-    _generateGrid();
-    _startGameLoop();
+    resetGame();
   }
 
   ///
   /// Time remaining
-  Duration _timeRemaining = const Duration(seconds: 20);
+  Timer? _timer;
+  final _startingTimeRemaining = const Duration(seconds: 20);
+  late Duration _timeRemaining = _startingTimeRemaining;
   Duration get timeRemaining => _timeRemaining;
 
   ///
   /// Number of tries remaining
-  int _triesRemaining = 5;
+  final _startingTriesRemaining = 5;
+  late int _triesRemaining = _startingTriesRemaining;
   int get triesRemaining => _triesRemaining;
 
   ///
@@ -38,6 +40,7 @@ class GameManager {
   final int _rewardInTrials = 1;
 
   // Listeners
+  final onGameStarted = GenericListener<Function()>();
   final onClockTicked = GenericListener<Function(Duration)>();
   final onTileRevealed = GenericListener<Function()>();
   final onTreasureFound = GenericListener<Function(Tile)>();
@@ -215,6 +218,14 @@ class GameManager {
         tile.col < nbCols);
   }
 
+  void resetGame() {
+    _generateGrid();
+    _timeRemaining = _startingTimeRemaining;
+    _triesRemaining = _startingTriesRemaining;
+    onGameStarted.notifyListeners((callback) => callback());
+    _startGameLoop();
+  }
+
   ///
   /// Generate a new grid with randomly positionned treasures
   void _generateGrid() {
@@ -296,9 +307,14 @@ class GameManager {
   ///
   /// Start the game loop
   Future<void> _startGameLoop() async {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer?.cancel();
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       _gameLoop();
-      if (isGameOver) timer.cancel();
+      if (isGameOver) {
+        _timer?.cancel();
+        _timer = null;
+      }
     });
   }
 

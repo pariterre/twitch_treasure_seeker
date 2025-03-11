@@ -11,27 +11,39 @@ class Header extends StatefulWidget {
 }
 
 class _HeaderState extends State<Header> {
-  late final List<String> _letters =
-      List.generate(WordsManager.instance.current.length, (_) => '_');
+  final List<String> _letters = [];
 
   @override
   void initState() {
     super.initState();
 
     final gm = GameManager.instance;
+    gm.onGameStarted.listen(_onGameStarted);
     gm.onClockTicked.listen(_onClockTicked);
     gm.onTileRevealed.listen(_onTileRevealed);
     gm.onTreasureFound.listen(_onTreasureFound);
+
+    _onGameStarted();
   }
 
   @override
   void dispose() {
     final gm = GameManager.instance;
+    gm.onGameStarted.cancel(_onGameStarted);
     gm.onClockTicked.cancel(_onClockTicked);
     gm.onTileRevealed.cancel(_onTileRevealed);
     gm.onTreasureFound.cancel(_onTreasureFound);
 
     super.dispose();
+  }
+
+  void _onGameStarted() {
+    _letters.clear();
+    _letters.addAll(
+        List.generate(WordsManager.instance.current.length, (_) => '_'));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+    });
   }
 
   void _onClockTicked(Duration timeRemaining) {

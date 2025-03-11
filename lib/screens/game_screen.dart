@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/managers/game_manager.dart';
-import 'package:twitch_treasure_seeker/models/enums.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/widgets/game_grid.dart';
 import 'package:twitch_treasure_seeker/widgets/growing_container.dart';
@@ -27,7 +26,6 @@ class _GameScreenState extends State<GameScreen> {
 
     final gm = GameManager.instance;
     gm.onTileRevealed.listen(_onTileRevealed);
-    gm.onTreasureFound.listen(_onTreasureFound);
     gm.onGameOver.listen(_onGameOver);
   }
 
@@ -36,7 +34,6 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     final gm = GameManager.instance;
     gm.onTileRevealed.cancel(_onTileRevealed);
-    gm.onTreasureFound.cancel(_onTreasureFound);
     gm.onGameOver.cancel(_onGameOver);
 
     super.dispose();
@@ -44,17 +41,17 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onTileRevealed() => setState(() {});
 
-  void _onTreasureFound(Tile tile) {
-    // _treasureFoundKey.currentState!.showMessage('Un bleuet trouvé');
-  }
-
   void _onGameOver(bool hasWin) {
     if (hasWin) {
       _treasureFoundKey.currentState!.showMessage('Vous avez gagné');
     } else {
       _treasureFoundKey.currentState!.showMessage('Vous avez perdu');
     }
-    // Navigator.of(context).pushReplacementNamed(EndScreen.route);
+
+    Future.delayed(Duration(seconds: 5), () {
+      GameManager.instance.resetGame();
+      setState(() {});
+    });
   }
 
   @override
