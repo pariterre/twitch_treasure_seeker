@@ -51,6 +51,12 @@ class GrowingContainerState extends State<GrowingContainer>
     duration: Duration(milliseconds: fullAnimationTime),
   );
 
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
   void showMessage(String message) {
     if (animationController.isAnimating) return;
 
@@ -61,6 +67,7 @@ class GrowingContainerState extends State<GrowingContainer>
     // Remove the message after the animation is done
     Future.delayed(Duration(milliseconds: fullAnimationTime)).then((value) {
       _text = null;
+      if (!mounted) return;
       animationController.reset();
       setState(() {});
       return;

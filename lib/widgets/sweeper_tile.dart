@@ -7,6 +7,8 @@ import 'package:twitch_treasure_seeker/managers/game_manager.dart';
 extension TileColor on Tile {
   Color get color {
     switch (this) {
+      case Tile.zero:
+        return const Color.fromARGB(0, 0, 0, 0);
       case Tile.one:
         return const Color.fromARGB(255, 89, 171, 191);
       case Tile.two:
@@ -25,7 +27,9 @@ extension TileColor on Tile {
         return Colors.deepPurple;
       case Tile.treasure:
         return const Color.fromARGB(255, 10, 41, 66);
-      default:
+      case Tile.letter:
+        return const Color.fromARGB(255, 255, 108, 108);
+      case Tile.concealed:
         return const Color.fromARGB(0, 0, 0, 0);
     }
   }
@@ -53,7 +57,7 @@ class SweeperTile extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(width: tileSize * 0.02),
+        border: Border.all(width: tileSize * 0.03),
       ),
       child: GestureDetector(
         onTap: () => gm.revealTile(tileIndex: tileIndex),
@@ -68,15 +72,23 @@ class SweeperTile extends StatelessWidget {
                   ? 'assets/grass.png'
                   : 'assets/open_grass.png'),
             ),
-            tile == Tile.treasure
-                ? const _TreasureTile()
-                : Text(
-                    nbTreasuresAround > 0 ? nbTreasuresAround.toString() : '',
+            tile == Tile.letter
+                ? Text(gm.getLetter(tileIndex)!,
                     style: TextStyle(
                         fontSize: textSize * 0.65,
                         color: tile.color,
-                        fontWeight: FontWeight.bold),
-                  ),
+                        fontWeight: FontWeight.bold))
+                : tile == Tile.treasure
+                    ? const _TreasureTile()
+                    : Text(
+                        nbTreasuresAround > 0
+                            ? nbTreasuresAround.toString()
+                            : '',
+                        style: TextStyle(
+                            fontSize: textSize * 0.65,
+                            color: tile.color,
+                            fontWeight: FontWeight.bold),
+                      ),
           ],
         ),
       ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/models/enums.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
-import 'package:twitch_treasure_seeker/screens/end_screen.dart';
 import 'package:twitch_treasure_seeker/widgets/game_grid.dart';
 import 'package:twitch_treasure_seeker/widgets/growing_container.dart';
+import 'package:twitch_treasure_seeker/widgets/header.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -43,11 +44,18 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onTileRevealed() => setState(() {});
 
-  void _onTreasureFound() =>
-      _treasureFoundKey.currentState!.showMessage('Un bleuet trouvé');
+  void _onTreasureFound(Tile tile) {
+    // _treasureFoundKey.currentState!.showMessage('Un bleuet trouvé');
+  }
 
-  void _onGameOver() =>
-      Navigator.of(context).pushReplacementNamed(EndScreen.route);
+  void _onGameOver(bool hasWin) {
+    if (hasWin) {
+      _treasureFoundKey.currentState!.showMessage('Vous avez gagné');
+    } else {
+      _treasureFoundKey.currentState!.showMessage('Vous avez perdu');
+    }
+    // Navigator.of(context).pushReplacementNamed(EndScreen.route);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +63,12 @@ class _GameScreenState extends State<GameScreen> {
     final windowHeight = MediaQuery.of(context).size.height;
 
     final offsetFromBorder = windowHeight * 0.02;
-    final gridHeight = windowHeight - 2 * offsetFromBorder;
+    final headerHeight = 100.0;
+    final gridHeight = windowHeight - 2 * offsetFromBorder - headerHeight;
 
     final gm = GameManager.instance;
     final tileSize = gridHeight / (gm.nbRows + 1);
+    final gridWidth = gm.nbCols * tileSize;
 
     return Scaffold(
       body: Container(
@@ -66,13 +76,17 @@ class _GameScreenState extends State<GameScreen> {
         child: Center(
           child: Stack(
             children: [
-              SizedBox(
-                width: windowWidth,
-                height: windowHeight,
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                    left: offsetFromBorder, top: offsetFromBorder),
+              Positioned(
+                  top: offsetFromBorder,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                      child: SizedBox(
+                          height: headerHeight, child: const Header()))),
+              Positioned(
+                top: offsetFromBorder + headerHeight,
+                left: (windowWidth - gridWidth) / 2,
+                right: (windowWidth - gridWidth) / 2,
                 child: GameGrid(tileSize: tileSize),
               ),
               Positioned(
@@ -88,7 +102,8 @@ class _GameScreenState extends State<GameScreen> {
                   finalSize: windowHeight * 0.04,
                   growingTime: _growingTextTime,
                   fadingTime: _fadingTextTime,
-                  backgroundColor: ThemeColor.main,
+                  backgroundColor:
+                      gm.hasLost ? ThemeColor.lost : ThemeColor.main,
                 )),
               ),
             ],

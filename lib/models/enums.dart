@@ -29,5 +29,6 @@ enum Tile {
   seven,
   eight,
   treasure,
+  letter,
   concealed,
 }
