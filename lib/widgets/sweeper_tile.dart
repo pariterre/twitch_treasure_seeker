@@ -1,36 +1,34 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitch_treasure_seeker/models/enums.dart';
 import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/widgets/tile.dart';
 
-extension TileColor on Tile {
+extension TileColor on TileValue {
   Color get color {
     switch (this) {
-      case Tile.zero:
+      case TileValue.zero:
         return const Color.fromARGB(0, 0, 0, 0);
-      case Tile.one:
+      case TileValue.one:
         return const Color.fromARGB(255, 89, 171, 191);
-      case Tile.two:
+      case TileValue.two:
         return const Color.fromARGB(255, 30, 139, 249);
-      case Tile.three:
+      case TileValue.three:
         return const Color.fromARGB(255, 171, 161, 235);
-      case Tile.four:
+      case TileValue.four:
         return const Color.fromARGB(255, 139, 105, 2);
-      case Tile.five:
+      case TileValue.five:
         return Colors.purple;
-      case Tile.six:
+      case TileValue.six:
         return Colors.brown;
-      case Tile.seven:
+      case TileValue.seven:
         return const Color.fromARGB(255, 212, 85, 0);
-      case Tile.eight:
+      case TileValue.eight:
         return Colors.deepPurple;
-      case Tile.treasure:
+      case TileValue.treasure:
         return const Color.fromARGB(255, 10, 41, 66);
-      case Tile.letter:
+      case TileValue.letter:
         return const Color.fromARGB(255, 255, 108, 108);
-      case Tile.concealed:
-        return const Color.fromARGB(0, 0, 0, 0);
     }
   }
 }
@@ -53,7 +51,7 @@ class SweeperTile extends StatelessWidget {
     final tile = gm.getTile(tileIndex);
 
     // index is the number of treasure around the current tile
-    final nbTreasuresAround = tile.index;
+    final value = tile.value;
 
     return Container(
       decoration: BoxDecoration(
@@ -68,27 +66,25 @@ class SweeperTile extends StatelessWidget {
               decoration: const BoxDecoration(
                   // border: Border.all(width: tileSize * 0.02),
                   ),
-              child: Image.asset(tile == Tile.concealed
-                  ? 'assets/grass.png'
-                  : 'assets/open_grass.png'),
+              child: Image.asset(tile.isConcealed
+                  ? 'assets/images/grass.png'
+                  : 'assets/images/open_grass.png'),
             ),
-            tile == Tile.letter
-                ? Text(gm.getLetter(tileIndex)!,
-                    style: TextStyle(
-                        fontSize: textSize * 0.65,
-                        color: tile.color,
-                        fontWeight: FontWeight.bold))
-                : tile == Tile.treasure
-                    ? const _TreasureTile()
-                    : Text(
-                        nbTreasuresAround > 0
-                            ? nbTreasuresAround.toString()
-                            : '',
+            tile.isRevealed && tile.hasReward
+                ? (tile.hasLetter
+                    ? Text(gm.getLetter(tileIndex)!,
                         style: TextStyle(
                             fontSize: textSize * 0.65,
-                            color: tile.color,
-                            fontWeight: FontWeight.bold),
-                      ),
+                            color: tile.value.color,
+                            fontWeight: FontWeight.bold))
+                    : const _TreasureTile())
+                : Text(
+                    tile.isRevealed ? value.toString() : '',
+                    style: TextStyle(
+                        fontSize: textSize * 0.65,
+                        color: tile.value.color,
+                        fontWeight: FontWeight.bold),
+                  )
           ],
         ),
       ),
@@ -125,7 +121,7 @@ class _TreasureTileState extends State<_TreasureTile> {
           return SizedBox(
               height: _animation(value) * 30,
               width: _animation(value) * 30,
-              child: Image.asset('assets/blueberries.png'));
+              child: Image.asset('assets/images/blueberries.png'));
         });
   }
 }

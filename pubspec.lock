@@ -105,6 +105,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.0"
+  common:
+    dependency: "direct main"
+    description:
+      path: "plugins/twitch_train_de_mots/common"
+      relative: true
+    source: path
+    version: "1.0.0"
   convert:
     dependency: transitive
     description:
@@ -137,6 +144,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.17.0"
+  diacritic:
+    dependency: transitive
+    description:
+      name: diacritic
+      sha256: "12981945ec38931748836cd76f2b38773118d0baef3c68404bdfde9566147876"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.6"
   ed25519_edwards:
     dependency: transitive
     description:

@@ -17,18 +17,3 @@ enum RevealResult {
   unrecognizedUser,
   gameOver,
 }
-
-enum Tile {
-  zero,
-  one,
-  two,
-  three,
-  four,
-  five,
-  six,
-  seven,
-  eight,
-  treasure,
-  letter,
-  concealed,
-}

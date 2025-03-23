@@ -1,3 +1,4 @@
+import 'package:common/widgets/background.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/managers/game_manager.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
@@ -18,14 +19,15 @@ class _GameScreenState extends State<GameScreen> {
   final _growingTextTime = const Duration(seconds: 1, milliseconds: 500);
   final _fadingTextTime = const Duration(milliseconds: 500);
 
-  final _treasureFoundKey = GlobalKey<GrowingContainerState>();
+  final _rewardFoundKey = GlobalKey<GrowingContainerState>();
 
   @override
   void initState() {
     super.initState();
 
     final gm = GameManager.instance;
-    gm.onTileRevealed.listen(_onTileRevealed);
+    gm.onGameStarted.listen(_refresh);
+    gm.onTileRevealed.listen(_refresh);
     gm.onGameOver.listen(_onGameOver);
   }
 
@@ -33,24 +35,24 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void dispose() {
     final gm = GameManager.instance;
-    gm.onTileRevealed.cancel(_onTileRevealed);
+    gm.onGameStarted.cancel(_refresh);
+    gm.onTileRevealed.cancel(_refresh);
     gm.onGameOver.cancel(_onGameOver);
 
     super.dispose();
   }
 
-  void _onTileRevealed() => setState(() {});
+  void _refresh() => setState(() {});
 
   void _onGameOver(bool hasWin) {
     if (hasWin) {
-      _treasureFoundKey.currentState!.showMessage('Vous avez gagné');
+      _rewardFoundKey.currentState!.showMessage('Vous avez gagné');
     } else {
-      _treasureFoundKey.currentState!.showMessage('Vous avez perdu');
+      _rewardFoundKey.currentState!.showMessage('Vous avez perdu');
     }
 
     Future.delayed(Duration(seconds: 5), () {
       GameManager.instance.resetGame();
-      setState(() {});
     });
   }
 
@@ -60,7 +62,7 @@ class _GameScreenState extends State<GameScreen> {
     final windowHeight = MediaQuery.of(context).size.height;
 
     final offsetFromBorder = windowHeight * 0.02;
-    final headerHeight = 100.0;
+    final headerHeight = 160.0;
     final gridHeight = windowHeight - 2 * offsetFromBorder - headerHeight;
 
     final gm = GameManager.instance;
@@ -68,8 +70,15 @@ class _GameScreenState extends State<GameScreen> {
     final gridWidth = gm.nbCols * tileSize;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(color: ThemeColor.greenScreen),
+      body: Background(
+        backgroundLayer: Opacity(
+          opacity: 0.05,
+          child: Image.asset(
+            'assets/images/train.png',
+            height: MediaQuery.of(context).size.height,
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Center(
           child: Stack(
             children: [
@@ -94,7 +103,7 @@ class _GameScreenState extends State<GameScreen> {
                 bottom: windowHeight * 1 / 4,
                 child: Center(
                     child: GrowingContainer(
-                  key: _treasureFoundKey,
+                  key: _rewardFoundKey,
                   startingSize: windowHeight * 0.01,
                   finalSize: windowHeight * 0.04,
                   growingTime: _growingTextTime,

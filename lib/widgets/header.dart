@@ -1,7 +1,8 @@
+import 'package:common/managers/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/managers/game_manager.dart';
-import 'package:twitch_treasure_seeker/managers/words_manager.dart';
-import 'package:twitch_treasure_seeker/models/enums.dart';
+import 'package:twitch_treasure_seeker/widgets/letter_displayer.dart';
+import 'package:twitch_treasure_seeker/widgets/tile.dart';
 
 class Header extends StatefulWidget {
   const Header({super.key});
@@ -11,8 +12,6 @@ class Header extends StatefulWidget {
 }
 
 class _HeaderState extends State<Header> {
-  final List<String> _letters = [];
-
   @override
   void initState() {
     super.initState();
@@ -21,9 +20,7 @@ class _HeaderState extends State<Header> {
     gm.onGameStarted.listen(_onGameStarted);
     gm.onClockTicked.listen(_onClockTicked);
     gm.onTileRevealed.listen(_onTileRevealed);
-    gm.onTreasureFound.listen(_onTreasureFound);
-
-    _onGameStarted();
+    gm.onRewardFound.listen(_onRewardFound);
   }
 
   @override
@@ -32,18 +29,13 @@ class _HeaderState extends State<Header> {
     gm.onGameStarted.cancel(_onGameStarted);
     gm.onClockTicked.cancel(_onClockTicked);
     gm.onTileRevealed.cancel(_onTileRevealed);
-    gm.onTreasureFound.cancel(_onTreasureFound);
+    gm.onRewardFound.cancel(_onRewardFound);
 
     super.dispose();
   }
 
   void _onGameStarted() {
-    _letters.clear();
-    _letters.addAll(
-        List.generate(WordsManager.instance.current.length, (_) => '_'));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {});
-    });
+    setState(() {});
   }
 
   void _onClockTicked(Duration timeRemaining) {
@@ -54,15 +46,7 @@ class _HeaderState extends State<Header> {
     setState(() {});
   }
 
-  void _onTreasureFound(Tile tile) {
-    if (tile != Tile.letter) return;
-    // Transfer the letters found to the header
-    final lettersFound = GameManager.instance.getLettersFoundIndices.toList();
-    final currentWord = WordsManager.instance.current;
-    for (int i = 0; i < lettersFound.length; i++) {
-      if (lettersFound[i]) _letters[i] = currentWord[i];
-    }
-
+  void _onRewardFound(Tile tile) {
     setState(() {});
   }
 
@@ -75,33 +59,16 @@ class _HeaderState extends State<Header> {
           children: [
             Text(
               'Temps restant: ${GameManager.instance.timeRemaining.inSeconds}',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge!
-                  .copyWith(fontWeight: FontWeight.bold),
+              style: ThemeManager.instance.textFrontendSc,
             ),
             Text(
               'Essais restants: ${GameManager.instance.triesRemaining}',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge!
-                  .copyWith(fontWeight: FontWeight.bold),
+              style: ThemeManager.instance.textFrontendSc,
             ),
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(_letters.length, (index) {
-            return Text(
-              _letters[index],
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge!
-                  .copyWith(fontWeight: FontWeight.bold),
-            );
-          }),
-        ),
+        const LetterDisplayer(),
       ],
     );
   }

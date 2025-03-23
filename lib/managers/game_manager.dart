@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:twitch_treasure_seeker/managers/words_manager.dart';
+import 'package:common/managers/dictionary_manager.dart';
+import 'package:common/models/simplified_game_state.dart';
 import 'package:twitch_treasure_seeker/models/enums.dart';
 import 'package:twitch_treasure_seeker/models/game_tile.dart';
 import 'package:twitch_treasure_seeker/models/generic_listener.dart';
+import 'package:twitch_treasure_seeker/widgets/tile.dart';
 
 ///
 /// Easy accessors translating index into row/col pair or row/col pair into
@@ -21,6 +23,8 @@ class GameManager {
     resetGame();
   }
 
+  final _random = Random();
+
   ///
   /// Time remaining
   Timer? _timer;
@@ -29,13 +33,20 @@ class GameManager {
   Duration get timeRemaining => _timeRemaining;
 
   ///
+  /// Current problem
+  final _dictionary = DictionaryManager.wordsWithAtLeast(6).toList();
+  SimplifiedLetterProblem? _problem;
+  SimplifiedLetterProblem get problem =>
+      _problem == null ? throw "This should not happen" : _problem!;
+
+  ///
   /// Number of tries remaining
   final _startingTriesRemaining = 5;
   late int _triesRemaining = _startingTriesRemaining;
   int get triesRemaining => _triesRemaining;
 
   ///
-  /// Rewards when a treasure (tries) or a letter (time) are found
+  /// Rewards when a treasure or a letter are found
   final Duration _rewardInTime = const Duration(seconds: 5);
   final int _rewardInTrials = 1;
 
@@ -43,74 +54,66 @@ class GameManager {
   final onGameStarted = GenericListener<Function()>();
   final onClockTicked = GenericListener<Function(Duration)>();
   final onTileRevealed = GenericListener<Function()>();
-  final onTreasureFound = GenericListener<Function(Tile)>();
+  final onRewardFound = GenericListener<Function(Tile)>();
   final onGameOver = GenericListener<Function(bool)>();
 
   // Size of the grid
   final int nbRows = 20;
   final int nbCols = 10;
-  final int nbTreasures = 40;
-  final bool revealIfTreasureIsFound = false;
+  final int rewardsCount = 40;
 
   // The actual grid
-  List<int> _grid = [];
-  Map<int, String> _letterGrid = {};
-  List<bool> _isRevealed = [];
+  List<Tile> _grid = [];
+  Map<int, int> _letterGrid = {}; // Grid index : Word letter index
+
+  ///
+  /// Get the number of letters that were found
+  int get letterFoundCount => problem.hiddenLetterStatuses.fold(0,
+      (prev, status) => prev + (status == HiddenLetterStatus.hidden ? 0 : 1));
 
   ///
   /// If the game is over
   bool get hasWin =>
-      treasuresFoundCount == nbTreasures ||
-      lettersFoundCount == WordsManager.instance.current.length;
+      rewardsFoundCount == rewardsCount ||
+      letterFoundCount == problem.letters.length;
   bool get hasLost => isGameOver && !hasWin;
   bool get isGameOver =>
       hasWin || _timeRemaining.inSeconds <= 0 || _triesRemaining <= 0;
 
-  ///
-  /// Get the value of a tile of a specific [index]. If the tile is not
-  /// revealed yet, this method returns concealed; if the tile is a treasure, then it
-  /// returns treasure, otherwise it returns the number of treasure around it.
-  Tile getTile(int index) =>
-      _isRevealed[index] ? _getRevealedTile(index) : Tile.concealed;
+  List<String> get letters => List.from(problem.letters, growable: false);
 
   ///
-  /// Same as tile, but return the non-conceiled value
-  Tile _getRevealedTile(int index) {
-    switch (_grid[index]) {
-      case -2:
-        return Tile.letter;
-      case -1:
-        return Tile.treasure;
-      default:
-        return Tile.values[_grid[index]];
-    }
-  }
+  /// Get the value of a tile of a specific [index].
+  Tile getTile(int index) => _grid[index];
 
   ///
-  /// Get if a tile is a treasure
-  bool _isTreasure(int index) => _grid[index] < 0;
-
-  ///
-  /// Get the number of treasures that were found
-  int get treasuresFoundCount => _grid.asMap().keys.fold(
+  /// Get the number of rewards that were found
+  int get rewardsFoundCount => _grid.asMap().keys.fold(
       0,
       (prev, index) =>
-          prev + (_isRevealed[index] && _isTreasure(index) ? 1 : 0));
+          prev + (_grid[index].isRevealed && _grid[index].hasReward ? 1 : 0));
 
   ///
   /// Get the letter of a tile
   String? getLetter(int index) =>
-      _isRevealed[index] ? _letterGrid[index] : null;
+      _grid[index].isRevealed ? problem.letters[getLetterIndex(index)] : null;
+
+  ///
+  /// Get the letter index associated with a Tile index
+  int getLetterIndex(int tile) => _letterGrid[tile]!;
 
   ///
   /// Get all the letters that were found
   Iterable<bool> get getLettersFoundIndices =>
-      _letterGrid.entries.map((entry) => _isRevealed[entry.key]);
+      _letterGrid.entries.map((entry) => _grid[entry.key].isRevealed);
 
   ///
-  /// Get the number of letters that were found
-  int get lettersFoundCount =>
-      getLettersFoundIndices.fold(0, (prev, found) => prev + (found ? 1 : 0));
+  /// Reveal a letter in the problem
+  void _revealLetter(int index) {
+    if (problem.hiddenLetterStatuses[index] == HiddenLetterStatus.hidden) {
+      problem.hiddenLetterStatuses[index] = HiddenLetterStatus.normal;
+    }
+  }
 
   ///
   /// Main interface for a user to reveal a tile from the grid
@@ -133,38 +136,35 @@ class GameManager {
     // If tile not in the grid
     if (!_isInsideGrid(tile)) return RevealResult.outsideGrid;
     // If tile was already revealed
-    if (_isRevealed[tileIndex]) return RevealResult.alreadyRevealed;
+    if (_grid[tileIndex].isRevealed) return RevealResult.alreadyRevealed;
 
-    // Change the values of the surrounding tiles if it is a treasure
-    if (_isTreasure(tileIndex)) {
-      _adjustSurroundingHints(tile);
-      // If it is a letter, add time
-      if (_grid[tileIndex] == -2) {
-        _timeRemaining += _rewardInTime;
-      } else {
+    // Change the values of the surrounding tiles if it is a reward
+    switch (_grid[tileIndex].value) {
+      case TileValue.letter:
+      case TileValue.treasure:
+        _adjustSurroundingHints(tile);
         _triesRemaining += _rewardInTrials;
-      }
-    } else {
-      // If it is not a treasure, reduce the number of tries
-      _triesRemaining--;
+        if (_grid[tileIndex].value == TileValue.letter) {
+          _timeRemaining += _rewardInTime;
+          _revealLetter(getLetterIndex(tileIndex));
+        }
+        onRewardFound
+            .notifyListeners((callback) => callback(_grid[tileIndex!]));
+        break;
+      default:
+        _triesRemaining--;
     }
 
     // Start the recursive process of revealing all the required tiles
     _revealTileRecursive(tileIndex);
-
-    // Notify the listeners that a tile was revealed
     onTileRevealed.notifyListeners((callback) => callback());
-    if (_isTreasure(tileIndex)) {
-      onTreasureFound.notifyListeners((callback) =>
-          callback(_grid[tileIndex!] == -2 ? Tile.letter : Tile.treasure));
-    }
 
     // Check if the game is over
     if (isGameOver) {
       onGameOver.notifyListeners((callback) => callback(hasWin));
       return RevealResult.gameOver;
     } else {
-      return _isTreasure(tileIndex) ? RevealResult.hit : RevealResult.miss;
+      return _grid[tileIndex].hasReward ? RevealResult.hit : RevealResult.miss;
     }
   }
 
@@ -182,11 +182,10 @@ class GameManager {
     isChecked[idx] = true;
 
     // Reveal the current tile
-    _isRevealed[idx] = true;
+    _grid[idx].reveal();
 
     // If the current tile is not zero, stop revealing, otherwise reveal the tiles around
-    if (!revealIfTreasureIsFound && _isTreasure(idx)) return;
-    if (_grid[idx] > 0) return;
+    if (_grid[idx].value != TileValue.zero) return;
 
     final currentTile = toGridTile(idx, nbCols);
     for (var j = -1; j < 2; j++) {
@@ -198,9 +197,11 @@ class GameManager {
         final newTile = GameTile(currentTile.row + j, currentTile.col + k);
         if (!_isInsideGrid(newTile)) continue;
 
-        // If current tile is a treasure, only reveal new zeros
+        // If current tile is a reward, only reveal new zeros
         final newIndex = toGridIndex(newTile, nbCols);
-        if (_isTreasure(idx) && _grid[newIndex] != 0) continue;
+        if (_grid[idx].hasReward && _grid[newIndex].value == TileValue.zero) {
+          continue;
+        }
 
         // Reveal the tile if it was not already revealed
         _revealTileRecursive(newIndex, isChecked: isChecked);
@@ -218,6 +219,20 @@ class GameManager {
         tile.col < nbCols);
   }
 
+  ///
+  /// Get a random word from the list (capitalized)
+  void _generateProblem() {
+    final word = _dictionary[_random.nextInt(_dictionary.length)];
+
+    _problem = SimplifiedLetterProblem(
+      letters: word.split(''),
+      scrambleIndices: List.generate(word.length, (index) => index),
+      revealedUselessLetterIndices: [],
+      hiddenLetterStatuses:
+          List.generate(word.length, (_) => HiddenLetterStatus.hidden),
+    );
+  }
+
   void resetGame() {
     _generateGrid();
     _timeRemaining = _startingTimeRemaining;
@@ -227,38 +242,41 @@ class GameManager {
   }
 
   ///
-  /// Generate a new grid with randomly positionned treasures
+  /// Generate a new grid with randomly positionned rewards
   void _generateGrid() {
+    _generateProblem();
+
     // Create an empty grid
-    _grid = List.filled(nbRows * nbCols, 0);
-    _isRevealed = List.filled(nbRows * nbCols, false);
+    _grid = List.generate(
+        nbRows * nbCols,
+        (index) =>
+            Tile(index: index, value: TileValue.zero, isConcealed: true));
 
     // Fetch a word to find
-    final word = WordsManager.instance.next;
     _letterGrid = {};
 
-    // Populate it with treasures
-    final rand = Random();
-    for (var i = 0; i < nbTreasures; i++) {
-      var indexOfTreasure = -1;
+    // Populate it with rewards
+    for (var i = 0; i < rewardsCount; i++) {
+      var rewardIndex = -1;
       do {
-        indexOfTreasure = rand.nextInt(nbRows * nbCols);
-        // Make sure it was not already a treasure
-      } while (_grid[indexOfTreasure] < 0);
-      if (_letterGrid.length < word.length) {
-        _letterGrid[indexOfTreasure] = word[_letterGrid.length];
-        _grid[indexOfTreasure] = -2;
+        rewardIndex = _random.nextInt(nbRows * nbCols);
+        // Make sure it this tile does not already have a reward
+      } while (_grid[rewardIndex].hasReward);
+
+      if (_letterGrid.length < letters.length) {
+        _letterGrid[rewardIndex] = _letterGrid.length;
+        _grid[rewardIndex].addLetter();
       } else {
-        _grid[indexOfTreasure] = -1;
+        _grid[rewardIndex].addTreasure();
       }
     }
 
-    // Recalculate the value of each tile based on number of treasures around it
+    // Recalculate the value of each tile based on number of rewards around it
     for (var i = 0; i < nbRows * nbCols; i++) {
-      // Do not recompute tile with a treasure in it
-      if (_isTreasure(i)) continue;
+      // Do not recompute tile with a reward in it
+      if (_grid[i].hasReward) continue;
 
-      var nbTreasuresAroundTile = 0;
+      var rewardsCountAroundTile = 0;
 
       final currentTile = toGridTile(i, nbCols);
       // Check the previous row to next row
@@ -273,33 +291,33 @@ class GameManager {
               GameTile(currentTile.row + j, currentTile.col + k);
           if (!_isInsideGrid(checkedTile)) continue;
 
-          // If there is a treasure, add it to the counter
-          if (_isTreasure(toGridIndex(checkedTile, nbCols))) {
-            nbTreasuresAroundTile++;
+          // If there is a rewared, add it to the counter
+          if (_grid[toGridIndex(checkedTile, nbCols)].hasReward) {
+            rewardsCountAroundTile++;
           }
         }
       }
 
       // Store the number in the tile
-      _grid[i] = nbTreasuresAroundTile;
+      _grid[i].value = TileValue.values[rewardsCountAroundTile];
     }
   }
 
   ///
-  /// When a treasure is found, lower all the surronding numbers
-  void _adjustSurroundingHints(GameTile treasure) {
+  /// When a reward is found, lower all the surronding numbers
+  void _adjustSurroundingHints(GameTile tile) {
     for (var j = -1; j <= 1; j++) {
       // Check the previous col to next col
       for (var k = -1; k <= 1; k++) {
         // Do not check itself
         if (j == 0 && k == 0) continue;
 
-        final tile = GameTile(treasure.row + j, treasure.col + k);
-        if (!_isInsideGrid(tile)) continue;
-        final index = toGridIndex(tile, nbCols);
+        final nextTile = GameTile(tile.row + j, tile.col + k);
+        if (!_isInsideGrid(nextTile)) continue;
+        final index = toGridIndex(nextTile, nbCols);
 
-        // If this is not a treasure, reduce that tile by one
-        if (_grid[index] > 0) _grid[index]--;
+        // If this is not a reward, reduce that tile by one
+        _grid[index].decrement();
       }
     }
   }
