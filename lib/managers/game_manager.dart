@@ -30,8 +30,9 @@ class GameManager {
 
   ///
   /// Time remaining
+  bool _isTimerRunning = false;
   Timer? _timer;
-  final _startingTimeRemaining = const Duration(seconds: 120);
+  final _startingTimeRemaining = const Duration(seconds: 30);
   late Duration _timeRemaining = _startingTimeRemaining;
   Duration get timeRemaining => _timeRemaining;
 
@@ -44,7 +45,7 @@ class GameManager {
 
   ///
   /// Number of tries remaining
-  final _startingTriesRemaining = 50;
+  final _startingTriesRemaining = 5;
   late int _triesRemaining = _startingTriesRemaining;
   int get triesRemaining => _triesRemaining;
 
@@ -72,10 +73,17 @@ class GameManager {
   Map<int, int> _letterGrid = {}; // Grid index : Word letter index
 
   void trySolution(String sender, String message) {
+    if (!_isTimerRunning) return;
+
     // Transform the message so it is only the first word all in uppercase
     final word = message.split(' ').first.toUpperCase();
 
     if (word == problem.letters.join()) {
+      for (int i = 0; i < _problem!.uselessLetterStatuses.length; i++) {
+        _problem!.uselessLetterStatuses[i] = LetterStatus.normal;
+        _problem!.hiddenLetterStatuses[i] = LetterStatus.normal;
+      }
+
       onTrySolution.notifyListeners((callback) => callback(sender, word, true));
 
       // For each _letterGrid, reveal the letter
@@ -91,14 +99,12 @@ class GameManager {
 
   ///
   /// Get the number of letters that were found
-  int get letterFoundCount => problem.hiddenLetterStatuses.fold(0,
-      (prev, status) => prev + (status == HiddenLetterStatus.hidden ? 0 : 1));
+  int get letterFoundCount => problem.hiddenLetterStatuses.fold(
+      0, (prev, status) => prev + (status == LetterStatus.hidden ? 0 : 1));
 
   ///
   /// If the game is over
-  bool get hasWin =>
-      rewardsFoundCount == rewardsCount ||
-      letterFoundCount == problem.letters.length;
+  bool get hasWin => letterFoundCount == problem.letters.length;
   bool get hasLost => isGameOver && !hasWin;
   bool get isGameOver =>
       hasWin || _timeRemaining.inSeconds <= 0 || _triesRemaining <= 0;
@@ -132,16 +138,24 @@ class GameManager {
 
   ///
   /// Reveal a letter in the problem
-  void _revealLetter(int index) {
-    if (problem.hiddenLetterStatuses[index] == HiddenLetterStatus.hidden) {
-      problem.hiddenLetterStatuses[index] = HiddenLetterStatus.normal;
+  bool _revealLetter(int index) {
+    // Do not reveal the mystery letter
+    if (problem.uselessLetterStatuses[index] == LetterStatus.revealed) {
+      return false;
     }
+    if (problem.hiddenLetterStatuses[index] != LetterStatus.hidden) {
+      return false;
+    }
+
+    problem.hiddenLetterStatuses[index] = LetterStatus.normal;
+    return true;
   }
 
   ///
   /// Main interface for a user to reveal a tile from the grid
   RevealResult revealTile({GameTile? tile, int? tileIndex}) {
     if (isGameOver) return RevealResult.gameOver;
+    _isTimerRunning = true;
 
     if (tile == null && tileIndex == null) {
       throw 'You must provide either a tile or an index';
@@ -168,8 +182,9 @@ class GameManager {
         _adjustSurroundingHints(tile);
         _triesRemaining += _rewardInTrials;
         if (_grid[tileIndex].value == TileValue.letter) {
-          _timeRemaining += _rewardInTime;
-          _revealLetter(getLetterIndex(tileIndex));
+          if (_revealLetter(getLetterIndex(tileIndex))) {
+            _timeRemaining += _rewardInTime;
+          }
         }
         onRewardFound
             .notifyListeners((callback) => callback(_grid[tileIndex!]));
@@ -247,17 +262,25 @@ class GameManager {
   void _generateProblem() {
     final word = _dictionary[_random.nextInt(_dictionary.length)];
 
+    // One letter will not be on the grid. For internal reasons of LetterDisplayer, we must flag it as "revealed"
+    final mysteryLetterIndex = _random.nextInt(word.length);
+
     _problem = SimplifiedLetterProblem(
       letters: word.split(''),
       scrambleIndices: List.generate(word.length, (index) => index),
-      revealedUselessLetterIndices: [],
+      uselessLetterStatuses: List.generate(
+          word.length,
+          (i) => i == mysteryLetterIndex
+              ? LetterStatus.revealed
+              : LetterStatus.normal),
       hiddenLetterStatuses:
-          List.generate(word.length, (_) => HiddenLetterStatus.hidden),
+          List.generate(word.length, (_) => LetterStatus.hidden),
     );
   }
 
   void resetGame() {
     _generateGrid();
+    _isTimerRunning = false;
     _timeRemaining = _startingTimeRemaining;
     _triesRemaining = _startingTriesRemaining;
     onGameStarted.notifyListeners((callback) => callback());
@@ -272,8 +295,11 @@ class GameManager {
     // Create an empty grid
     _grid = List.generate(
         nbRows * nbCols,
-        (index) =>
-            Tile(index: index, value: TileValue.zero, isConcealed: true));
+        (index) => Tile(
+            index: index,
+            value: TileValue.zero,
+            isConcealed: true,
+            isUseless: false));
 
     // Fetch a word to find
     _letterGrid = {};
@@ -288,7 +314,9 @@ class GameManager {
 
       if (_letterGrid.length < letters.length) {
         _letterGrid[rewardIndex] = _letterGrid.length;
-        _grid[rewardIndex].addLetter();
+        _grid[rewardIndex].addLetter(
+            uselessStatus:
+                _problem!.uselessLetterStatuses[_letterGrid.length - 1]);
       } else {
         _grid[rewardIndex].addTreasure();
       }
@@ -362,6 +390,8 @@ class GameManager {
   ///
   /// The game loop
   void _gameLoop() {
+    if (!_isTimerRunning) return;
+
     _tickClock();
 
     if (isGameOver) {

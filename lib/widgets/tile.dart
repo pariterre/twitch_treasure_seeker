@@ -1,3 +1,5 @@
+import 'package:common/models/simplified_game_state.dart';
+
 enum TileValue {
   zero,
   one,
@@ -73,18 +75,31 @@ class Tile {
 
   TileValue value;
 
-  bool _isConcealed;
-  bool get isConcealed => _isConcealed;
-  bool get isRevealed => !_isConcealed;
+  LetterStatus _uselessStatus = LetterStatus.normal;
+  LetterStatus _hiddenStatus;
+  bool get isConcealed => _hiddenStatus == LetterStatus.hidden;
+  bool get isRevealed => !isConcealed;
 
-  Tile({required int index, required this.value, required bool isConcealed})
+  Tile(
+      {required int index,
+      required this.value,
+      required bool isConcealed,
+      required bool isUseless})
       : _index = index,
-        _isConcealed = isConcealed;
+        _hiddenStatus =
+            isConcealed ? LetterStatus.hidden : LetterStatus.revealed,
+        _uselessStatus =
+            isUseless ? LetterStatus.revealed : LetterStatus.normal;
 
   void addTreasure() => value = TileValue.treasure;
-  void addLetter() => value = TileValue.letter;
+  void addLetter({required LetterStatus uselessStatus}) {
+    value = TileValue.letter;
+    _uselessStatus = uselessStatus;
+  }
+
   bool get hasTreasure => value == TileValue.treasure;
-  bool get hasLetter => value == TileValue.letter;
+  bool get hasLetter =>
+      value == TileValue.letter && _uselessStatus == LetterStatus.normal;
   bool get hasReward =>
       value == TileValue.treasure || value == TileValue.letter;
   bool get hasNoReward => !hasReward;
@@ -97,6 +112,6 @@ class Tile {
   }
 
   void reveal() {
-    _isConcealed = false;
+    _hiddenStatus = LetterStatus.revealed;
   }
 }
