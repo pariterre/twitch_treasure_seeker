@@ -36,6 +36,7 @@ class _GameScreenState extends State<GameScreen> {
     gm.onGameStarted.listen(_refresh);
     gm.onTileRevealed.listen(_refresh);
     gm.onGameOver.listen(_onGameOver);
+    gm.onTrySolution.listen(_onShowTrySolution);
 
     final tm = TwitchManager.instance;
     tm.onTwitchManagerHasConnected.addListener(_refresh);
@@ -53,6 +54,7 @@ class _GameScreenState extends State<GameScreen> {
     gm.onGameStarted.cancel(_refresh);
     gm.onTileRevealed.cancel(_refresh);
     gm.onGameOver.cancel(_onGameOver);
+    gm.onTrySolution.cancel(_onShowTrySolution);
 
     final tm = TwitchManager.instance;
     tm.onTwitchManagerHasConnected.removeListener(_refresh);
@@ -62,10 +64,18 @@ class _GameScreenState extends State<GameScreen> {
 
   void _refresh() => setState(() {});
 
-  void _onGameOver(bool hasWin) {
-    if (hasWin) {
-      _rewardFoundKey.currentState!.showMessage('Vous avez gagné');
+  void _onShowTrySolution(String sender, String word, bool isSuccess) {
+    if (isSuccess) {
+      _rewardFoundKey.currentState!
+          .showMessage('Vous avez gagné, $sender a trouvé la solution!');
     } else {
+      _rewardFoundKey.currentState!.showMessage(
+          '$sender a proposé $word,\n mais ce n\'est pas la solution');
+    }
+  }
+
+  void _onGameOver(bool hasWin) {
+    if (!hasWin) {
       _rewardFoundKey.currentState!.showMessage('Vous avez perdu');
     }
 
@@ -88,49 +98,50 @@ class _GameScreenState extends State<GameScreen> {
     final gridWidth = gm.nbCols * tileSize;
 
     return Scaffold(
-      body: Background(
-        backgroundLayer: Opacity(
-          opacity: 0.05,
-          child: Image.asset(
-            'assets/images/train.png',
-            height: MediaQuery.of(context).size.height,
-            fit: BoxFit.cover,
+      body: TwitchManager.instance.debugOverlay(
+        child: Background(
+          backgroundLayer: Opacity(
+            opacity: 0.05,
+            child: Image.asset(
+              'assets/images/train.png',
+              height: MediaQuery.of(context).size.height,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        child: Center(
-          child: Stack(
-            children: [
-              Positioned(
-                  top: offsetFromBorder,
+          child: Center(
+            child: Stack(
+              children: [
+                Positioned(
+                    top: offsetFromBorder,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                        child: SizedBox(
+                            height: headerHeight, child: const Header()))),
+                Positioned(
+                  top: offsetFromBorder + headerHeight,
+                  left: (windowWidth - gridWidth) / 2,
+                  right: (windowWidth - gridWidth) / 2,
+                  child: GameGrid(tileSize: tileSize),
+                ),
+                Positioned(
                   left: 0,
                   right: 0,
+                  top: 0,
+                  bottom: windowHeight * 1 / 4,
                   child: Center(
-                      child: SizedBox(
-                          height: headerHeight, child: const Header()))),
-              Positioned(
-                top: offsetFromBorder + headerHeight,
-                left: (windowWidth - gridWidth) / 2,
-                right: (windowWidth - gridWidth) / 2,
-                child: GameGrid(tileSize: tileSize),
-              ),
-              Positioned(
-                left: offsetFromBorder,
-                right: windowWidth -
-                    ((gm.nbCols + 1.5) * tileSize + 2 * offsetFromBorder),
-                top: 0,
-                bottom: windowHeight * 1 / 4,
-                child: Center(
-                    child: GrowingContainer(
-                  key: _rewardFoundKey,
-                  startingSize: windowHeight * 0.01,
-                  finalSize: windowHeight * 0.04,
-                  growingTime: _growingTextTime,
-                  fadingTime: _fadingTextTime,
-                  backgroundColor:
-                      gm.hasLost ? ThemeColor.lost : ThemeColor.main,
-                )),
-              ),
-            ],
+                      child: GrowingContainer(
+                    key: _rewardFoundKey,
+                    startingSize: windowHeight * 0.01,
+                    finalSize: windowHeight * 0.04,
+                    growingTime: _growingTextTime,
+                    fadingTime: _fadingTextTime,
+                    backgroundColor:
+                        gm.hasLost ? ThemeColor.lost : ThemeColor.main,
+                  )),
+                ),
+              ],
+            ),
           ),
         ),
       ),

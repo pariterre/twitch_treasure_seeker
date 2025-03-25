@@ -1,5 +1,6 @@
 import 'package:common/managers/theme_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:twitch_treasure_seeker/managers/game_manager.dart';
 import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/screens/game_screen.dart';
 
@@ -12,8 +13,9 @@ import 'package:twitch_treasure_seeker/screens/game_screen.dart';
 
 void main() async {
   await ThemeManager.initialize();
+  TwitchManager.instance.initialize(useMock: false);
 
-  TwitchManager.instance.initialize(useMock: true);
+  GameManager.instance; // Force the initialization of the game manager
 
   runApp(MaterialApp(
     initialRoute: GameScreen.route,

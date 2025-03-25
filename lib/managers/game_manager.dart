@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:common/managers/dictionary_manager.dart';
 import 'package:common/models/simplified_game_state.dart';
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/enums.dart';
 import 'package:twitch_treasure_seeker/models/game_tile.dart';
 import 'package:twitch_treasure_seeker/models/generic_listener.dart';
@@ -21,6 +22,8 @@ class GameManager {
   static GameManager get instance => _instance;
   GameManager._() {
     resetGame();
+
+    TwitchManager.instance.addChatListener(trySolution);
   }
 
   final _random = Random();
@@ -28,7 +31,7 @@ class GameManager {
   ///
   /// Time remaining
   Timer? _timer;
-  final _startingTimeRemaining = const Duration(seconds: 20);
+  final _startingTimeRemaining = const Duration(seconds: 120);
   late Duration _timeRemaining = _startingTimeRemaining;
   Duration get timeRemaining => _timeRemaining;
 
@@ -41,7 +44,7 @@ class GameManager {
 
   ///
   /// Number of tries remaining
-  final _startingTriesRemaining = 5;
+  final _startingTriesRemaining = 50;
   late int _triesRemaining = _startingTriesRemaining;
   int get triesRemaining => _triesRemaining;
 
@@ -53,6 +56,8 @@ class GameManager {
   // Listeners
   final onGameStarted = GenericListener<Function()>();
   final onClockTicked = GenericListener<Function(Duration)>();
+  final onTrySolution =
+      GenericListener<Function(String sender, String word, bool isSuccess)>();
   final onTileRevealed = GenericListener<Function()>();
   final onRewardFound = GenericListener<Function(Tile)>();
   final onGameOver = GenericListener<Function(bool)>();
@@ -65,6 +70,24 @@ class GameManager {
   // The actual grid
   List<Tile> _grid = [];
   Map<int, int> _letterGrid = {}; // Grid index : Word letter index
+
+  void trySolution(String sender, String message) {
+    // Transform the message so it is only the first word all in uppercase
+    final word = message.split(' ').first.toUpperCase();
+
+    if (word == problem.letters.join()) {
+      onTrySolution.notifyListeners((callback) => callback(sender, word, true));
+
+      // For each _letterGrid, reveal the letter
+      for (final index in _letterGrid.keys) {
+        revealTile(tileIndex: index);
+        onRewardFound.notifyListeners((callback) => callback(_grid[index]));
+      }
+    } else {
+      onTrySolution
+          .notifyListeners((callback) => callback(sender, word, false));
+    }
+  }
 
   ///
   /// Get the number of letters that were found
