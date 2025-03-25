@@ -1,6 +1,7 @@
 import 'package:common/widgets/background.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/widgets/game_grid.dart';
 import 'package:twitch_treasure_seeker/widgets/growing_container.dart';
@@ -21,6 +22,12 @@ class _GameScreenState extends State<GameScreen> {
 
   final _rewardFoundKey = GlobalKey<GrowingContainerState>();
 
+  Future<void> _setTwitchManager({required bool reloadIfPossible}) async {
+    await TwitchManager.instance
+        .showConnectManagerDialog(context, reloadIfPossible: reloadIfPossible);
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -29,15 +36,26 @@ class _GameScreenState extends State<GameScreen> {
     gm.onGameStarted.listen(_refresh);
     gm.onTileRevealed.listen(_refresh);
     gm.onGameOver.listen(_onGameOver);
+
+    final tm = TwitchManager.instance;
+    tm.onTwitchManagerHasConnected.addListener(_refresh);
+
+    if (tm.isNotConnected) {
+      WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _setTwitchManager(reloadIfPossible: true));
+    }
   }
 
-// Dispose
+  // Dispose
   @override
   void dispose() {
     final gm = GameManager.instance;
     gm.onGameStarted.cancel(_refresh);
     gm.onTileRevealed.cancel(_refresh);
     gm.onGameOver.cancel(_onGameOver);
+
+    final tm = TwitchManager.instance;
+    tm.onTwitchManagerHasConnected.removeListener(_refresh);
 
     super.dispose();
   }
