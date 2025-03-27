@@ -1,8 +1,8 @@
 import 'package:common/managers/theme_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/models/tile.dart';
 import 'package:twitch_treasure_seeker/widgets/letter_displayer.dart';
-import 'package:twitch_treasure_seeker/widgets/tile.dart';
 
 class Header extends StatefulWidget {
   const Header({super.key});

@@ -129,6 +129,7 @@ class _GameScreenState extends State<GameScreen> {
                   right: 0,
                   top: 0,
                   bottom: windowHeight * 1 / 4,
+                  // TODO Replace GrowingContainer by BouncyContainer
                   child: Center(
                       child: GrowingContainer(
                     key: _rewardFoundKey,

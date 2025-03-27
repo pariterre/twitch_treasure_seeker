@@ -7,7 +7,7 @@ import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/enums.dart';
 import 'package:twitch_treasure_seeker/models/game_tile.dart';
 import 'package:twitch_treasure_seeker/models/generic_listener.dart';
-import 'package:twitch_treasure_seeker/widgets/tile.dart';
+import 'package:twitch_treasure_seeker/models/tile.dart';
 
 ///
 /// Easy accessors translating index into row/col pair or row/col pair into
@@ -76,7 +76,9 @@ class GameManager {
     if (!_isTimerRunning) return;
 
     // Transform the message so it is only the first word all in uppercase
-    final word = message.split(' ').first.toUpperCase();
+    final words = message.split(' ');
+    if (words.isEmpty || words.length > 1) return;
+    final word = words.first.toUpperCase();
 
     if (word == problem.letters.join()) {
       for (int i = 0; i < _problem!.uselessLetterStatuses.length; i++) {
