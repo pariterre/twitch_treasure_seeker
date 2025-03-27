@@ -12,7 +12,7 @@ dependencies:
   shared_preferences: ^2.2.0
   audioplayers: ^6.1.0
   twitch_manager:
-    path: ./plugins/twitch_manager
+    path: ./plugins/twitch_train_de_mots/common/plugins/twitch_manager
   common:
     path: ./plugins/twitch_train_de_mots/common
 
