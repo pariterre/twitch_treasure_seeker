@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/managers/treasure_seeker_game_manager.dart';
 import 'package:twitch_treasure_seeker/models/tile.dart';
 
 extension TileColor on TileValue {

@@ -1,6 +1,6 @@
 import 'package:common/managers/theme_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/managers/treasure_seeker_game_manager.dart';
 import 'package:twitch_treasure_seeker/models/tile.dart';
 import 'package:twitch_treasure_seeker/widgets/letter_displayer.dart';
 

@@ -1,7 +1,7 @@
 import 'package:common/widgets/fireworks.dart';
 import 'package:common/widgets/letter_displayer_common.dart';
 import 'package:flutter/material.dart';
-import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/managers/treasure_seeker_game_manager.dart';
 import 'package:twitch_treasure_seeker/models/tile.dart';
 
 class LetterDisplayer extends StatefulWidget {

@@ -48,7 +48,7 @@ class TwitchManager {
     final manager = await showDialog<TwitchAppManager>(
         context: context,
         builder: (context) => TwitchAppAuthenticationDialog(
-              isMockActive: _isMockActive,
+              useMocker: _isMockActive,
               debugPanelOptions: _twitchDebugPanelOptions,
               onConnexionEstablished: (manager) {
                 if (context.mounted) Navigator.of(context).pop(manager);
@@ -84,8 +84,8 @@ class TwitchManager {
 
   ///
   /// Declare the singleton
-  static final TwitchManager _instance = TwitchManager._internal();
-  TwitchManager._internal();
+  static final TwitchManager _instance = TwitchManager._();
+  TwitchManager._();
   static TwitchManager get instance => _instance;
 
   ///

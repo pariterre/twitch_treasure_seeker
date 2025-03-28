@@ -1,6 +1,6 @@
 import 'package:common/widgets/background.dart';
 import 'package:flutter/material.dart';
-import 'package:twitch_treasure_seeker/managers/game_manager.dart';
+import 'package:twitch_treasure_seeker/managers/treasure_seeker_game_manager.dart';
 import 'package:twitch_treasure_seeker/managers/twitch_manager.dart';
 import 'package:twitch_treasure_seeker/models/minesweeper_theme.dart';
 import 'package:twitch_treasure_seeker/widgets/game_grid.dart';
